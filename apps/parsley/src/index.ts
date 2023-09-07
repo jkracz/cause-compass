@@ -1,13 +1,20 @@
-import { drizzle } from "drizzle-orm/planetscale-serverless";
+import "dotenv/config";
 import { connect } from "@planetscale/database";
-// import dotenv from "dotenv";
-// dotenv.config({ path: "./../.env" });
+import { drizzle } from "drizzle-orm/planetscale-serverless";
+import { incomeAndAssetCode } from "./db/drizzle/schema";
 
-// create the connection
-const connection = connect({
-    host: process.env["DATABASE_HOST"],
-    username: process.env["DATABASE_USERNAME"],
-    password: process.env["DATABASE_PASSWORD"],
-});
+const config = {
+    host: process.env.DATABASE_HOST,
+    username: process.env.DATABASE_USERNAME,
+    password: process.env.DATABASE_PASSWORD,
+};
+const conn = connect(config);
+const db = drizzle(conn);
 
-const db = drizzle(connection);
+const main = async () => {
+    console.log(config);
+    const res = await db.select().from(incomeAndAssetCode);
+    console.log(res);
+};
+
+main();

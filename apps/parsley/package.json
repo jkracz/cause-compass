@@ -4,7 +4,10 @@
     "description": "Originally built for defining the DB schema and importing nonprofit data from the IRS.",
     "main": "index.js",
     "scripts": {
-        "start": "tsx watch -r dontenv/config index.ts",
+        "start": "tsx src/index.ts",
+        "insert-ntee-file": "tsx src/insertNteeFileIntoDb.ts",
+        "insert-eo-file": "tsx src/insertEoFileIntoDb.ts",
+        "introspect": "drizzle-kit introspect:mysql",
         "migrations:generate": "drizzle-kit generate:mysql",
         "migrations:push": "node -r esbuild-register src/lib/db/migrate.ts",
         "db:push": "drizzle-kit push:mysql",
@@ -23,11 +26,12 @@
     "dependencies": {
         "@planetscale/database": "^1.7.0",
         "dotenv": "^16.3.1",
-        "drizzle-orm": "^0.27.0"
+        "drizzle-orm": "^0.28.5"
     },
     "devDependencies": {
         "@types/node": "^20.3.1",
-        "drizzle-kit": "^0.19.1",
+        "drizzle-kit": "^0.19.13",
+        "mysql2": "^3.6.0",
         "tsx": "^3.12.7"
     }
 }
