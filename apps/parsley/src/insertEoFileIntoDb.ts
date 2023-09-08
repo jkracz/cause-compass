@@ -4,7 +4,7 @@ import { join } from "path";
 import "dotenv/config";
 import { connect } from "@planetscale/database";
 import { drizzle } from "drizzle-orm/planetscale-serverless";
-import { taxExemptOrgs } from "./db/drizzle/schema";
+import { tax_exempt_orgs as taxExemptOrgs } from "./db/drizzle/schema";
 import { eq } from "drizzle-orm";
 
 type TaxEOSelect = typeof taxExemptOrgs.$inferSelect;
@@ -47,92 +47,144 @@ const config = {
 const conn = connect(config);
 const db = drizzle(conn);
 
+function parseDateString(dateStr: string): Date | null {
+    if (dateStr.length !== 6) {
+        return null;
+    }
+
+    const year = parseInt(dateStr.slice(0, 4), 10);
+    const month = parseInt(dateStr.slice(4, 6), 10) - 1; // Months are 0-indexed in JavaScript
+
+    if (isNaN(year) || isNaN(month)) {
+        return null;
+    }
+
+    return new Date(year, month);
+}
+
 const insertEoFileIntoDb = async (fname: string) => {
     const currentPath = join(__dirname, "../data/needs_imported", fname);
     const destinationPath = join(__dirname, "../data/imported", fname);
+    const keysFromFile = [
+        "EIN",
+        "NAME",
+        "ICO",
+        "STREET",
+        "CITY",
+        "STATE",
+        "ZIP",
+        "GROUP",
+        "SUBSECTION",
+        "AFFILIATION",
+        "CLASSIFICATION",
+        "RULING",
+        "DEDUCTIBILITY",
+        "FOUNDATION",
+        "ACTIVITY",
+        "ORGANIZATION",
+        "STATUS",
+        "TAX_PERIOD",
+        "ASSET_CD",
+        "INCOME_CD",
+        "FILING_REQ_CD",
+        "PF_FILING_REQ_CD",
+        "ACCT_PD",
+        "ASSET_AMT",
+        "INCOME_AMT",
+        "REVENUE_AMT",
+        "NTEE_CD",
+        "SORT_NAME",
+    ];
+    const keyMap = {
+        EIN: "ein",
+        NAME: "organization_name",
+        ICO: "in_care_of_name",
+        STREET: "street_address",
+        CITY: "city",
+        STATE: "state",
+        ZIP: "zip_code",
+        GROUP: "group_exemption_number",
+        SUBSECTION: "subsection_code",
+        AFFILIATION: "affiliation_code",
+        CLASSIFICATION: "classification_code",
+        RULING: "ruling_date",
+        DEDUCTIBILITY: "deductability",
+        FOUNDATION: "foundation_code",
+        ACTIVITY: "activity_code",
+        ORGANIZATION: "organization_type",
+        STATUS: "exempt_organization_status_code",
+        TAX_PERIOD: "tax_period",
+        ASSET_CD: "asset_code",
+        INCOME_CD: "income_code",
+        FILING_REQ_CD: "filing_requirement_code",
+        PF_FILING_REQ_CD: "pf_filing_requirement",
+        ACCT_PD: "accounting_period",
+        ASSET_AMT: "asset_amount",
+        INCOME_AMT: "income_amount",
+        REVENUE_AMT: "revenue_amount",
+        NTEE_CD: "ntee_code",
+        SORT_NAME: "sort_name",
+    };
+
     try {
         const file = await fs.promises.open(currentPath, "r");
         let keys: Array<keyof TaxEOInsert> = [];
         for await (const line of file.readLines()) {
-            const lineSplit = line.split(",");
-            if (lineSplit[0] === "EIN") {
-                keys = lineSplit as Array<keyof TaxEOInsert>;
+            const values = line.split(",");
+            if (values[0] === "EIN") {
                 continue;
             }
 
             const orgs: TaxEOSelect[] = await db
                 .select()
                 .from(taxExemptOrgs)
-                .where(eq(taxExemptOrgs.ein, Number(lineSplit[0])));
+                .where(eq(taxExemptOrgs.ein, Number(values[0])));
 
             if (orgs.length === 0) {
-                const obj: TaxEOInsert = keys.reduce<TaxEOInsert>((acc, key, index) => {
-                    const value = lineSplit[index];
-                    switch (key) {
-                        case "ein":
-                        case "group_exemption_number":
-                        case "subsection_code":
-                        case "affiliation_code":
-                        case "classification_code":
-                        case "foundation_code":
-                        case "activity_code":
-                        case "exempt_organization_status_code":
-                        case "asset_code":
-                        case "income_code":
-                        case "income_amount":
-                        case "revenue_amount":
-                        case "filing_requirement_code":
-                        case "pf_filing_requirement":
-                            acc[key] = parseInt(value, 10);
-                            break;
-                        case "ruling_date":
-                        case "tax_period":
-                            acc[key] = new Date(value); // or just `value` if string is fine
-                            break;
-                        default:
-                            acc[key] = value as never;
-                            break;
+                const parsedObject: { [key: string]: any } = {};
+
+                for (let i = 0; i < keysFromFile.length; i++) {
+                    const key = keysFromFile[i];
+                    const value = values[i];
+
+                    const dbKey = keyMap[key as keyof typeof keyMap];
+
+                    if (!value) {
+                        continue;
                     }
-                    return acc;
-                }, {} as TaxEOInsert);
-                console.log(obj);
-                await db.insert(taxExemptOrgs).values(obj);
+
+                    if (dbKey === "ruling_date" || dbKey === "tax_period") {
+                        const parsedDate = parseDateString(value);
+                        parsedObject[dbKey] = parsedDate;
+                    } else if (dbKey === "activity_code") {
+                        const activities = value.match(/.{1,3}/g) || [];
+                        activities.forEach((activity, index) => {
+                            if (activity !== "000") {
+                                parsedObject[`activity_code_${index + 1}`] = parseInt(activity, 10);
+                            }
+                        });
+                    } else if (dbKey === "ntee_code") {
+                        parsedObject[dbKey] = value.substring(0, 3);
+                    } else {
+                        const isNumeric = !isNaN(parseFloat(value)) && isFinite(+value);
+                        parsedObject[dbKey] = isNumeric ? parseInt(value, 10) : value;
+                    }
+                }
+
+                await db.insert(taxExemptOrgs).values(parsedObject as any);
             } else {
-                console.log("ELSE");
+                console.log(`EIN: ${values[0]} ALREADY EXISTS IN DB`);
             }
-            break;
-
-            // if (lineSplit[0].length === 1) {
-            //     const majorNtee: MajorNteeCode[] = await db
-            //         .select()
-            //         .from(nteeMajorCode)
-            //         .where(eq(nteeMajorCode.code, lineSplit[0]));
-            //     if (majorNtee.length == 0) {
-            //         await db
-            //             .insert(nteeMajorCode)
-            //             .values({ code: lineSplit[0], category: lineSplit[1], description: lineSplit[2] });
-            //     }
-            // } else {
-            //     const ntee: NteeCode[] = await db.select().from(nteeCode).where(eq(nteeCode.code, lineSplit[0]));
-            //     if (ntee.length === 0) {
-            //         await db.insert(nteeCode).values({
-            //             code: lineSplit[0],
-            //             category: lineSplit[1],
-            //             description: lineSplit[2],
-            //             majorCode: lineSplit[0][0],
-            //         });
-            //     }
-            // }
         }
-        // console.log(`FINISHED INSERTING ALL NEW RECORDS FROM: ${fname}`);
+        console.log(`FINISHED INSERTING ALL NEW RECORDS FROM: ${fname}`);
 
-        // fs.rename(currentPath, destinationPath, function (err) {
-        //     if (err) {
-        //         throw err;
-        //     } else {
-        //         console.log(`MOVED FILE TO: ${destinationPath}`);
-        //     }
-        // });
+        fs.rename(currentPath, destinationPath, function (err) {
+            if (err) {
+                throw err;
+            } else {
+                console.log(`MOVED FILE TO: ${destinationPath}`);
+            }
+        });
     } catch (err) {
         console.log(`COULD NOT INSERT FILE BECAUSE OF ERROR:\n${err}`);
     }

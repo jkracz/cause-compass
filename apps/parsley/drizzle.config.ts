@@ -9,4 +9,7 @@ export default {
     dbCredentials: {
         connectionString: process.env.DATABASE_URL || "",
     },
+    introspect: {
+        casing: "preserve",
+    },
 } satisfies Config;

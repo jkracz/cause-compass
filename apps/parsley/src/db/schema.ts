@@ -48,7 +48,7 @@ export const ntee_major_code = mysqlTable(
 export const tax_exempt_orgs = mysqlTable(
     "tax_exempt_orgs",
     {
-        organization_id: bigint("organization_id", { mode: "bigint" }).autoincrement().notNull(),
+        organization_id: bigint("organization_id", { mode: "bigint" }).autoincrement().notNull(), // not added from file; gets generated on new insert
         ein: int("ein").notNull(),
         organization_name: varchar("organization_name", { length: 255 }).notNull(),
         in_care_of_name: varchar("in_care_of_name", { length: 500 }),
@@ -66,7 +66,9 @@ export const tax_exempt_orgs = mysqlTable(
             enum: ["deductible by treaty", "deductible", "not deductible"],
         }),
         foundation_code: tinyint("foundation_code"),
-        activity_code: int("activity_code"),
+        activity_code_1: smallint("activity_code_1"), // activity code in file can be broken into 3, 3 digit activity codes; 00 should mean null
+        activity_code_2: smallint("activity_code_2"),
+        activity_code_3: smallint("activity_code_3"),
         organization_type: varchar("organization_type", {
             length: 12,
             enum: ["co-operative", "corporation", "association", "partnership", "trust"],
@@ -81,6 +83,8 @@ export const tax_exempt_orgs = mysqlTable(
         pf_filing_requirement: tinyint("pf_filing_requirement"),
         ntee_code: char("ntee_code", { length: 3 }),
         sort_name: varchar("sort_name", { length: 100 }),
+        accounting_period: tinyint("accounting_period"), // at most a 2 digit value that represents the month of the year
+        asset_amount: int("asset_amount"),
     },
     (table) => {
         return {

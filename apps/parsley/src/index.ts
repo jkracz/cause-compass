@@ -1,7 +1,6 @@
 import "dotenv/config";
 import { connect } from "@planetscale/database";
 import { drizzle } from "drizzle-orm/planetscale-serverless";
-import { incomeAndAssetCode } from "./db/drizzle/schema";
 
 const config = {
     host: process.env.DATABASE_HOST,
@@ -12,9 +11,7 @@ const conn = connect(config);
 const db = drizzle(conn);
 
 const main = async () => {
-    console.log(config);
-    const res = await db.select().from(incomeAndAssetCode);
-    console.log(res);
+    console.log("test place");
 };
 
 main();

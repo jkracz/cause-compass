@@ -4,7 +4,7 @@ import { join } from "path";
 import "dotenv/config";
 import { connect } from "@planetscale/database";
 import { drizzle } from "drizzle-orm/planetscale-serverless";
-import { nteeMajorCode, nteeCode } from "./db/drizzle/schema";
+import { ntee_major_code as nteeMajorCode, ntee_code as nteeCode } from "./db/drizzle/schema";
 import { eq } from "drizzle-orm";
 
 type NteeCode = typeof nteeCode.$inferSelect;
@@ -44,7 +44,7 @@ const insertNteeFileIntoDb = async (fname: string) => {
                         code: lineSplit[0],
                         category: lineSplit[1],
                         description: lineSplit[2],
-                        majorCode: lineSplit[0][0],
+                        major_code: lineSplit[0][0],
                     });
                 }
             }
