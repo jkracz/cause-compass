@@ -1,17 +1,6 @@
-import { mysqlTable, mysqlSchema, AnyMySqlColumn, primaryKey, tinyint, int, index, char, varchar, bigint, smallint, date } from "drizzle-orm/mysql-core"
+import { mysqlTable, mysqlSchema, AnyMySqlColumn, index, primaryKey, char, varchar, tinyint, bigint, int, smallint, date } from "drizzle-orm/mysql-core"
 import { sql } from "drizzle-orm"
 
-
-export const income_and_asset_code = mysqlTable("income_and_asset_code", {
-	code: tinyint("code").notNull(),
-	low_range: int("low_range"),
-	high_range: int("high_range"),
-},
-(table) => {
-	return {
-		income_and_asset_code_code: primaryKey(table.code),
-	}
-});
 
 export const ntee_code = mysqlTable("ntee_code", {
 	code: char("code", { length: 3 }).notNull(),
@@ -37,6 +26,17 @@ export const ntee_major_code = mysqlTable("ntee_major_code", {
 	}
 });
 
+export const subsection_classification_codes = mysqlTable("subsection_classification_codes", {
+	subsection_code: tinyint("subsection_code").notNull(),
+	classification_code: tinyint("classification_code").notNull(),
+	description: varchar("description", { length: 100 }),
+},
+(table) => {
+	return {
+		subsection_classification_codes_classification_code_subsection_code: primaryKey(table.classification_code, table.subsection_code),
+	}
+});
+
 export const tax_exempt_orgs = mysqlTable("tax_exempt_orgs", {
 	organization_id: bigint("organization_id", { mode: "number" }).autoincrement().notNull(),
 	ein: int("ein").notNull(),
@@ -56,11 +56,11 @@ export const tax_exempt_orgs = mysqlTable("tax_exempt_orgs", {
 	foundation_code: tinyint("foundation_code"),
 	activity_code_1: smallint("activity_code_1"),
 	organization_type: varchar("organization_type", { length: 12 }),
-	exempt_organization_status_code: tinyint("exempt_organization_status_code"),
+	exempt_organization_status: varchar("exempt_organization_status", { length: 100 }),
 	// you can use { mode: 'date' }, if you want to have Date as type for this column
 	tax_period: date("tax_period", { mode: 'string' }),
-	asset_code: tinyint("asset_code"),
-	income_code: tinyint("income_code"),
+	asset_amount_range: varchar("asset_amount_range", { length: 25 }),
+	income_amount_range: varchar("income_amount_range", { length: 25 }),
 	income_amount: int("income_amount"),
 	revenue_amount: int("revenue_amount"),
 	filing_requirement_code: tinyint("filing_requirement_code"),
@@ -74,10 +74,8 @@ export const tax_exempt_orgs = mysqlTable("tax_exempt_orgs", {
 },
 (table) => {
 	return {
-		asset_code_idx: index("asset_code_idx").on(table.asset_code),
-		ein_idx: index("ein_idx").on(table.ein),
-		income_code_idx: index("income_code_idx").on(table.income_code),
 		ntee_code_idx: index("ntee_code_idx").on(table.ntee_code),
+		ein_idx: index("ein_idx").on(table.ein),
 		tax_exempt_orgs_organization_id: primaryKey(table.organization_id),
 	}
 });

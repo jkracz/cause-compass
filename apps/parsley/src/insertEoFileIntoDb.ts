@@ -8,7 +8,7 @@ import { tax_exempt_orgs as taxExemptOrgs } from "./db/drizzle/schema";
 import { eq } from "drizzle-orm";
 
 type TaxEOSelect = typeof taxExemptOrgs.$inferSelect;
-type Tax = typeof taxExemptOrgs.$inferInsert;
+// type Tax = typeof taxExemptOrgs.$inferInsert;
 interface TaxEOInsert {
     ein: number;
     organization_name: string;
@@ -26,10 +26,10 @@ interface TaxEOInsert {
     foundation_code?: number;
     activity_code?: number;
     organization_type?: "co-operative" | "corporation" | "association" | "partnership" | "trust";
-    exempt_organization_status_code?: number;
+    exempt_organization_status?: string;
     tax_period?: Date | string;
-    asset_code?: number;
-    income_code?: number;
+    asset_amount_range?: string;
+    income_amount_range?: string;
     income_amount?: number;
     revenue_amount?: number;
     filing_requirement_code?: number;
@@ -112,10 +112,10 @@ const insertEoFileIntoDb = async (fname: string) => {
         FOUNDATION: "foundation_code",
         ACTIVITY: "activity_code",
         ORGANIZATION: "organization_type",
-        STATUS: "exempt_organization_status_code",
+        STATUS: "exempt_organization_status",
         TAX_PERIOD: "tax_period",
-        ASSET_CD: "asset_code",
-        INCOME_CD: "income_code",
+        ASSET_CD: "asset_amount_range",
+        INCOME_CD: "income_amount_range",
         FILING_REQ_CD: "filing_requirement_code",
         PF_FILING_REQ_CD: "pf_filing_requirement",
         ACCT_PD: "accounting_period",
@@ -165,6 +165,82 @@ const insertEoFileIntoDb = async (fname: string) => {
                         });
                     } else if (dbKey === "ntee_code") {
                         parsedObject[dbKey] = value.substring(0, 3);
+                    } else if (dbKey === "organization_type") {
+                        switch (value) {
+                            case "1":
+                                parsedObject[dbKey] = "corporation";
+                                break;
+                            case "2":
+                                parsedObject[dbKey] = "trust";
+                                break;
+                            case "3":
+                                parsedObject[dbKey] = "co-operative";
+                                break;
+                            case "4":
+                                parsedObject[dbKey] = "partnership";
+                                break;
+                            case "5":
+                                parsedObject[dbKey] = "association";
+                                break;
+
+                            default:
+                                parsedObject[dbKey] = "unknown";
+                                break;
+                        }
+                    } else if (dbKey === "asset_code" || dbKey === "income_code") {
+                        switch (value) {
+                            case "0":
+                                parsedObject[dbKey] = "0";
+                                break;
+                            case "1":
+                                parsedObject[dbKey] = "1,9999";
+                                break;
+                            case "2":
+                                parsedObject[dbKey] = "10000,24999";
+                                break;
+                            case "3":
+                                parsedObject[dbKey] = "25000,99999";
+                                break;
+                            case "4":
+                                parsedObject[dbKey] = "100000,499999";
+                                break;
+                            case "5":
+                                parsedObject[dbKey] = "500000,999999";
+                                break;
+                            case "6":
+                                parsedObject[dbKey] = "1000000,4999999";
+                                break;
+                            case "7":
+                                parsedObject[dbKey] = "5000000,9999999";
+                                break;
+                            case "8":
+                                parsedObject[dbKey] = "10000000,49999999";
+                                break;
+                            case "9":
+                                parsedObject[dbKey] = "50000000";
+                                break;
+                            default:
+                                parsedObject[dbKey] = "unknown";
+                        }
+                    } else if (dbKey === "exempt_organization_status") {
+                        switch (value) {
+                            case "01":
+                                parsedObject[dbKey] = "Unconditional Exemption";
+                                break;
+                            case "02":
+                                parsedObject[dbKey] = "Conditional Exemption";
+                                break;
+                            case "12":
+                                parsedObject[dbKey] = "Trust described in section 4947(a)(2) of the IR Code";
+                                break;
+                            case "25":
+                                parsedObject[dbKey] =
+                                    "Organization terminating its private foundation status under section 507(b)(1)(B) of the Code";
+                                break;
+                            default:
+                                parsedObject[dbKey] = "unknown";
+                                break;
+                        }
                     } else {
                         const isNumeric = !isNaN(parseFloat(value)) && isFinite(+value);
                         parsedObject[dbKey] = isNumeric ? parseInt(value, 10) : value;

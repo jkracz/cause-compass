@@ -15,40 +15,31 @@ import {
 } from "drizzle-orm/mysql-core";
 import { sql } from "drizzle-orm";
 
-export const ntee_code = mysqlTable(
+export const ntee_codes = mysqlTable(
     "ntee_code",
     {
-        code: char("code", { length: 3 }).notNull(),
+        code: char("code", { length: 3 }).notNull().primaryKey(),
         category: varchar("category", { length: 150 }).notNull(),
         description: varchar("description", { length: 1000 }),
         major_code: char("major_code", { length: 1 }).notNull(),
     },
     (table) => {
         return {
-            codeId: primaryKey(table.code),
             major_code_idx: index("major_code_idx").on(table.major_code),
         };
     }
 );
 
-export const ntee_major_code = mysqlTable(
-    "ntee_major_code",
-    {
-        code: char("code", { length: 1 }).notNull(),
-        category: varchar("category", { length: 150 }).notNull(),
-        description: varchar("description", { length: 1000 }),
-    },
-    (table) => {
-        return {
-            codeId: primaryKey(table.code),
-        };
-    }
-);
+export const ntee_major_codes = mysqlTable("ntee_major_code", {
+    code: char("code", { length: 1 }).notNull().primaryKey(),
+    category: varchar("category", { length: 150 }).notNull(),
+    description: varchar("description", { length: 1000 }),
+});
 
 export const tax_exempt_orgs = mysqlTable(
     "tax_exempt_orgs",
     {
-        organization_id: bigint("organization_id", { mode: "bigint" }).autoincrement().notNull(), // not added from file; gets generated on new insert
+        organization_id: bigint("organization_id", { mode: "bigint" }).autoincrement().notNull().primaryKey(), // not added from file; gets generated on new insert
         ein: int("ein").notNull(),
         organization_name: varchar("organization_name", { length: 255 }).notNull(),
         in_care_of_name: varchar("in_care_of_name", { length: 500 }),
@@ -73,10 +64,46 @@ export const tax_exempt_orgs = mysqlTable(
             length: 12,
             enum: ["co-operative", "corporation", "association", "partnership", "trust"],
         }),
-        exempt_organization_status_code: tinyint("exempt_organization_status_code"),
+        exempt_organization_status: varchar("exempt_organization_status", {
+            length: 100,
+            enum: [
+                "Unconditional Exemption",
+                "Conditional Exemption",
+                "Trust described in section 4947(a)(2) of the IR Code",
+                "Organization terminating its private foundation status under section 507(b)(1)(B) of the Code",
+            ],
+        }),
         tax_period: date("tax_period", { mode: "date" }),
-        asset_code: tinyint("asset_code"),
-        income_code: tinyint("income_code"),
+        asset_amount_range: varchar("asset_amount_range", {
+            length: 25,
+            enum: [
+                "0",
+                "1,9999",
+                "10000,24999",
+                "25000,99999",
+                "100000,499999",
+                "500000,999999",
+                "1000000,4999999",
+                "5000000,9999999",
+                "10000000,49999999",
+                "50000000",
+            ],
+        }),
+        income_amount_range: varchar("income_amount_range", {
+            length: 25,
+            enum: [
+                "0",
+                "1,9999",
+                "10000,24999",
+                "25000,99999",
+                "100000,499999",
+                "500000,999999",
+                "1000000,4999999",
+                "5000000,9999999",
+                "10000000,49999999",
+                "50000000",
+            ],
+        }),
         income_amount: int("income_amount"),
         revenue_amount: int("revenue_amount"),
         filing_requirement_code: tinyint("filing_requirement_code"),
@@ -88,31 +115,29 @@ export const tax_exempt_orgs = mysqlTable(
     },
     (table) => {
         return {
-            organization_id: primaryKey(table.organization_id),
             ntee_code_idx: index("ntee_code_idx").on(table.ntee_code),
             ein_idx: index("ein_idx").on(table.ein),
-            asset_code_idx: index("asset_code_idx").on(table.asset_code),
-            income_code_idx: index("income_code_idx").on(table.income_code),
         };
     }
 );
 
-export const income_and_asset_code = mysqlTable(
-    "income_and_asset_code",
+// export const income_asset_codes = mysqlTable("income_asset_code", {
+//     code: tinyint("code").primaryKey(),
+//     low_range: int("low_range"),
+//     high_range: int("high_range"),
+// });
+
+export const subsection_classification_codes = mysqlTable(
+    "subsection_classification_codes",
     {
-        code: tinyint("code"),
-        low_range: int("low_range"),
-        high_range: int("high_range"),
+        subsection_code: tinyint("subsection_code").notNull(),
+        classification_code: tinyint("classification_code").notNull(),
+        description: varchar("description", { length: 100 }),
     },
     (table) => {
-        return { code: primaryKey(table.code) };
+        return { pk: primaryKey(table.subsection_code, table.classification_code) };
     }
 );
-
-// NEEDED FOR V1
-// 13. ntee code
-// major ntee code
-// 9. income & asset code
 
 // NEEDED FOR V2
 // 11. filing req code
@@ -120,9 +145,5 @@ export const income_and_asset_code = mysqlTable(
 // 3. affiliation code
 
 // TABLES NOT NEEDED NOW - maybe future
-// 4. classification code
 // 1. group exemption number
-// 2. subsection code
 // 7. activity code
-// 5. deductability code
-// 8. org code
