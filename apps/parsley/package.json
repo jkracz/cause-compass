@@ -5,6 +5,7 @@
     "main": "index.js",
     "scripts": {
         "start": "tsx src/index.ts",
+        "search-test": "tsx src/search.ts",
         "insert-ntee-file": "tsx src/insertNteeFileIntoDb.ts",
         "insert-eo-file": "tsx src/insertEoFileIntoDb.ts",
         "introspect": "drizzle-kit introspect:mysql",
@@ -24,14 +25,16 @@
     },
     "homepage": "https://github.com/CauseCompass/np-data-parser#readme",
     "dependencies": {
-        "@planetscale/database": "^1.7.0",
+        "@planetscale/database": "^1.13.0",
+        "axios": "^1.6.3",
         "dotenv": "^16.3.1",
-        "drizzle-orm": "^0.28.5"
+        "drizzle-orm": "^0.29.2",
+        "puppeteer": "^21.6.1"
     },
     "devDependencies": {
-        "@types/node": "^20.3.1",
-        "drizzle-kit": "^0.19.13",
-        "mysql2": "^3.6.0",
-        "tsx": "^3.12.7"
+        "@types/node": "^20.10.6",
+        "drizzle-kit": "^0.20.9",
+        "mysql2": "^3.6.5",
+        "tsx": "^4.7.0"
     }
 }
