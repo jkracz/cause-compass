@@ -1,38 +1,36 @@
-// open state file
-// check if state folder exists, if not create it
-// check if the np file exists, if not create it, if yes skip row
-
 import * as fs from "fs";
 import { parse } from "csv-parse";
 import { join } from "path";
 
-import { NonprofitProfile } from "./types";
+import { NonprofitProfile } from "../types";
 
-export const parseEoFile = async (fileName: string) => {
-    const stateAbbreviation = fileName.split("_")[1].split(".")[0];
-    const parser = parse({ columns: true, delimiter: "," });
-    const currentPath = join(__dirname, "../src/data/raw", fileName);
-    const readableStream = fs.createReadStream(currentPath);
+export const parseEoFile = async (fileName: string): Promise<NonprofitProfile[]> => {
+    const currentPath = join(__dirname, "../data/raw", fileName);
 
-    const outputDirectoryPath = join(__dirname, `../src/data/nonprofitProfiles/${stateAbbreviation}`);
+    return new Promise((resolve, reject) => {
+        const profiles: NonprofitProfile[] = [];
+        const parser = parse({ columns: true, delimiter: "," });
+        const readableStream = fs.createReadStream(currentPath);
 
-    // Pipe the readable stream to the parser
-    readableStream
-        .pipe(parser)
-        .on("data", (row) => {
-            if (!checkFileExists(outputDirectoryPath, `${row.EIN}.json`)) {
+        // Pipe the readable stream to the parser
+        readableStream
+            .pipe(parser)
+            .on("data", (row) => {
                 const npProfile = transformCsvRowToNonprofitProfile(row);
-                writeProfile(outputDirectoryPath, npProfile);
-            }
-        })
-        .on("error", (err) => {
-            console.error(err);
-        })
-        .on("end", () => {
-            console.log("Finished parsing the CSV file.");
-        });
+                profiles.push(npProfile);
+            })
+            .on("error", (err) => {
+                console.error(err);
+                reject(err);
+            })
+            .on("end", () => {
+                console.log("Finished parsing the CSV file.");
+                resolve(profiles);
+            });
+    });
 };
 
+// part of old filesystem process; before mongodb
 const writeProfile = async (outputDirectoryPath: string, profile: NonprofitProfile) => {
     if (!fs.existsSync(outputDirectoryPath)) {
         fs.mkdirSync(outputDirectoryPath, { recursive: true });

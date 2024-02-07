@@ -1,16 +1,7 @@
-// import "dotenv/config";
-// import { connect } from "@planetscale/database";
-// import { drizzle } from "drizzle-orm/planetscale-serverless";
+import "dotenv/config";
 // import googleSearch from "./search";
-import { parseEoFile } from "./fileParse";
-
-// const config = {
-//     host: process.env.DATABASE_HOST,
-//     username: process.env.DATABASE_USERNAME,
-//     password: process.env.DATABASE_PASSWORD,
-// };
-// const conn = connect(config);
-// const db = drizzle(conn);
+import { parseEoFile } from "./utils/fileParse";
+import { insertManyNonprofits } from "./utils/mongo";
 
 const main = async () => {
     // googleSearch("Fabmo Logo")
@@ -18,7 +9,9 @@ const main = async () => {
     //         console.log(results);
     //     })
     //     .catch(console.error);
-    parseEoFile("eo_al.csv");
+
+    const profiles = await parseEoFile("eo_ca.csv");
+    await insertManyNonprofits(profiles, "causecompass", "nonprofits");
 };
 
 main();
