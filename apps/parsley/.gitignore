@@ -1,3 +1,5 @@
 .env
-/data
 /node_modules
+/src/data/nonprofitProfiles
+/src/data/raw
+/src/data/searchOutput.json
