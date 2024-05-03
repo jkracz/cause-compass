@@ -1,0 +1,1322 @@
+{
+    "001": {
+        "code": "001",
+        "description": "Church, synagogue, etc",
+        "category": "Religious Activities"
+    },
+    "002": {
+        "code": "002",
+        "description": "Association or convention of churches",
+        "category": "Religious Activities"
+    },
+    "003": {
+        "code": "003",
+        "description": "Religious order",
+        "category": "Religious Activities"
+    },
+    "004": {
+        "code": "004",
+        "description": "Church auxiliary",
+        "category": "Religious Activities"
+    },
+    "005": {
+        "code": "005",
+        "description": "Mission",
+        "category": "Religious Activities"
+    },
+    "006": {
+        "code": "006",
+        "description": "Missionary activities",
+        "category": "Religious Activities"
+    },
+    "007": {
+        "code": "007",
+        "description": "Evangelism",
+        "category": "Religious Activities"
+    },
+    "008": {
+        "code": "008",
+        "description": "Religious publishing activities",
+        "category": "Religious Activities"
+    },
+    "029": {
+        "code": "029",
+        "description": "Other religious activities",
+        "category": "Religious Activities"
+    },
+    "030": {
+        "code": "030",
+        "description": "School, college, trade school, etc.",
+        "category": "Schools, Colleges and Related Activities"
+    },
+    "031": {
+        "code": "031",
+        "description": "Special school for the blind, handicapped, etc",
+        "category": "Schools, Colleges and Related Activities"
+    },
+    "032": {
+        "code": "032",
+        "description": "Nursery school",
+        "category": "Schools, Colleges and Related Activities"
+    },
+    "033": {
+        "code": "033",
+        "description": "Faculty group",
+        "category": "Schools, Colleges and Related Activities"
+    },
+    "034": {
+        "code": "034",
+        "description": "Alumni association or group",
+        "category": "Schools, Colleges and Related Activities"
+    },
+    "035": {
+        "code": "035",
+        "description": "Parent or parent-teachers association",
+        "category": "Schools, Colleges and Related Activities"
+    },
+    "036": {
+        "code": "036",
+        "description": "Fraternity or sorority",
+        "category": "Schools, Colleges and Related Activities"
+    },
+    "037": {
+        "code": "037",
+        "description": "Other student society or group",
+        "category": "Schools, Colleges and Related Activities"
+    },
+    "038": {
+        "code": "038",
+        "description": "School or college athletic association",
+        "category": "Schools, Colleges and Related Activities"
+    },
+    "039": {
+        "code": "039",
+        "description": "Scholarships for children of employees",
+        "category": "Schools, Colleges and Related Activities"
+    },
+    "040": {
+        "code": "040",
+        "description": "Scholarships (other)",
+        "category": "Schools, Colleges and Related Activities"
+    },
+    "041": {
+        "code": "041",
+        "description": "Student loans",
+        "category": "Schools, Colleges and Related Activities"
+    },
+    "042": {
+        "code": "042",
+        "description": "Student housing activities",
+        "category": "Schools, Colleges and Related Activities"
+    },
+    "043": {
+        "code": "043",
+        "description": "Other student aid",
+        "category": "Schools, Colleges and Related Activities"
+    },
+    "044": {
+        "code": "044",
+        "description": "Student exchange with foreign country",
+        "category": "Schools, Colleges and Related Activities"
+    },
+    "045": {
+        "code": "045",
+        "description": "Student operated business",
+        "category": "Schools, Colleges and Related Activities"
+    },
+    "046": {
+        "code": "046",
+        "description": "Private school",
+        "category": "Schools, Colleges and Related Activities"
+    },
+    "059": {
+        "code": "059",
+        "description": "Other school related activities",
+        "category": "Schools, Colleges and Related Activities"
+    },
+    "060": {
+        "code": "060",
+        "description": "Museum, zoo, planetarium, etc.",
+        "category": "Cultural, Historical of Other Educational Activities"
+    },
+    "061": {
+        "code": "061",
+        "description": "Library",
+        "category": "Cultural, Historical of Other Educational Activities"
+    },
+    "062": {
+        "code": "062",
+        "description": "Historical site, records or reenactment",
+        "category": "Cultural, Historical of Other Educational Activities"
+    },
+    "063": {
+        "code": "063",
+        "description": "Monument",
+        "category": "Cultural, Historical of Other Educational Activities"
+    },
+    "064": {
+        "code": "064",
+        "description": "Commemorative event (centennial, festival, pageant, etc.)",
+        "category": "Cultural, Historical of Other Educational Activities"
+    },
+    "065": {
+        "code": "065",
+        "description": "Fair",
+        "category": "Cultural, Historical of Other Educational Activities"
+    },
+    "088": {
+        "code": "088",
+        "description": "Community theatrical group",
+        "category": "Cultural, Historical of Other Educational Activities"
+    },
+    "089": {
+        "code": "089",
+        "description": "Singing society or group",
+        "category": "Cultural, Historical of Other Educational Activities"
+    },
+    "090": {
+        "code": "090",
+        "description": "Cultural performances",
+        "category": "Cultural, Historical of Other Educational Activities"
+    },
+    "091": {
+        "code": "091",
+        "description": "Art exhibit",
+        "category": "Cultural, Historical of Other Educational Activities"
+    },
+    "092": {
+        "code": "092",
+        "description": "Literary activities",
+        "category": "Cultural, Historical of Other Educational Activities"
+    },
+    "093": {
+        "code": "093",
+        "description": "Cultural exchanges with foreign country",
+        "category": "Cultural, Historical of Other Educational Activities"
+    },
+    "094": {
+        "code": "094",
+        "description": "Genealogical activities",
+        "category": "Cultural, Historical of Other Educational Activities"
+    },
+    "119": {
+        "code": "119",
+        "description": "Other cultural or historical activities",
+        "category": "Cultural, Historical of Other Educational Activities"
+    },
+    "120": {
+        "code": "120",
+        "description": "Publishing activities",
+        "category": "Other Instructions and Training Activities"
+    },
+    "121": {
+        "code": "121",
+        "description": "Radio or television broadcasting",
+        "category": "Other Instructions and Training Activities"
+    },
+    "122": {
+        "code": "122",
+        "description": "Producing films",
+        "category": "Other Instructions and Training Activities"
+    },
+    "123": {
+        "code": "123",
+        "description": "Discussion groups, forums, panels lectures, etc.",
+        "category": "Other Instructions and Training Activities"
+    },
+    "124": {
+        "code": "124",
+        "description": "Study and research (non-scientific)",
+        "category": "Other Instructions and Training Activities"
+    },
+    "125": {
+        "code": "125",
+        "description": "Giving information or opinion (see also Advocacy)",
+        "category": "Other Instructions and Training Activities"
+    },
+    "126": {
+        "code": "126",
+        "description": "Apprentice training",
+        "category": "Other Instructions and Training Activities"
+    },
+    "149": {
+        "code": "149",
+        "description": "Other instruction and training",
+        "category": "Other Instructions and Training Activities"
+    },
+    "150": {
+        "code": "150",
+        "description": "Hospital",
+        "category": "Health Services and Related Activities"
+    },
+    "151": {
+        "code": "151",
+        "description": "Hospital auxiliary",
+        "category": "Health Services and Related Activities"
+    },
+    "152": {
+        "code": "152",
+        "description": "Nursing or convalescent home",
+        "category": "Health Services and Related Activities"
+    },
+    "153": {
+        "code": "153",
+        "description": "Care and housing for the aged (see also 382)",
+        "category": "Health Services and Related Activities"
+    },
+    "154": {
+        "code": "154",
+        "description": "Health clinic",
+        "category": "Health Services and Related Activities"
+    },
+    "155": {
+        "code": "155",
+        "description": "Rural medical facility",
+        "category": "Health Services and Related Activities"
+    },
+    "156": {
+        "code": "156",
+        "description": "Blood bank",
+        "category": "Health Services and Related Activities"
+    },
+    "157": {
+        "code": "157",
+        "description": "Cooperative hospital service organization",
+        "category": "Health Services and Related Activities"
+    },
+    "158": {
+        "code": "158",
+        "description": "Rescue and emergency service",
+        "category": "Health Services and Related Activities"
+    },
+    "159": {
+        "code": "159",
+        "description": "Nurses register or bureau",
+        "category": "Health Services and Related Activities"
+    },
+    "160": {
+        "code": "160",
+        "description": "Aid to the handicapped (see also 031)",
+        "category": "Health Services and Related Activities"
+    },
+    "161": {
+        "code": "161",
+        "description": "Scientific research (diseases)",
+        "category": "Health Services and Related Activities"
+    },
+    "162": {
+        "code": "162",
+        "description": "Other medical research",
+        "category": "Health Services and Related Activities"
+    },
+    "163": {
+        "code": "163",
+        "description": "Health insurance (medical, dental, optical, etc.)",
+        "category": "Health Services and Related Activities"
+    },
+    "164": {
+        "code": "164",
+        "description": "Prepared group health plan",
+        "category": "Health Services and Related Activities"
+    },
+    "165": {
+        "code": "165",
+        "description": "Community health planning",
+        "category": "Health Services and Related Activities"
+    },
+    "166": {
+        "code": "166",
+        "description": "Mental health care",
+        "category": "Health Services and Related Activities"
+    },
+    "167": {
+        "code": "167",
+        "description": "Group medical practice association",
+        "category": "Health Services and Related Activities"
+    },
+    "168": {
+        "code": "168",
+        "description": "In-faculty group practice association",
+        "category": "Health Services and Related Activities"
+    },
+    "169": {
+        "code": "169",
+        "description": "Hospital pharmacy, parking facility, food services, etc.",
+        "category": "Health Services and Related Activities"
+    },
+    "179": {
+        "code": "179",
+        "description": "Other health services",
+        "category": "Health Services and Related Activities"
+    },
+    "180": {
+        "code": "180",
+        "description": "Contact or sponsored scientific research for industry",
+        "category": "Scientific Research Activities"
+    },
+    "181": {
+        "code": "181",
+        "description": "Scientific research for government",
+        "category": "Scientific Research Activities"
+    },
+    "199": {
+        "code": "199",
+        "description": "Other scientific research activities",
+        "category": "Scientific Research Activities"
+    },
+    "200": {
+        "code": "200",
+        "description": "Business promotion (chamber of commerce, business league, etc.",
+        "category": "Business and Professional Organizations"
+    },
+    "201": {
+        "code": "201",
+        "description": "Real estate association",
+        "category": "Business and Professional Organizations"
+    },
+    "202": {
+        "code": "202",
+        "description": "Board of trade",
+        "category": "Business and Professional Organizations"
+    },
+    "203": {
+        "code": "203",
+        "description": "Regulating business",
+        "category": "Business and Professional Organizations"
+    },
+    "204": {
+        "code": "204",
+        "description": "Promotion of fair business practices",
+        "category": "Business and Professional Organizations"
+    },
+    "205": {
+        "code": "205",
+        "description": "Professional association",
+        "category": "Business and Professional Organizations"
+    },
+    "206": {
+        "code": "206",
+        "description": "Professional association auxiliary",
+        "category": "Business and Professional Organizations"
+    },
+    "207": {
+        "code": "207",
+        "description": "Industry trade shows",
+        "category": "Business and Professional Organizations"
+    },
+    "208": {
+        "code": "208",
+        "description": "Convention displays",
+        "category": "Business and Professional Organizations"
+    },
+    "209": {
+        "code": "209",
+        "description": "Research, development and testing",
+        "category": "Business and Professional Organizations"
+    },
+    "210": {
+        "code": "210",
+        "description": "Professional athletic league",
+        "category": "Business and Professional Organizations"
+    },
+    "211": {
+        "code": "211",
+        "description": "Underwriting municipal insurance",
+        "category": "Business and Professional Organizations"
+    },
+    "212": {
+        "code": "212",
+        "description": "Assigned risk insurance activities",
+        "category": "Business and Professional Organizations"
+    },
+    "213": {
+        "code": "213",
+        "description": "Tourist bureau",
+        "category": "Business and Professional Organizations"
+    },
+    "229": {
+        "code": "229",
+        "description": "Other business or professional group",
+        "category": "Business and Professional Organizations"
+    },
+    "230": {
+        "code": "230",
+        "description": "Farming",
+        "category": "Farming and Related Activities"
+    },
+    "231": {
+        "code": "231",
+        "description": "Farm bureau",
+        "category": "Farming and Related Activities"
+    },
+    "232": {
+        "code": "232",
+        "description": "Agricultural group",
+        "category": "Farming and Related Activities"
+    },
+    "233": {
+        "code": "233",
+        "description": "Horticultural group",
+        "category": "Farming and Related Activities"
+    },
+    "234": {
+        "code": "234",
+        "description": "Farmers cooperative marketing or purchasing",
+        "category": "Farming and Related Activities"
+    },
+    "235": {
+        "code": "235",
+        "description": "Farmers cooperative marketing or purchasing",
+        "category": "Farming and Related Activities"
+    },
+    "236": {
+        "code": "236",
+        "description": "Dairy herd improvement association",
+        "category": "Farming and Related Activities"
+    },
+    "237": {
+        "code": "237",
+        "description": "Breeders association",
+        "category": "Farming and Related Activities"
+    },
+    "249": {
+        "code": "249",
+        "description": "Other farming and related activities",
+        "category": "Farming and Related Activities"
+    },
+    "250": {
+        "code": "250",
+        "description": "Mutual ditch, irrigation, telephone, electric company or like organization",
+        "category": "Mutual Organizations"
+    },
+    "251": {
+        "code": "251",
+        "description": "Credit union",
+        "category": "Mutual Organizations"
+    },
+    "252": {
+        "code": "252",
+        "description": "Reserve funds or insurance for domestic building and loan association, cooperative bank, or mutual savings bank",
+        "category": "Mutual Organizations"
+    },
+    "253": {
+        "code": "253",
+        "description": "Mutual insurance company",
+        "category": "Mutual Organizations"
+    },
+    "254": {
+        "code": "254",
+        "description": "Corporation organized under an Act of Congress (see also use (904)",
+        "category": "Mutual Organizations"
+    },
+    "259": {
+        "code": "259",
+        "description": "Other mutual organization",
+        "category": "Mutual Organizations"
+    },
+    "260": {
+        "code": "260",
+        "description": "Fraternal Beneficiary society, order, or association",
+        "category": "Employee of Membership Benefit Organizations"
+    },
+    "261": {
+        "code": "261",
+        "description": "Improvement of conditions of workers",
+        "category": "Employee of Membership Benefit Organizations"
+    },
+    "262": {
+        "code": "262",
+        "description": "Association of municipal employees",
+        "category": "Employee of Membership Benefit Organizations"
+    },
+    "263": {
+        "code": "263",
+        "description": "Association of employees",
+        "category": "Employee of Membership Benefit Organizations"
+    },
+    "264": {
+        "code": "264",
+        "description": "Employee or member welfare association",
+        "category": "Employee of Membership Benefit Organizations"
+    },
+    "265": {
+        "code": "265",
+        "description": "Sick, accident, death, or similar benefits",
+        "category": "Employee of Membership Benefit Organizations"
+    },
+    "266": {
+        "code": "266",
+        "description": "Strike benefits",
+        "category": "Employee of Membership Benefit Organizations"
+    },
+    "267": {
+        "code": "267",
+        "description": "Unemployment benefits",
+        "category": "Employee of Membership Benefit Organizations"
+    },
+    "268": {
+        "code": "268",
+        "description": "Pension or retirement benefits",
+        "category": "Employee of Membership Benefit Organizations"
+    },
+    "269": {
+        "code": "269",
+        "description": "Vacation benefits",
+        "category": "Employee of Membership Benefit Organizations"
+    },
+    "279": {
+        "code": "279",
+        "description": "Other services or benefits to members or employees",
+        "category": "Employee of Membership Benefit Organizations"
+    },
+    "280": {
+        "code": "280",
+        "description": "Country club",
+        "category": "Sports, Athletic Recreational and Social Activities"
+    },
+    "281": {
+        "code": "281",
+        "description": "Hobby club",
+        "category": "Sports, Athletic Recreational and Social Activities"
+    },
+    "282": {
+        "code": "282",
+        "description": "Dinner club",
+        "category": "Sports, Athletic Recreational and Social Activities"
+    },
+    "283": {
+        "code": "283",
+        "description": "Variety club",
+        "category": "Sports, Athletic Recreational and Social Activities"
+    },
+    "284": {
+        "code": "284",
+        "description": "Dog club",
+        "category": "Sports, Athletic Recreational and Social Activities"
+    },
+    "285": {
+        "code": "285",
+        "description": "Women's club",
+        "category": "Sports, Athletic Recreational and Social Activities"
+    },
+    "286": {
+        "code": "286",
+        "description": "Hunting or fishing club",
+        "category": "Sports, Athletic Recreational and Social Activities"
+    },
+    "287": {
+        "code": "287",
+        "description": "Swimming or tennis club",
+        "category": "Sports, Athletic Recreational and Social Activities"
+    },
+    "288": {
+        "code": "288",
+        "description": "Other sports club",
+        "category": "Sports, Athletic Recreational and Social Activities"
+    },
+    "296": {
+        "code": "296",
+        "description": "Community center",
+        "category": "Sports, Athletic Recreational and Social Activities"
+    },
+    "297": {
+        "code": "297",
+        "description": "Community recreational facilities (park, playground, etc)",
+        "category": "Sports, Athletic Recreational and Social Activities"
+    },
+    "298": {
+        "code": "298",
+        "description": "Training in sports",
+        "category": "Sports, Athletic Recreational and Social Activities"
+    },
+    "299": {
+        "code": "299",
+        "description": "Travel tours",
+        "category": "Sports, Athletic Recreational and Social Activities"
+    },
+    "300": {
+        "code": "300",
+        "description": "Amateur athletic association",
+        "category": "Sports, Athletic Recreational and Social Activities"
+    },
+    "301": {
+        "code": "301",
+        "description": "Fundraising athletic or sports event",
+        "category": "Sports, Athletic Recreational and Social Activities"
+    },
+    "317": {
+        "code": "317",
+        "description": "Other sports or athletic activities",
+        "category": "Sports, Athletic Recreational and Social Activities"
+    },
+    "318": {
+        "code": "318",
+        "description": "Other recreational activities",
+        "category": "Sports, Athletic Recreational and Social Activities"
+    },
+    "319": {
+        "code": "319",
+        "description": "Other social activities",
+        "category": "Sports, Athletic Recreational and Social Activities"
+    },
+    "320": {
+        "code": "320",
+        "description": "Boy Scouts, Girl Scouts, etc.",
+        "category": "Youth Activities"
+    },
+    "321": {
+        "code": "321",
+        "description": "Boys Club, Little League, etc.",
+        "category": "Youth Activities"
+    },
+    "322": {
+        "code": "322",
+        "description": "FFA, FHA, 4-H club, etc.",
+        "category": "Youth Activities"
+    },
+    "323": {
+        "code": "323",
+        "description": "Key club",
+        "category": "Youth Activities"
+    },
+    "324": {
+        "code": "324",
+        "description": "YMCA, YWCA, YMCA, etc.",
+        "category": "Youth Activities"
+    },
+    "325": {
+        "code": "325",
+        "description": "Camp",
+        "category": "Youth Activities"
+    },
+    "326": {
+        "code": "326",
+        "description": "Care and housing of children (orphanage, etc)",
+        "category": "Youth Activities"
+    },
+    "327": {
+        "code": "327",
+        "description": "Prevention of cruelty to children",
+        "category": "Youth Activities"
+    },
+    "328": {
+        "code": "328",
+        "description": "Combat juvenile delinquency",
+        "category": "Youth Activities"
+    },
+    "349": {
+        "code": "349",
+        "description": "Other youth organization or activities",
+        "category": "Youth Activities"
+    },
+    "350": {
+        "code": "350",
+        "description": "Preservation of natural resources (conservation)",
+        "category": "Conservation, Environmental and Beautification Activities"
+    },
+    "351": {
+        "code": "351",
+        "description": "Combating or preventing pollution (air, water, etc)",
+        "category": "Conservation, Environmental and Beautification Activities"
+    },
+    "352": {
+        "code": "352",
+        "description": "Land acquisition for preservation",
+        "category": "Conservation, Environmental and Beautification Activities"
+    },
+    "353": {
+        "code": "353",
+        "description": "Soil or water conservation",
+        "category": "Conservation, Environmental and Beautification Activities"
+    },
+    "354": {
+        "code": "354",
+        "description": "Preservation of scenic beauty",
+        "category": "Conservation, Environmental and Beautification Activities"
+    },
+    "355": {
+        "code": "355",
+        "description": "Wildlife sanctuary or refuge",
+        "category": "Conservation, Environmental and Beautification Activities"
+    },
+    "356": {
+        "code": "356",
+        "description": "Garden club",
+        "category": "Conservation, Environmental and Beautification Activities"
+    },
+    "379": {
+        "code": "379",
+        "description": "Other conservation, environmental or beautification activities",
+        "category": "Conservation, Environmental and Beautification Activities"
+    },
+    "380": {
+        "code": "380",
+        "description": "Low-income housing",
+        "category": "Housing Activities"
+    },
+    "381": {
+        "code": "381",
+        "description": "Low and moderate income housing",
+        "category": "Housing Activities"
+    },
+    "382": {
+        "code": "382",
+        "description": "Housing for the aged (see also 153)",
+        "category": "Housing Activities"
+    },
+    "398": {
+        "code": "398",
+        "description": "Instruction and guidance on housing",
+        "category": "Housing Activities"
+    },
+    "399": {
+        "code": "399",
+        "description": "Other housing activities",
+        "category": "Housing Activities"
+    },
+    "400": {
+        "code": "400",
+        "description": "Area development, redevelopment of renewal",
+        "category": "Inner City or Community Activities"
+    },
+    "401": {
+        "code": "401",
+        "description": "Homeowners association",
+        "category": "Inner City or Community Activities"
+    },
+    "402": {
+        "code": "402",
+        "description": "Other activity aimed t combating community deterioration",
+        "category": "Inner City or Community Activities"
+    },
+    "403": {
+        "code": "403",
+        "description": "Attracting new industry or retaining industry in an area",
+        "category": "Inner City or Community Activities"
+    },
+    "404": {
+        "code": "404",
+        "description": "Community promotion",
+        "category": "Inner City or Community Activities"
+    },
+    "405": {
+        "code": "405",
+        "description": "Loans or grants for minority businesses",
+        "category": "Inner City or Community Activities"
+    },
+    "406": {
+        "code": "406",
+        "description": "Crime prevention",
+        "category": "Inner City or Community Activities"
+    },
+    "407": {
+        "code": "407",
+        "description": "Voluntary firemen's organization or auxiliary",
+        "category": "Inner City or Community Activities"
+    },
+    "408": {
+        "code": "408",
+        "description": "Community service organization",
+        "category": "Inner City or Community Activities"
+    },
+    "429": {
+        "code": "429",
+        "description": "Other inner city or community benefit activities",
+        "category": "Inner City or Community Activities"
+    },
+    "430": {
+        "code": "430",
+        "description": "Defense of human and civil rights",
+        "category": "Civil Rights Activities"
+    },
+    "431": {
+        "code": "431",
+        "description": "Elimination of prejudice and discrimination (race, religion, sex, national origin, etc)",
+        "category": "Civil Rights Activities"
+    },
+    "432": {
+        "code": "432",
+        "description": "Lessen neighborhood tensions",
+        "category": "Civil Rights Activities"
+    },
+    "449": {
+        "code": "449",
+        "description": "Other civil rights activities",
+        "category": "Civil Rights Activities"
+    },
+    "460": {
+        "code": "460",
+        "description": "Public interest litigation activities",
+        "category": "Litigation and Legal Aid Activities"
+    },
+    "461": {
+        "code": "461",
+        "description": "Other litigation or support of litigation",
+        "category": "Litigation and Legal Aid Activities"
+    },
+    "462": {
+        "code": "462",
+        "description": "Legal aid to indigents",
+        "category": "Litigation and Legal Aid Activities"
+    },
+    "463": {
+        "code": "463",
+        "description": "Providing bail",
+        "category": "Litigation and Legal Aid Activities"
+    },
+    "465": {
+        "code": "465",
+        "description": "Plan under IRC section 120",
+        "category": "Litigation and Legal Aid Activities"
+    },
+    "480": {
+        "code": "480",
+        "description": "Propose, support, or oppose legislation",
+        "category": "Legislative and Political Activities"
+    },
+    "481": {
+        "code": "481",
+        "description": "Voter information on issues or candidates",
+        "category": "Legislative and Political Activities"
+    },
+    "482": {
+        "code": "482",
+        "description": "Voter education (mechanics of registering, voting etc.)",
+        "category": "Legislative and Political Activities"
+    },
+    "483": {
+        "code": "483",
+        "description": "Support, oppose, or rate political candidates",
+        "category": "Legislative and Political Activities"
+    },
+    "484": {
+        "code": "484",
+        "description": "Provide facilities or services for political campaign activities",
+        "category": "Legislative and Political Activities"
+    },
+    "509": {
+        "code": "509",
+        "description": "Other legislative and political activities",
+        "category": "Legislative and Political Activities"
+    },
+    "510": {
+        "code": "510",
+        "description": "Firearms control",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "511": {
+        "code": "511",
+        "description": "Selective Service System",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "512": {
+        "code": "512",
+        "description": "National defense policy",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "513": {
+        "code": "513",
+        "description": "Weapons systems",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "514": {
+        "code": "514",
+        "description": "Government spending",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "515": {
+        "code": "515",
+        "description": "Taxes or tax exemption",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "516": {
+        "code": "516",
+        "description": "Separation of church and state",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "517": {
+        "code": "517",
+        "description": "Government aid to parochial schools",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "518": {
+        "code": "518",
+        "description": "U.S. foreign policy",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "519": {
+        "code": "519",
+        "description": "U.S. military involvement",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "520": {
+        "code": "520",
+        "description": "Pacifism and peace",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "521": {
+        "code": "521",
+        "description": "Economic-political system of U.S.",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "522": {
+        "code": "522",
+        "description": "Anti-communism",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "523": {
+        "code": "523",
+        "description": "Right to work",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "524": {
+        "code": "524",
+        "description": "Zoning or rezoning",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "525": {
+        "code": "525",
+        "description": "Location of highway or transportation system",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "526": {
+        "code": "526",
+        "description": "Rights of criminal defendants",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "527": {
+        "code": "527",
+        "description": "Capital punishment",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "528": {
+        "code": "528",
+        "description": "Stricter law enforcement",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "529": {
+        "code": "529",
+        "description": "Ecology or conservation",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "530": {
+        "code": "530",
+        "description": "Protection of consumer interests",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "531": {
+        "code": "531",
+        "description": "Medical care service",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "532": {
+        "code": "532",
+        "description": "Welfare systems",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "533": {
+        "code": "533",
+        "description": "Urban renewal",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "534": {
+        "code": "534",
+        "description": "Busing student to achieve racial balance",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "535": {
+        "code": "535",
+        "description": "Racial integration",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "536": {
+        "code": "536",
+        "description": "Use of intoxicating beverage",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "537": {
+        "code": "537",
+        "description": "Use of drugs or narcotics",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "538": {
+        "code": "538",
+        "description": "Use of tobacco",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "539": {
+        "code": "539",
+        "description": "Prohibition of erotica",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "540": {
+        "code": "540",
+        "description": "Sex education in public schools",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "541": {
+        "code": "541",
+        "description": "Population control",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "542": {
+        "code": "542",
+        "description": "Birth control methods",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "543": {
+        "code": "543",
+        "description": "Legalized abortion",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "559": {
+        "code": "559",
+        "description": "Other matters",
+        "category": "Advocacy Attempt to influence public opinion concerning"
+    },
+    "560": {
+        "code": "560",
+        "description": "Supplying money, goods or services to the poor",
+        "category": "Other Activities Directed to Individuals"
+    },
+    "561": {
+        "code": "561",
+        "description": "Gifts or grants to individuals (other than scholarships)",
+        "category": "Other Activities Directed to Individuals"
+    },
+    "562": {
+        "code": "562",
+        "description": "Other loans to individuals",
+        "category": "Other Activities Directed to Individuals"
+    },
+    "563": {
+        "code": "563",
+        "description": "Marriage counseling",
+        "category": "Other Activities Directed to Individuals"
+    },
+    "564": {
+        "code": "564",
+        "description": "Family planning",
+        "category": "Other Activities Directed to Individuals"
+    },
+    "565": {
+        "code": "565",
+        "description": "Credit counseling an assistance",
+        "category": "Other Activities Directed to Individuals"
+    },
+    "566": {
+        "code": "566",
+        "description": "Job training, counseling, or assistance",
+        "category": "Other Activities Directed to Individuals"
+    },
+    "567": {
+        "code": "567",
+        "description": "Draft counseling",
+        "category": "Other Activities Directed to Individuals"
+    },
+    "568": {
+        "code": "568",
+        "description": "Vocational counseling",
+        "category": "Other Activities Directed to Individuals"
+    },
+    "569": {
+        "code": "569",
+        "description": "Referral service (social agencies)",
+        "category": "Other Activities Directed to Individuals"
+    },
+    "572": {
+        "code": "572",
+        "description": "Rehabilitating convicts or ex-convicts",
+        "category": "Other Activities Directed to Individuals"
+    },
+    "573": {
+        "code": "573",
+        "description": "Rehabilitating alcoholics, drug abusers, compulsive gamblers, etc.",
+        "category": "Other Activities Directed to Individuals"
+    },
+    "574": {
+        "code": "574",
+        "description": "Day care center",
+        "category": "Other Activities Directed to Individuals"
+    },
+    "575": {
+        "code": "575",
+        "description": "Services for the aged (see also 153 ad 382)",
+        "category": "Other Activities Directed to Individuals"
+    },
+    "600": {
+        "code": "600",
+        "description": "Community Chest, United Way, etc.",
+        "category": "Other Activities Directed to Other Organizations"
+    },
+    "601": {
+        "code": "601",
+        "description": "Booster club",
+        "category": "Other Activities Directed to Other Organizations"
+    },
+    "602": {
+        "code": "602",
+        "description": "Gifts, grants, or loans to other organizations",
+        "category": "Other Activities Directed to Other Organizations"
+    },
+    "603": {
+        "code": "603",
+        "description": "Non-financial services of facilities to other organizations",
+        "category": "Other Activities Directed to Other Organizations"
+    },
+    "900": {
+        "code": "900",
+        "description": "Cemetery or burial activities",
+        "category": "Other Purposes and Activities"
+    },
+    "901": {
+        "code": "901",
+        "description": "Perpetual (care fund (cemetery, columbarium, etc)",
+        "category": "Other Purposes and Activities"
+    },
+    "902": {
+        "code": "902",
+        "description": "Emergency or disaster aid fund",
+        "category": "Other Purposes and Activities"
+    },
+    "903": {
+        "code": "903",
+        "description": "Community trust or component",
+        "category": "Other Purposes and Activities"
+    },
+    "904": {
+        "code": "904",
+        "description": "Government instrumentality or agency (see also 254)",
+        "category": "Other Purposes and Activities"
+    },
+    "905": {
+        "code": "905",
+        "description": "Testing products for public safety",
+        "category": "Other Purposes and Activities"
+    },
+    "906": {
+        "code": "906",
+        "description": "Consumer interest group",
+        "category": "Other Purposes and Activities"
+    },
+    "907": {
+        "code": "907",
+        "description": "Veterans activities",
+        "category": "Other Purposes and Activities"
+    },
+    "908": {
+        "code": "908",
+        "description": "Patriotic activities",
+        "category": "Other Purposes and Activities"
+    },
+    "910": {
+        "code": "910",
+        "description": "Domestic organization with activities outside U.S.",
+        "category": "Other Purposes and Activities"
+    },
+    "911": {
+        "code": "911",
+        "description": "Foreign organization",
+        "category": "Other Purposes and Activities"
+    },
+    "912": {
+        "code": "912",
+        "description": "Title holding corporation",
+        "category": "Other Purposes and Activities"
+    },
+    "913": {
+        "code": "913",
+        "description": "Prevention of cruelty to animals",
+        "category": "Other Purposes and Activities"
+    },
+    "914": {
+        "code": "914",
+        "description": "Achievement pries of awards",
+        "category": "Other Purposes and Activities"
+    },
+    "915": {
+        "code": "915",
+        "description": "Erection or maintenance of public building or works",
+        "category": "Other Purposes and Activities"
+    },
+    "916": {
+        "code": "916",
+        "description": "Cafeteria, restaurant, snack bar, food services, etc.",
+        "category": "Other Purposes and Activities"
+    },
+    "917": {
+        "code": "917",
+        "description": "Thrift ship, retail outlet, etc.",
+        "category": "Other Purposes and Activities"
+    },
+    "918": {
+        "code": "918",
+        "description": "Book, gift or supply store",
+        "category": "Other Purposes and Activities"
+    },
+    "919": {
+        "code": "919",
+        "description": "Advertising",
+        "category": "Other Purposes and Activities"
+    },
+    "920": {
+        "code": "920",
+        "description": "Association of employees",
+        "category": "Other Purposes and Activities"
+    },
+    "921": {
+        "code": "921",
+        "description": "Loans or credit reporting",
+        "category": "Other Purposes and Activities"
+    },
+    "922": {
+        "code": "922",
+        "description": "Endowment fund or financial services",
+        "category": "Other Purposes and Activities"
+    },
+    "923": {
+        "code": "923",
+        "description": "Indians (tribes, cultures, etc.)",
+        "category": "Other Purposes and Activities"
+    },
+    "924": {
+        "code": "924",
+        "description": "Traffic or tariff bureau",
+        "category": "Other Purposes and Activities"
+    },
+    "925": {
+        "code": "925",
+        "description": "Section 501(c)(1) with 50% deductibility",
+        "category": "Other Purposes and Activities"
+    },
+    "926": {
+        "code": "926",
+        "description": "Government instrumentality other than section 501(c)",
+        "category": "Other Purposes and Activities"
+    },
+    "927": {
+        "code": "927",
+        "description": "Fundraising",
+        "category": "Other Purposes and Activities"
+    },
+    "928": {
+        "code": "928",
+        "description": "4947(a)(2) trust",
+        "category": "Other Purposes and Activities"
+    },
+    "930": {
+        "code": "930",
+        "description": "Prepaid legal services pan exempt under IRC section 501(c)(20)",
+        "category": "Other Purposes and Activities"
+    },
+    "931": {
+        "code": "931",
+        "description": "Withdrawal liability payment fund",
+        "category": "Other Purposes and Activities"
+    },
+    "990": {
+        "code": "990",
+        "description": "Section 501(k) child care organization",
+        "category": "Other Purposes and Activities"
+    }
+}

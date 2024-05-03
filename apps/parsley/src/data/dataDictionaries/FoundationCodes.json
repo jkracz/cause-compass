@@ -1,0 +1,58 @@
+{
+    "00": {
+        "code": "00",
+        "description": "All organizations except 501(c)(3)"
+    },
+    "02": {
+        "code": "02",
+        "description": "Private operating foundation exempt from paying excise taxes on investment income"
+    },
+    "03": {
+        "code": "03",
+        "description": "Private operating foundation (other)"
+    },
+    "04": {
+        "code": "04",
+        "description": "Private nonoperating foundation"
+    },
+    "09": {
+        "code": "09",
+        "description": "Suspense"
+    },
+    "10": {
+        "code": "10",
+        "description": "Church"
+    },
+    "11": {
+        "code": "11",
+        "description": "School"
+    },
+    "12": {
+        "code": "12",
+        "description": "Hospital or medical research organization"
+    },
+    "13": {
+        "code": "13",
+        "description": "Organization which operates for benefit of college or university and is owned or operated by a governmental unit"
+    },
+    "14": {
+        "code": "14",
+        "description": "Governmental unit"
+    },
+    "15": {
+        "code": "15",
+        "description": "Organization which receives a substantial part of its support from a governmental unit or the general public"
+    },
+    "16": {
+        "code": "16",
+        "description": "Organization that normally receives no more than one-third of its support from gross investment income and unrelated business income and at the same time more than one-third of its support from contributions, fees, and gross receipts related to exempt purposes"
+    },
+    "17": {
+        "code": "17",
+        "description": "Organizations operated solely for the benefit of and in conjunction with organizations described in 10 through 16 above"
+    },
+    "18": {
+        "code": "18",
+        "description": "Organization organized and operated to test for public safety"
+    }
+}
