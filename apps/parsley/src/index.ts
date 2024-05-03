@@ -1,17 +1,34 @@
 import "dotenv/config";
-// import googleSearch from "./search";
 import { parseEoFile } from "./utils/fileParse";
 import { insertManyNonprofits } from "./utils/mongo";
+import { generalSearch } from "./utils/googleSearch";
+import * as fs from "fs";
+import { join } from "path";
 
 const main = async () => {
-    // googleSearch("Fabmo Logo")
-    //     .then((results) => {
-    //         console.log(results);
-    //     })
-    //     .catch(console.error);
+    generalSearch("DUO DUO ANIMAL WELFARE PROJECT INC SUNNYVALE CA")
+        .then((results) => {
+            console.log(results);
+            writeProfile(results);
+        })
+        .catch(console.error);
 
-    const profiles = await parseEoFile("eo_ca.csv");
-    await insertManyNonprofits(profiles, "causecompass", "nonprofits");
+    // const profiles = await parseEoFile("eo_ca.csv");
+    // await insertManyNonprofits(profiles, "causecompass", "nonprofits");
+};
+
+const writeProfile = async (content: object) => {
+    const outputPath = join(__dirname, "searchOutput.json");
+    const data = JSON.stringify(content, null, 4);
+
+    // Asynchronously write the file
+    fs.writeFile(outputPath, data, (err) => {
+        if (err) {
+            console.error("Error writing file:", err);
+        } else {
+            return outputPath;
+        }
+    });
 };
 
 main();

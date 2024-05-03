@@ -27,7 +27,7 @@ export interface NonprofitProfile {
     assetAmt?: number; // Asset Amount
     incomeAmt?: number; // Income Amount
     revenueAmt?: number; // Revenue Amount
-    nteeCode?: string; // NTEE Code
+    nteeCode?: NteeCode; // NTEE Code
     sortName?: string; // Sort Name (Secondary Name Line)
     searchResults?: SearchResult[]; // Placeholder for search results
     aiGeneratedContent?: AIGeneratedContent; // Placeholder for AI-generated content
@@ -57,7 +57,35 @@ export interface Source {
 }
 
 export interface NteeCode {
+    code: string;
     title: string;
     description: string;
     keywords?: string[];
+}
+
+export interface AssetCode {
+    code: number;
+    amountLow: number;
+    amountHigh?: number;
+}
+
+export interface AffiliationCode {
+    code: number;
+    name: string;
+    description: string;
+}
+
+export interface DeductibilityCode {
+    code: number;
+    description: string;
+}
+
+interface OrgCode {
+    code: number;
+    description: string;
+}
+
+interface FoundationCode {
+    code: string;
+    description: string;
 }
