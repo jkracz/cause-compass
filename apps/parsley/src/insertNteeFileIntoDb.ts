@@ -1,4 +1,4 @@
-// This is from the planetscale days. No longer relevant.s
+// This is from the planetscale days. No longer relevant.
 
 import * as fs from "fs";
 import { join } from "path";

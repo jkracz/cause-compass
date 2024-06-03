@@ -1,6 +1,9 @@
 export interface NonprofitProfile {
     createdAt: string;
     lastUpdatedAt?: string;
+    searchDate?: string;
+    aiGenDate?: string;
+    liveProfileDate?: string;
     ein: string; // Employer Identification Number
     name: string; // Primary Name of Organization
     ico?: string; // In Care of Name
@@ -10,19 +13,19 @@ export interface NonprofitProfile {
     zip: string; // Zip Code
     group?: string; // Group Exemption Number
     subsection: string; // Subsection Code
-    affiliation: string; // Affiliation Code
+    affiliation: AffiliationCode; // Affiliation Code
     classification: string; // Classification Code(s), array to accommodate multiple codes
     ruling: string; // Ruling Date
-    deductibility: string; // Deductibility Code
-    foundation: string; // Foundation Code
-    activity: string; // Activity Codes, array for multiple codes
-    organization: string; // Organization Code
+    deductibility: DeductibilityCode; // Deductibility Code
+    foundation: FoundationCode; // Foundation Code
+    activityCodes?: ActivityCode[]; // Activity Codes, array for multiple codes
+    organization: OrgCode; // Organization Code
     status: string; // Exempt Organization Status Code
     taxPeriod?: string; // Tax Period
-    assetCode: string; // Asset Code
+    assetCode: AssetCode; // Asset Code
     incomeCode: string; // Income Code
-    filingReqCode: string; // Filing Requirement Code
-    pfFilingReqCode?: string; // PF Filing Requirement Code, optional as it may not apply to all
+    filingReqCode: FilingRequirementCode; // Filing Requirement Code
+    pfFilingReqCode?: FilingRequirementCode; // PF Filing Requirement Code, optional as it may not apply to all
     acctPeriod: string; // Accounting Period
     assetAmt?: number; // Asset Amount
     incomeAmt?: number; // Income Amount
@@ -56,36 +59,54 @@ export interface Source {
     url: string;
 }
 
+interface NteeMajorCode {
+    code: string;
+    description: string;
+    title: string;
+}
 export interface NteeCode {
     code: string;
     title: string;
     description: string;
     keywords?: string[];
+    majorCode: NteeMajorCode;
+}
+
+export interface ActivityCode {
+    code: string;
+    description: string;
+    category: string;
 }
 
 export interface AssetCode {
-    code: number;
-    amountLow: number;
-    amountHigh?: number;
+    code: string;
+    lowerLimit: number;
+    upperLimit?: number | null;
 }
 
 export interface AffiliationCode {
-    code: number;
-    name: string;
+    code: string;
+    code_name: string;
     description: string;
 }
 
 export interface DeductibilityCode {
-    code: number;
-    description: string;
-}
-
-interface OrgCode {
-    code: number;
-    description: string;
-}
-
-interface FoundationCode {
     code: string;
     description: string;
+}
+
+export interface OrgCode {
+    code: string;
+    type: string;
+}
+
+export interface FoundationCode {
+    code: string;
+    description: string;
+}
+
+export interface FilingRequirementCode {
+    code: string;
+    description: string;
+    form_number: string;
 }

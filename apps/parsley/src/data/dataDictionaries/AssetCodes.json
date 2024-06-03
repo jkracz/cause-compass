@@ -1,52 +1,52 @@
 {
     "0": {
         "code": "0",
-        "lower_amount": 0,
-        "upper_amount": 0
+        "lowerLimit": 0,
+        "upperLimit": 0
     },
     "1": {
         "code": "1",
-        "lower_amount": 1,
-        "upper_amount": 9999
+        "lowerLimit": 1,
+        "upperLimit": 9999
     },
     "2": {
         "code": "2",
-        "lower_amount": 10000,
-        "upper_amount": 24999
+        "lowerLimit": 10000,
+        "upperLimit": 24999
     },
     "3": {
         "code": "3",
-        "lower_amount": 25000,
-        "upper_amount": 99999
+        "lowerLimit": 25000,
+        "upperLimit": 99999
     },
     "4": {
         "code": "4",
-        "lower_amount": 100000,
-        "upper_amount": 499999
+        "lowerLimit": 100000,
+        "upperLimit": 499999
     },
     "5": {
         "code": "5",
-        "lower_amount": 500000,
-        "upper_amount": 999999
+        "lowerLimit": 500000,
+        "upperLimit": 999999
     },
     "6": {
         "code": "6",
-        "lower_amount": 1000000,
-        "upper_amount": 4999999
+        "lowerLimit": 1000000,
+        "upperLimit": 4999999
     },
     "7": {
         "code": "7",
-        "lower_amount": 5000000,
-        "upper_amount": 9999999
+        "lowerLimit": 5000000,
+        "upperLimit": 9999999
     },
     "8": {
         "code": "8",
-        "lower_amount": 10000000,
-        "upper_amount": 49999999
+        "lowerLimit": 10000000,
+        "upperLimit": 49999999
     },
     "9": {
         "code": "9",
-        "lower_amount": 50000000,
-        "upper_amount": null
+        "lowerLimit": 50000000,
+        "upperLimit": null
     }
 }

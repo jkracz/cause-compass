@@ -25,6 +25,7 @@
     "homepage": "https://github.com/CauseCompass/np-data-parser#readme",
     "dependencies": {
         "@planetscale/database": "^1.18.0",
+        "@supabase/supabase-js": "^2.43.4",
         "axios": "^1.6.8",
         "csv-parse": "^5.5.5",
         "dotenv": "^16.4.5",
