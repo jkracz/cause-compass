@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { parseEoFile } from "./utils/fileParse";
 import { generalSearch } from "./utils/googleSearch";
+import { uploadJsonToSupabase } from "./utils/supabaseStorage";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -13,6 +14,8 @@ const main = async () => {
     //     .catch(console.error);
     // const profiles = await parseEoFile("eo_ca.csv");
     // await insertManyNonprofits(profiles, "causecompass", "nonprofits");
+    const currentPath = path.join(__dirname, "/data/nonprofitProfiles/al", "010520599.json");
+    uploadJsonToSupabase(currentPath, "nonprofit_profile_files/parsed", "al/010520599.json");
 };
 
 const writeSearchResults = async (content: object) => {
