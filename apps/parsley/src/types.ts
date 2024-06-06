@@ -1,5 +1,5 @@
 export interface NonprofitProfile {
-    createdAt: string;
+    createdAt?: string;
     lastUpdatedAt?: string;
     searchDate?: string;
     aiGenDate?: string;
