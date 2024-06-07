@@ -4,6 +4,8 @@ export interface NonprofitProfile {
     searchDate?: string;
     aiGenDate?: string;
     liveProfileDate?: string;
+    dbId?: string;
+    slug?: string;
     ein: string; // Employer Identification Number
     name: string; // Primary Name of Organization
     ico?: string; // In Care of Name
@@ -20,7 +22,7 @@ export interface NonprofitProfile {
     foundation: FoundationCode; // Foundation Code
     activityCodes?: ActivityCode[]; // Activity Codes, array for multiple codes
     organization: OrgCode; // Organization Code
-    status: string; // Exempt Organization Status Code
+    status: EOStatusCode; // Exempt Organization Status Code
     taxPeriod?: string; // Tax Period
     assetCode: AssetCode; // Asset Code
     incomeCode: string; // Income Code
@@ -91,6 +93,11 @@ export interface AffiliationCode {
 }
 
 export interface DeductibilityCode {
+    code: string;
+    description: string;
+}
+
+export interface EOStatusCode {
     code: string;
     description: string;
 }

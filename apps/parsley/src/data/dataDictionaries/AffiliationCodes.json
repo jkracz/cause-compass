@@ -1,4 +1,9 @@
 {
+    "0": {
+        "code": "0",
+        "code_name": "Unknown",
+        "description": "Unknown"
+    },
     "1": {
         "code": "1",
         "code_name": "Central",

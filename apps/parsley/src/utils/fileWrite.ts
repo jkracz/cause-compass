@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { NonprofitProfile } from "../types";
 
-const writeProfile = async (outputDirectoryPath: string, profile: NonprofitProfile) => {
+export const writeProfile = async (outputDirectoryPath: string, profile: NonprofitProfile) => {
     if (!fs.existsSync(outputDirectoryPath)) {
         fs.mkdirSync(outputDirectoryPath, { recursive: true });
     }

@@ -54,5 +54,21 @@
     "18": {
         "code": "18",
         "description": "Organization organized and operated to test for public safety"
+    },
+    "21": {
+        "code": "21",
+        "description": "509(a)(3) Type I"
+    },
+    "22": {
+        "code": "22",
+        "description": "509(a)(3) Type II"
+    },
+    "23": {
+        "code": "23",
+        "description": "509(a)(3) Type III functionally integrated"
+    },
+    "24": {
+        "code": "24",
+        "description": "509(a)(3) Type III not functionally integrated"
     }
 }

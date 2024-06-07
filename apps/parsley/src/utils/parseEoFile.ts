@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import { parse } from "csv-parse";
 import { join } from "path";
+import { testWriter } from "./testWriter";
 
 import {
     NonprofitProfile,
@@ -12,18 +13,20 @@ import {
     OrgCode,
     FoundationCode,
     FilingRequirementCode,
+    EOStatusCode,
 } from "../types";
 
 // importing the data dictionaries
-import * as activityCodes from "./../data/dataDictionaries/ActivityCodes.json";
-import * as affiliationCodes from "./../data/dataDictionaries/AffiliationCodes.json";
-import * as assetCodes from "./../data/dataDictionaries/AssetCodes.json";
-import * as deductibilityCodes from "./../data/dataDictionaries/DeductibilityCodes.json";
-import * as filingReqCodes from "./../data/dataDictionaries/FilingRequirementCodes.json";
-import * as foundationCodes from "./../data/dataDictionaries/FoundationCodes.json";
-import * as nteeCodes from "./../data/dataDictionaries/Ntee.json";
-import * as orgTypes from "./../data/dataDictionaries/OrganizationTypes.json";
-import * as pfFilingReqCodes from "./../data/dataDictionaries/PFFilingRequirementCodes.json";
+import * as activityCodes from "../data/dataDictionaries/ActivityCodes.json";
+import * as affiliationCodes from "../data/dataDictionaries/AffiliationCodes.json";
+import * as assetCodes from "../data/dataDictionaries/AssetCodes.json";
+import * as deductibilityCodes from "../data/dataDictionaries/DeductibilityCodes.json";
+import * as filingReqCodes from "../data/dataDictionaries/FilingRequirementCodes.json";
+import * as foundationCodes from "../data/dataDictionaries/FoundationCodes.json";
+import * as nteeCodes from "../data/dataDictionaries/Ntee.json";
+import * as orgTypes from "../data/dataDictionaries/OrganizationTypes.json";
+import * as pfFilingReqCodes from "../data/dataDictionaries/PFFilingRequirementCodes.json";
+import * as eoStatusCodes from "../data/dataDictionaries/EOStatusCodes.json";
 
 // Cast imported JSON objects to their respective types
 const activityCodesDict = activityCodes as Record<string, ActivityCode>;
@@ -35,6 +38,7 @@ const foundationCodesDict = foundationCodes as Record<string, FoundationCode>;
 const nteeCodesDict = nteeCodes as Record<string, NteeCode>;
 const orgTypesDict = orgTypes as Record<string, OrgCode>;
 const pfFilingReqCodesDict = pfFilingReqCodes as Record<string, FilingRequirementCode>;
+const eoStatusCodesDict = eoStatusCodes as Record<string, EOStatusCode>;
 
 export const parseEoFile = async (fileName: string): Promise<NonprofitProfile[]> => {
     const currentPath = join(__dirname, "../data/raw", fileName);
@@ -80,7 +84,7 @@ const transformCsvRowToNonprofitProfile = (row: any): NonprofitProfile => {
         foundation: foundationCodesDict[row.FOUNDATION],
         activityCodes: parseActivityCodes(row.ACTIVITY),
         organization: orgTypesDict[row.ORGANIZATION],
-        status: row.STATUS,
+        status: eoStatusCodesDict[row.STATUS],
         taxPeriod: row.TAX_PERIOD,
         assetCode: assetCodesDict[row.ASSET_CD],
         incomeCode: row.INCOME_CD,

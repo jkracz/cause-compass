@@ -1,10 +1,10 @@
 import "dotenv/config";
-import { parseEoFile } from "./utils/fileParse";
+import { parseEoFile } from "./utils/parseEoFile";
 import { generalSearch } from "./utils/googleSearch";
 import { uploadJsonToSupabase } from "./utils/supabaseStorage";
-import { customAlphabet } from "nanoid";
 import * as fs from "fs";
 import * as path from "path";
+import { createProfilesByState } from "./scripts/createProfilesByState";
 
 const main = async () => {
     // generalSearch("DUO DUO ANIMAL WELFARE PROJECT INC SUNNYVALE CA")
@@ -17,11 +17,7 @@ const main = async () => {
     // await insertManyNonprofits(profiles, "causecompass", "nonprofits");
     // const currentPath = path.join(__dirname, "/data/nonprofitProfiles/al", "010520599.json");
     // uploadJsonToSupabase(currentPath, "nonprofit_profile_files/parsed", "al/010520599.json");
-    const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 22);
-    console.log(nanoid());
-    console.log(nanoid());
-    console.log(nanoid());
-    console.log(nanoid());
+    createProfilesByState("ca");
 };
 
 const writeSearchResults = async (content: object) => {
