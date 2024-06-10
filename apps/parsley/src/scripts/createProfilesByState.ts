@@ -4,15 +4,14 @@ import { ActivityCode, NonprofitProfile } from "../types";
 import slugify from "slugify";
 import * as path from "path";
 import * as fs from "fs/promises";
-import { testWriter } from "../utils/testWriter";
+import { uploadJsonToSupabase } from "../utils/supabaseStorage";
+import { insertOneTaxExemptOrganization, TaxExemptOrganizationInsertType } from "../utils/supabaseDB";
 
 export const createProfilesByState = async (state: string) => {
     const fileName: string = "eo_" + state.toLowerCase() + ".csv";
     const parsedProfiles: NonprofitProfile[] = await parseEoFile(fileName);
 
-    const mc: NonprofitProfile[] = [];
-    const nmc: NonprofitProfile[] = [];
-    parsedProfiles.forEach((profile: NonprofitProfile) => {
+    parsedProfiles.forEach(async (profile: NonprofitProfile) => {
         if (meetsCriteria(profile)) {
             const id: string = generateId();
             profile.dbId = id;
@@ -20,15 +19,13 @@ export const createProfilesByState = async (state: string) => {
                 lower: true,
             });
             profile.slug = slug;
-            mc.push(profile);
-            // write file w. nanoID as name
-            // create db entry
-
-            // upload
+            const outputPath: string = await writeProfileToFile(profile, profile.dbId, state, true);
+            await uploadJsonToSupabase(outputPath, `eo_profiles/${state}`, profile.dbId + ".json");
+            const teo: TaxExemptOrganizationInsertType = mapProfileToDbSchema(profile, id, slug);
+            await insertOneTaxExemptOrganization(teo);
         } else {
-            nmc.push(profile);
-            // write file with
-            // upload to not-inserted folder
+            const outputPath: string = await writeProfileToFile(profile, profile.ein, state, false);
+            await uploadJsonToSupabase(outputPath, `eo_profiles/${state}/not-inserted`, profile.ein + ".json");
         }
     });
 };
@@ -43,8 +40,16 @@ const meetsCriteria = (profile: NonprofitProfile) => {
     return true;
 };
 
-const writeProfileToFile = async (profile: NonprofitProfile, fileName: string, state: string): Promise<string> => {
-    const outputDirectoryPath: string = path.join(__dirname, "../data/nonprofitProfiles", state);
+const writeProfileToFile = async (
+    profile: NonprofitProfile,
+    id: string,
+    state: string,
+    insert: boolean
+): Promise<string> => {
+    let outputDirectoryPath: string = path.join(__dirname, "../data/nonprofitProfiles", state);
+    if (!insert) {
+        outputDirectoryPath = path.join(outputDirectoryPath, "/not-inserted");
+    }
     // Check if the directory exists
     try {
         await fs.access(outputDirectoryPath);
@@ -52,6 +57,7 @@ const writeProfileToFile = async (profile: NonprofitProfile, fileName: string, s
         // If the directory does not exist, create it
         await fs.mkdir(outputDirectoryPath, { recursive: true });
     }
+    const fileName = id + ".json";
     const outputFilePath: string = path.join(outputDirectoryPath, fileName);
     const data = JSON.stringify(profile, null, 4);
     try {
@@ -61,4 +67,23 @@ const writeProfileToFile = async (profile: NonprofitProfile, fileName: string, s
         console.error("error writing file", err);
         return "";
     }
+};
+
+const mapProfileToDbSchema = (
+    profile: NonprofitProfile,
+    nanoId: string,
+    slug: string
+): TaxExemptOrganizationInsertType => {
+    return {
+        id: nanoId,
+        slug: slug,
+        ein: profile.ein,
+        name: profile.name,
+        inCareOfName: profile.ico,
+        streetAddress: profile.street,
+        city: profile.city,
+        state: profile.state,
+        createdAt: profile.createdAt ? new Date(profile.createdAt) : new Date(),
+        lastUpdated: profile.lastUpdated ? new Date(profile.lastUpdated) : new Date(),
+    };
 };

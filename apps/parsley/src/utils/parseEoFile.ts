@@ -97,6 +97,7 @@ const transformCsvRowToNonprofitProfile = (row: any): NonprofitProfile => {
         nteeCode: nteeCodesDict[row.NTEE_CD],
         sortName: row.SORT_NAME,
         createdAt: new Date().toISOString(), // Current timestamp
+        lastUpdated: new Date().toISOString(),
     };
 };
 

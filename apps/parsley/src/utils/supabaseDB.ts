@@ -10,12 +10,12 @@ const connectionString = process.env.DATABASE_URL || "";
 export const client = postgres(connectionString, { prepare: false });
 export const db = drizzle(client, { schema });
 
-export type taxExemptOrganizationInsertType = typeof schema.taxExemptOrganizations.$inferInsert;
+export type TaxExemptOrganizationInsertType = typeof schema.taxExemptOrganizations.$inferInsert;
 
-export const insertManyTaxExemptOrganization = async (profiles: taxExemptOrganizationInsertType[]) => {
+export const insertManyTaxExemptOrganization = async (profiles: TaxExemptOrganizationInsertType[]) => {
     return await db.insert(schema.taxExemptOrganizations).values(profiles).returning();
 };
 
-export const insertOneTaxExemptOrganization = async (profile: taxExemptOrganizationInsertType) => {
+export const insertOneTaxExemptOrganization = async (profile: TaxExemptOrganizationInsertType) => {
     return await db.insert(schema.taxExemptOrganizations).values(profile).returning();
 };

@@ -1,7 +1,7 @@
 export interface NonprofitProfile {
     createdAt?: string;
-    lastUpdatedAt?: string;
-    searchDate?: string;
+    lastUpdated?: string;
+    searchedAt?: string;
     aiGenDate?: string;
     liveProfileDate?: string;
     dbId?: string;

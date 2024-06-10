@@ -17,7 +17,7 @@ const main = async () => {
     // await insertManyNonprofits(profiles, "causecompass", "nonprofits");
     // const currentPath = path.join(__dirname, "/data/nonprofitProfiles/al", "010520599.json");
     // uploadJsonToSupabase(currentPath, "nonprofit_profile_files/parsed", "al/010520599.json");
-    createProfilesByState("ca");
+    createProfilesByState("test");
 };
 
 const writeSearchResults = async (content: object) => {
