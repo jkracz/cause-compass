@@ -5,13 +5,18 @@ import slugify from "slugify";
 import * as path from "path";
 import * as fs from "fs/promises";
 import { uploadJsonToSupabase } from "../utils/supabaseStorage";
-import { insertOneTaxExemptOrganization, TaxExemptOrganizationInsertType } from "../utils/supabaseDB";
+import { insertOneTaxExemptOrganization, TaxExemptOrganizationInsertType, closeClient } from "../utils/supabaseDB";
 
-export const createProfilesByState = async (state: string) => {
+const yargs = require("yargs");
+const { hideBin } = require("yargs/helpers");
+
+const argv = yargs(hideBin(process.argv)).argv;
+
+const createProfilesByState = async (state: string) => {
     const fileName: string = "eo_" + state.toLowerCase() + ".csv";
     const parsedProfiles: NonprofitProfile[] = await parseEoFile(fileName);
 
-    parsedProfiles.forEach(async (profile: NonprofitProfile) => {
+    for (const profile of parsedProfiles) {
         if (meetsCriteria(profile)) {
             const id: string = generateId();
             profile.dbId = id;
@@ -27,14 +32,28 @@ export const createProfilesByState = async (state: string) => {
             const outputPath: string = await writeProfileToFile(profile, profile.ein, state, false);
             await uploadJsonToSupabase(outputPath, `eo_profiles/${state}/not-inserted`, profile.ein + ".json");
         }
-    });
+    }
 };
 
 const meetsCriteria = (profile: NonprofitProfile) => {
     const religiousActivities: ActivityCode[] | undefined = profile.activityCodes?.filter(
         (code) => code.category === "Religious Activities"
     );
-    if (profile.foundation.code === "10" || profile.deductibility?.code !== "1" || religiousActivities?.length !== 0) {
+    if (
+        profile.deductibility?.code !== "1" || // Not deductible
+        religiousActivities?.length !== 0 || // Religious activities
+        profile.affiliation.code === "9" || // Subordinate
+        profile.filingReqCode.code === "06" || // Not required to file (church)
+        profile.filingReqCode.code === "13" || // Not required to file (religious organization)
+        profile.filingReqCode.code === "14" || // Not required to file (instrumentalities of states or political subdivisions)
+        profile.filingReqCode.code === "00" || // Not required to file (all other)
+        profile.foundation.code === "02" || // Private operating foundation exempt from paying excise taxes
+        profile.foundation.code === "03" || // Private operating foundation (other)
+        profile.foundation.code === "04" || // Private non-operating foundation
+        profile.foundation.code === "10" || // Church
+        profile.status.code === "12" || // Trust
+        profile.status.code === "25" // Terminating private foundation status
+    ) {
         return false;
     }
     return true;
@@ -87,3 +106,16 @@ const mapProfileToDbSchema = (
         lastUpdated: profile.lastUpdated ? new Date(profile.lastUpdated) : new Date(),
     };
 };
+
+const main = async () => {
+    const state = argv.state as string;
+    if (state) {
+        await createProfilesByState(state.toLowerCase());
+        await closeClient();
+    } else {
+        console.error("Please provide a state using --state");
+        process.exit(1);
+    }
+};
+
+main();

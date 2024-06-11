@@ -12,8 +12,6 @@ export const uploadJsonToSupabase = async (filePath: string, bucketName: string,
 
     if (error) {
         console.error("Error uploading file:", error.message);
-    } else {
-        console.log("File uploaded successfully:", data);
     }
 };
 

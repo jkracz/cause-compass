@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import { parse } from "csv-parse";
 import { join } from "path";
-import { testWriter } from "./testWriter";
+import { convertToTitleCase } from "./titleCase";
 
 import {
     NonprofitProfile,
@@ -69,10 +69,10 @@ export const parseEoFile = async (fileName: string): Promise<NonprofitProfile[]>
 const transformCsvRowToNonprofitProfile = (row: any): NonprofitProfile => {
     return {
         ein: row.EIN,
-        name: row.NAME,
-        ico: row.ICO.split("% ")[1],
-        street: row.STREET,
-        city: row.CITY,
+        name: convertToTitleCase(row.NAME),
+        ico: row.ICO.split("% ")[1] ? convertToTitleCase(row.ICO.split("% ")[1]) : undefined,
+        street: convertToTitleCase(row.STREET),
+        city: convertToTitleCase(row.CITY),
         state: row.STATE,
         zip: row.ZIP,
         group: row.GROUP,
