@@ -1,18 +1,3 @@
-{
-    "01": {
-        "code": "01",
-        "description": "Unconditional Exemption"
-    },
-    "02": {
-        "code": "02",
-        "description": "Conditional Exemption"
-    },
-    "12": {
-        "code": "12",
-        "description": "Trust described in section 4947(a)(2) of the Internal Revenue Code"
-    },
-    "25": {
-        "code": "25",
-        "description": "Organization terminating its private foundation status under section 507(b)(1)(B) of the Code"
-    }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:7bca3c73d7808a2dbb6182974b7ccaae150d4c3c839de0ae99e42e5a36eba17c
+size 474
