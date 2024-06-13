@@ -3,7 +3,6 @@ export interface NonprofitProfile {
     lastUpdated?: string;
     searchedAt?: string;
     aiGenDate?: string;
-    liveProfileDate?: string;
     dbId?: string;
     slug?: string;
     ein: string; // Employer Identification Number

@@ -1,18 +1,15 @@
 import "dotenv/config";
-import { titleCase } from "title-case";
+import { parseEoFile } from "./utils/parseEoFile";
+import { NonprofitProfile } from "./types";
+import path from "path";
+import { jsonFileWrite } from "./utils/fileWrite";
 
 const main = async () => {
-    const testStrings = [
-        "UNITED STATES BOWLING CONGRESS INC",
-        "MARGUERITE DOWLING",
-        "3250 E PALMER WASILLA HWY",
-        "WASILLA",
-        "test",
-    ];
-
-    testStrings.forEach((str) => {
-        console.log(titleCase(str.toLowerCase()));
-    });
+    const profiles: Record<string, NonprofitProfile> = await parseEoFile("eo_ca.csv");
+    // console.log(Object.keys(profiles).length);
+    const outputDirectoryPath: string = path.join(__dirname, "/data/nonprofitProfiles");
+    // const out: string = JSON.stringify(profiles);
+    await jsonFileWrite(outputDirectoryPath, profiles, "Test");
 };
 
-main();
+main().catch(console.error);

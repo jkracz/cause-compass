@@ -40,11 +40,11 @@ const orgTypesDict = orgTypes as Record<string, OrgCode>;
 const pfFilingReqCodesDict = pfFilingReqCodes as Record<string, FilingRequirementCode>;
 const eoStatusCodesDict = eoStatusCodes as Record<string, EOStatusCode>;
 
-export const parseEoFile = async (fileName: string): Promise<NonprofitProfile[]> => {
+export const parseEoFile = async (fileName: string): Promise<Record<string, NonprofitProfile>> => {
     const currentPath = join(__dirname, "../data/raw", fileName);
 
     return new Promise((resolve, reject) => {
-        const profiles: NonprofitProfile[] = [];
+        const profiles: Record<string, NonprofitProfile> = {};
         const parser = parse({ columns: true, delimiter: "," });
         const readableStream = fs.createReadStream(currentPath);
 
@@ -53,7 +53,7 @@ export const parseEoFile = async (fileName: string): Promise<NonprofitProfile[]>
             .pipe(parser)
             .on("data", (row) => {
                 const npProfile = transformCsvRowToNonprofitProfile(row);
-                profiles.push(npProfile);
+                profiles[npProfile.ein] = npProfile;
             })
             .on("error", (err) => {
                 console.error(err);

@@ -1,11 +1,10 @@
 import generateId from "../utils/nanoid";
 import { parseEoFile } from "../utils/parseEoFile";
+import { jsonFileWrite } from "../utils/fileWrite";
 import { ActivityCode, NonprofitProfile } from "../types";
 import slugify from "slugify";
 import * as path from "path";
-import * as fs from "fs/promises";
-import { uploadJsonToSupabase } from "../utils/supabaseStorage";
-import { insertOneTaxExemptOrganization, TaxExemptOrganizationInsertType, closeClient } from "../utils/supabaseDB";
+import { TaxExemptOrganizationInsertType, closeClient, insertManyTaxExemptOrganization } from "../utils/supabaseDB";
 
 const yargs = require("yargs");
 const { hideBin } = require("yargs/helpers");
@@ -13,25 +12,56 @@ const { hideBin } = require("yargs/helpers");
 const argv = yargs(hideBin(process.argv)).argv;
 
 const createProfilesByState = async (state: string) => {
-    const fileName: string = "eo_" + state.toLowerCase() + ".csv";
-    const parsedProfiles: NonprofitProfile[] = await parseEoFile(fileName);
+    try {
+        // parse the profiles from the eo file
+        const fileName: string = "eo_" + state.toLowerCase() + ".csv";
+        const parsedProfiles: Record<string, NonprofitProfile> = await parseEoFile(fileName);
 
-    for (const profile of parsedProfiles) {
-        if (meetsCriteria(profile)) {
-            const id: string = generateId();
-            profile.dbId = id;
-            const slug: string = slugify(profile.name, {
-                lower: true,
-            });
-            profile.slug = slug;
-            const outputPath: string = await writeProfileToFile(profile, profile.dbId, state, true);
-            await uploadJsonToSupabase(outputPath, `eo_profiles/${state}`, profile.dbId + ".json");
-            const teo: TaxExemptOrganizationInsertType = mapProfileToDbSchema(profile, id, slug);
-            await insertOneTaxExemptOrganization(teo);
-        } else {
-            const outputPath: string = await writeProfileToFile(profile, profile.ein, state, false);
-            await uploadJsonToSupabase(outputPath, `eo_profiles/${state}/not-inserted`, profile.ein + ".json");
+        // create a batch so we don't insert profiles 1 by 1
+        let dbBatch: TaxExemptOrganizationInsertType[] = [];
+        const batchSize: number = 5000;
+
+        // init some metrics for logging at the end
+        let totalInserted: number = 0;
+        let totalNotInserted: number = 0;
+        let totalFilesWritten: number = 0;
+        let totalProfilesParsed: number = 0;
+
+        for (const ein in parsedProfiles) {
+            const profile: NonprofitProfile = parsedProfiles[ein];
+            totalProfilesParsed += 1;
+            if (meetsCriteria(profile)) {
+                profile.dbId = generateId();
+                profile.slug = `${slugify(profile.name, { lower: true })}-${ein.slice(-4)}`;
+                const teo: TaxExemptOrganizationInsertType = mapProfileToDbSchema(profile, profile.dbId, profile.slug);
+                dbBatch.push(teo);
+                if (dbBatch.length >= batchSize) {
+                    await insertManyTaxExemptOrganization(dbBatch);
+                    console.log(`Inserted batch of ${batchSize} records to the database.`);
+                    dbBatch = [];
+                    totalInserted += batchSize;
+                }
+            } else {
+                totalNotInserted += 1;
+            }
         }
+        if (dbBatch.length > 0) {
+            await insertManyTaxExemptOrganization(dbBatch);
+            totalInserted += dbBatch.length;
+            console.log(`Inserted final batch of ${dbBatch.length} records to the database.`);
+            dbBatch = [];
+        }
+        const outputDirectoryPath: string = path.join(__dirname, "../data/nonprofitProfiles");
+        await jsonFileWrite(outputDirectoryPath, parsedProfiles, state);
+        totalFilesWritten += 1;
+        console.log("----------------------------");
+        console.log(`Processing for ${state} completed.`);
+        console.log(`- ${totalProfilesParsed} profile(s) parsed.`);
+        console.log(`- ${totalInserted} profile(s) inserted.`);
+        console.log(`- ${totalNotInserted} profile(s) selectively NOT inserted.`);
+        console.log(`- ${totalFilesWritten} file(s) written.`);
+    } catch (error) {
+        console.error(`Error processing ${state} profiles.`, error);
     }
 };
 
@@ -57,35 +87,6 @@ const meetsCriteria = (profile: NonprofitProfile) => {
         return false;
     }
     return true;
-};
-
-const writeProfileToFile = async (
-    profile: NonprofitProfile,
-    id: string,
-    state: string,
-    insert: boolean
-): Promise<string> => {
-    let outputDirectoryPath: string = path.join(__dirname, "../data/nonprofitProfiles", state);
-    if (!insert) {
-        outputDirectoryPath = path.join(outputDirectoryPath, "/not-inserted");
-    }
-    // Check if the directory exists
-    try {
-        await fs.access(outputDirectoryPath);
-    } catch (error) {
-        // If the directory does not exist, create it
-        await fs.mkdir(outputDirectoryPath, { recursive: true });
-    }
-    const fileName = id + ".json";
-    const outputFilePath: string = path.join(outputDirectoryPath, fileName);
-    const data = JSON.stringify(profile, null, 4);
-    try {
-        await fs.writeFile(outputFilePath, data);
-        return outputFilePath;
-    } catch (err) {
-        console.error("error writing file", err);
-        return "";
-    }
 };
 
 const mapProfileToDbSchema = (

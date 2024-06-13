@@ -1,25 +1,21 @@
-import * as fs from "fs";
+import * as fs from "fs/promises";
 import * as path from "path";
-import { NonprofitProfile } from "../types";
 
-export const writeProfile = async (outputDirectoryPath: string, profile: NonprofitProfile) => {
-    if (!fs.existsSync(outputDirectoryPath)) {
-        fs.mkdirSync(outputDirectoryPath, { recursive: true });
+export const jsonFileWrite = async (directoryPath: string, content: object, fileName: string) => {
+    try {
+        await fs.access(directoryPath);
+    } catch (error) {
+        // If the directory does not exist, create it
+        await fs.mkdir(directoryPath, { recursive: true });
     }
-    const profileFilePath = path.join(outputDirectoryPath, `${profile.ein}.json`);
-    const data = JSON.stringify(profile, null, 4);
+    const outputFilePath = path.join(directoryPath, `${fileName}.json`);
+    const data = JSON.stringify(content);
 
-    // Asynchronously write the file
-    fs.writeFile(profileFilePath, data, (err) => {
-        if (err) {
-            console.error("Error writing file:", err);
-        } else {
-            return profileFilePath;
-        }
-    });
-};
-
-const checkFileExists = (folderPath: string, fileName: string): boolean => {
-    const filePath = path.join(folderPath, fileName);
-    return fs.existsSync(filePath);
+    try {
+        await fs.writeFile(outputFilePath, data);
+        return outputFilePath;
+    } catch (err) {
+        console.error("error writing file", err);
+        return "";
+    }
 };

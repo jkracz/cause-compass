@@ -6,8 +6,6 @@
     "scripts": {
         "start": "tsx src/index.ts",
         "create-profiles": "tsx src/scripts/createProfilesByState.ts",
-        "insert-ntee-file": "tsx src/insertNteeFileIntoDb.ts",
-        "insert-eo-file": "tsx src/insertEoFileIntoDb.ts",
         "introspect": "drizzle-kit introspect",
         "db:generate": "drizzle-kit generate",
         "db:migrate": "drizzle-kit migrate",
@@ -32,7 +30,6 @@
         "dotenv": "^16.4.5",
         "drizzle-orm": "^0.31.1",
         "googleapis": "^139.0.0",
-        "mongodb": "^6.7.0",
         "nanoid": "^5.0.7",
         "openai": "^4.48.1",
         "postgres": "^3.4.4",
