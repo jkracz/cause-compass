@@ -30,6 +30,7 @@
         "dotenv": "^16.4.5",
         "drizzle-orm": "^0.31.1",
         "googleapis": "^139.0.0",
+        "mongo": "^0.1.0",
         "nanoid": "^5.0.7",
         "openai": "^4.48.1",
         "postgres": "^3.4.4",

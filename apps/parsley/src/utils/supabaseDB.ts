@@ -12,11 +12,11 @@ const db = drizzle(client, { schema });
 
 export type TaxExemptOrganizationInsertType = typeof schema.taxExemptOrganizations.$inferInsert;
 
-export const insertManyTaxExemptOrganization = async (profiles: TaxExemptOrganizationInsertType[]) => {
+export const insertManyTaxExemptOrganizationSb = async (profiles: TaxExemptOrganizationInsertType[]) => {
     return await db.insert(schema.taxExemptOrganizations).values(profiles).returning();
 };
 
-export const insertOneTaxExemptOrganization = async (profile: TaxExemptOrganizationInsertType) => {
+export const insertOneTaxExemptOrganizationSb = async (profile: TaxExemptOrganizationInsertType) => {
     return await db.insert(schema.taxExemptOrganizations).values(profile).returning();
 };
 
