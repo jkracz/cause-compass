@@ -27,5 +27,7 @@ jobs:
                   echo MONGO_CONNECTION_STRING=${{secrets.MONGO_CONNECTION_STRING}} >> .env
                   echo SEARCH_ENGINE_ID=${{secrets.SEARCH_ENGINE_ID}} >> .env
 
+            - name: Print .env file
+              run: cat .env
             - name: Run script
               run: npm run search-orgs
