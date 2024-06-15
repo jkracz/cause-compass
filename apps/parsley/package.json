@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "start": "tsx src/index.ts",
-        "create-profiles": "tsx src/scripts/createProfilesByState.ts",
+        "create-profiles": "tsx src/scripts/createOrgsByState.ts",
         "search-orgs": "tsx src/scripts/googleSearchOrgs.ts",
         "introspect": "drizzle-kit introspect",
         "db:generate": "drizzle-kit generate",

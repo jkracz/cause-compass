@@ -1,5 +1,5 @@
 import { MongoClient, ServerApiVersion, AnyBulkWriteOperation } from "mongodb";
-import { NonprofitProfile } from "../types";
+import { TaxExemptOrganization } from "../types";
 import "dotenv/config";
 
 const uri: string = process.env.MONGO_CONNECTION_STRING || "";
@@ -12,9 +12,9 @@ const client = new MongoClient(uri, {
 });
 
 const db = client.db("CauseCompass-1");
-const tax_exempt_organizations = db.collection<NonprofitProfile>("tax_exempt_organizations");
+const tax_exempt_organizations = db.collection<TaxExemptOrganization>("tax_exempt_organizations");
 
-export const insertManyTaxExemptOrgs = async (documents: NonprofitProfile[]): Promise<void> => {
+export const insertManyTaxExemptOrgs = async (documents: TaxExemptOrganization[]): Promise<void> => {
     try {
         await client.connect();
         const result = await tax_exempt_organizations.insertMany(documents);
@@ -26,7 +26,7 @@ export const insertManyTaxExemptOrgs = async (documents: NonprofitProfile[]): Pr
     }
 };
 
-export const getTaxExemptOrgsToSearch = async (): Promise<NonprofitProfile[]> => {
+export const getTaxExemptOrgsToSearch = async (): Promise<TaxExemptOrganization[]> => {
     try {
         await client.connect();
         const profiles = await tax_exempt_organizations
@@ -52,11 +52,11 @@ export const getTaxExemptOrgsToSearch = async (): Promise<NonprofitProfile[]> =>
     }
 };
 
-export const bulkUpdateOrgs = async (orgs: NonprofitProfile[]): Promise<void> => {
+export const bulkUpdateOrgs = async (orgs: TaxExemptOrganization[]): Promise<void> => {
     try {
         await client.connect();
 
-        const bulkOps: AnyBulkWriteOperation<NonprofitProfile>[] = orgs.map((org) => ({
+        const bulkOps: AnyBulkWriteOperation<TaxExemptOrganization>[] = orgs.map((org) => ({
             updateOne: {
                 filter: { _id: org._id }, // Assuming _id is the identifier field
                 update: { $set: org },

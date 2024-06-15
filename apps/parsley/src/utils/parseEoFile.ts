@@ -4,7 +4,7 @@ import { join } from "path";
 import { convertToTitleCase } from "./titleCase";
 
 import {
-    NonprofitProfile,
+    TaxExemptOrganization,
     NteeCode,
     ActivityCode,
     AssetCode,
@@ -40,11 +40,11 @@ const orgTypesDict = orgTypes as Record<string, OrgCode>;
 const pfFilingReqCodesDict = pfFilingReqCodes as Record<string, FilingRequirementCode>;
 const eoStatusCodesDict = eoStatusCodes as Record<string, EOStatusCode>;
 
-export const parseEoFile = async (fileName: string): Promise<Record<string, NonprofitProfile>> => {
+export const parseEoFile = async (fileName: string): Promise<Record<string, TaxExemptOrganization>> => {
     const currentPath = join(__dirname, "../data/raw", fileName);
 
     return new Promise((resolve, reject) => {
-        const profiles: Record<string, NonprofitProfile> = {};
+        const profiles: Record<string, TaxExemptOrganization> = {};
         const parser = parse({ columns: true, delimiter: "," });
         const readableStream = fs.createReadStream(currentPath);
 
@@ -66,7 +66,7 @@ export const parseEoFile = async (fileName: string): Promise<Record<string, Nonp
     });
 };
 
-const transformCsvRowToNonprofitProfile = (row: any): NonprofitProfile => {
+const transformCsvRowToNonprofitProfile = (row: any): TaxExemptOrganization => {
     return {
         ein: row.EIN,
         name: convertToTitleCase(row.NAME),

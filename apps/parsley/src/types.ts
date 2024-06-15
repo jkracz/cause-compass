@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-export interface NonprofitProfile {
+export interface TaxExemptOrganization {
     createdAt?: string;
     lastUpdated?: string;
     searchedAt?: string;

@@ -1,9 +1,9 @@
-import { NonprofitProfile } from "../types";
+import { TaxExemptOrganization } from "../types";
 import { bulkUpdateOrgs, getTaxExemptOrgsToSearch } from "../utils/mongo";
 import { googleSearch } from "../utils/googleSearch";
 
 const googleSearchOrgs = async () => {
-    const orgs: NonprofitProfile[] = await getTaxExemptOrgsToSearch();
+    const orgs: TaxExemptOrganization[] = await getTaxExemptOrgsToSearch();
     for (const org of orgs) {
         const searchQuery: string = `${org.name} ${org.city} ${org.state}`;
         const searchResults = await googleSearch(searchQuery);

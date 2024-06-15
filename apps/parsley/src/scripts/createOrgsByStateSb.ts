@@ -1,7 +1,7 @@
 import generateId from "../utils/nanoid";
 import { parseEoFile } from "../utils/parseEoFile";
 import { jsonFileWrite } from "../utils/fileWrite";
-import { ActivityCode, NonprofitProfile } from "../types";
+import { ActivityCode, TaxExemptOrganization } from "../types";
 import slugify from "slugify";
 import * as path from "path";
 import { TaxExemptOrganizationInsertType, closeClient, insertManyTaxExemptOrganizationSb } from "../utils/supabaseDB";
@@ -11,11 +11,11 @@ const { hideBin } = require("yargs/helpers");
 
 const argv = yargs(hideBin(process.argv)).argv;
 
-const createProfilesByStateSb = async (state: string) => {
+const createOrgsByStateSb = async (state: string) => {
     try {
         // parse the profiles from the eo file
         const fileName: string = "eo_" + state.toLowerCase() + ".csv";
-        const parsedProfiles: Record<string, NonprofitProfile> = await parseEoFile(fileName);
+        const parsedProfiles: Record<string, TaxExemptOrganization> = await parseEoFile(fileName);
 
         // create a batch so we don't insert profiles 1 by 1
         let dbBatch: TaxExemptOrganizationInsertType[] = [];
@@ -28,7 +28,7 @@ const createProfilesByStateSb = async (state: string) => {
         let totalProfilesParsed: number = 0;
 
         for (const ein in parsedProfiles) {
-            const profile: NonprofitProfile = parsedProfiles[ein];
+            const profile: TaxExemptOrganization = parsedProfiles[ein];
             totalProfilesParsed += 1;
             if (meetsCriteria(profile)) {
                 profile.dbId = generateId();
@@ -65,7 +65,7 @@ const createProfilesByStateSb = async (state: string) => {
     }
 };
 
-const meetsCriteria = (profile: NonprofitProfile) => {
+const meetsCriteria = (profile: TaxExemptOrganization) => {
     const religiousActivities: ActivityCode[] | undefined = profile.activityCodes?.filter(
         (code) => code.category === "Religious Activities"
     );
@@ -90,7 +90,7 @@ const meetsCriteria = (profile: NonprofitProfile) => {
 };
 
 const mapProfileToDbSchema = (
-    profile: NonprofitProfile,
+    profile: TaxExemptOrganization,
     nanoId: string,
     slug: string
 ): TaxExemptOrganizationInsertType => {
@@ -111,7 +111,7 @@ const mapProfileToDbSchema = (
 const main = async () => {
     const state = argv.state as string;
     if (state) {
-        await createProfilesByStateSb(state.toLowerCase());
+        await createOrgsByStateSb(state.toLowerCase());
         await closeClient();
     } else {
         console.error("Please provide a state using --state");

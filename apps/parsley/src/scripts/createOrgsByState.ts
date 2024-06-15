@@ -1,7 +1,7 @@
 import generateId from "../utils/nanoid";
 import { parseEoFile } from "../utils/parseEoFile";
 import { jsonFileWrite } from "../utils/fileWrite";
-import { NonprofitProfile } from "../types";
+import { TaxExemptOrganization } from "../types";
 import slugify from "slugify";
 import * as path from "path";
 import { insertManyTaxExemptOrgs } from "../utils/mongo";
@@ -11,14 +11,14 @@ const { hideBin } = require("yargs/helpers");
 
 const argv = yargs(hideBin(process.argv)).argv;
 
-const createProfilesByState = async (state: string) => {
+const createOrgsByState = async (state: string) => {
     try {
         // parse the profiles from the eo file
         const fileName: string = "eo_" + state.toLowerCase() + ".csv";
-        const parsedProfiles: Record<string, NonprofitProfile> = await parseEoFile(fileName);
+        const parsedProfiles: Record<string, TaxExemptOrganization> = await parseEoFile(fileName);
 
         // create a batch so we don't insert profiles 1 by 1
-        let dbBatch: NonprofitProfile[] = [];
+        let dbBatch: TaxExemptOrganization[] = [];
         const batchSize: number = 5000;
 
         // init some metrics for logging at the end
@@ -28,7 +28,7 @@ const createProfilesByState = async (state: string) => {
         let totalProfilesParsed: number = 0;
 
         for (const ein in parsedProfiles) {
-            const profile: NonprofitProfile = parsedProfiles[ein];
+            const profile: TaxExemptOrganization = parsedProfiles[ein];
             totalProfilesParsed += 1;
             profile.dbId = generateId();
             profile.slug = `${slugify(profile.name, { lower: true })}-${ein.slice(-4)}`;
@@ -62,7 +62,7 @@ const createProfilesByState = async (state: string) => {
 const main = async () => {
     const state = argv.state as string;
     if (state) {
-        await createProfilesByState(state.toLowerCase());
+        await createOrgsByState(state.toLowerCase());
     } else {
         console.error("Please provide a state using --state");
         process.exit(1);
