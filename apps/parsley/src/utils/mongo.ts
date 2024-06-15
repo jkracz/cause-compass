@@ -2,7 +2,10 @@ import { MongoClient, ServerApiVersion, AnyBulkWriteOperation } from "mongodb";
 import { TaxExemptOrganization } from "../types";
 import "dotenv/config";
 
-const uri: string = process.env.MONGO_CONNECTION_STRING || "";
+const uri: string | undefined = process.env.MONGO_CONNECTION_STRING;
+if (!uri) {
+    throw new Error("Missing MONGO_CONNECTION_STRING environment variable");
+}
 const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1,

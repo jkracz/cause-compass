@@ -1,6 +1,7 @@
 import { TaxExemptOrganization } from "../types";
 import { bulkUpdateOrgs, getTaxExemptOrgsToSearch } from "../utils/mongo";
 import { googleSearch } from "../utils/googleSearch";
+import "dotenv/config";
 
 const googleSearchOrgs = async () => {
     const orgs: TaxExemptOrganization[] = await getTaxExemptOrgsToSearch();
