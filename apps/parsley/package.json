@@ -6,6 +6,7 @@
     "scripts": {
         "start": "tsx src/index.ts",
         "create-profiles": "tsx src/scripts/createProfilesByState.ts",
+        "search-orgs": "tsx src/scripts/googleSearchOrgs.ts",
         "introspect": "drizzle-kit introspect",
         "db:generate": "drizzle-kit generate",
         "db:migrate": "drizzle-kit migrate",

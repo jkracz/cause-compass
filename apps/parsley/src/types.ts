@@ -1,8 +1,10 @@
+import { ObjectId } from "mongodb";
 export interface NonprofitProfile {
     createdAt?: string;
     lastUpdated?: string;
     searchedAt?: string;
     aiGenDate?: string;
+    _id?: ObjectId;
     dbId?: string;
     slug?: string;
     ein: string; // Employer Identification Number
@@ -33,14 +35,8 @@ export interface NonprofitProfile {
     revenueAmt?: number; // Revenue Amount
     nteeCode?: NteeCode; // NTEE Code
     sortName?: string; // Sort Name (Secondary Name Line)
-    searchResults?: SearchResult[]; // Placeholder for search results
+    searchResults?: object; // Placeholder for search results
     aiGeneratedContent?: AIGeneratedContent; // Placeholder for AI-generated content
-}
-
-export interface SearchResult {
-    title: string;
-    snippet: string;
-    url: string;
 }
 
 export interface AIGeneratedContent {

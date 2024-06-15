@@ -3,13 +3,19 @@ import { parseEoFile } from "./utils/parseEoFile";
 import { NonprofitProfile } from "./types";
 import path from "path";
 import { jsonFileWrite } from "./utils/fileWrite";
+import { getTaxExemptOrgsToSearch } from "./utils/mongo";
+import { googleSearch } from "./utils/googleSearch";
 
 const main = async () => {
-    const profiles: Record<string, NonprofitProfile> = await parseEoFile("eo_ca.csv");
-    // console.log(Object.keys(profiles).length);
-    const outputDirectoryPath: string = path.join(__dirname, "/data/nonprofitProfiles");
-    // const out: string = JSON.stringify(profiles);
-    await jsonFileWrite(outputDirectoryPath, profiles, "Test");
+    const orgs: NonprofitProfile[] = await getTaxExemptOrgsToSearch();
+    for (const org of orgs) {
+        const searchQuery: string = `${org.name} ${org.city} ${org.state}`;
+        // console.log(searchQuery);
+        org.searchedAt = new Date().toISOString();
+        org.searchResults = { query: searchQuery };
+        console.log(org);
+        // const searchResults = await googleSearch();
+    }
 };
 
 main().catch(console.error);

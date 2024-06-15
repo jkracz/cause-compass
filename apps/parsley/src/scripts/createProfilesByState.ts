@@ -4,7 +4,7 @@ import { jsonFileWrite } from "../utils/fileWrite";
 import { NonprofitProfile } from "../types";
 import slugify from "slugify";
 import * as path from "path";
-import { insertManyTaxExemptOrganization } from "../utils/mongo";
+import { insertManyTaxExemptOrgs } from "../utils/mongo";
 
 const yargs = require("yargs");
 const { hideBin } = require("yargs/helpers");
@@ -34,13 +34,13 @@ const createProfilesByState = async (state: string) => {
             profile.slug = `${slugify(profile.name, { lower: true })}-${ein.slice(-4)}`;
             dbBatch.push(profile);
             if (dbBatch.length >= batchSize) {
-                await insertManyTaxExemptOrganization(dbBatch);
+                await insertManyTaxExemptOrgs(dbBatch);
                 dbBatch = [];
                 totalInserted += batchSize;
             }
         }
         if (dbBatch.length > 0) {
-            await insertManyTaxExemptOrganization(dbBatch);
+            await insertManyTaxExemptOrgs(dbBatch);
             totalInserted += dbBatch.length;
             console.log(`Inserted final batch of ${dbBatch.length} records to the database.`);
             dbBatch = [];

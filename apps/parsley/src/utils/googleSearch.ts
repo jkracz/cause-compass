@@ -1,7 +1,7 @@
 import { google } from "googleapis";
 import "dotenv/config";
 
-export const generalSearch = async (query: string): Promise<any> => {
+export const googleSearch = async (query: string): Promise<any> => {
     const customsearch = google.customsearch("v1");
     try {
         const res = await customsearch.cse.list({
