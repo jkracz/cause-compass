@@ -2,10 +2,15 @@ import { MongoClient, ServerApiVersion, AnyBulkWriteOperation } from "mongodb";
 import { TaxExemptOrganization } from "../types";
 import "dotenv/config";
 
-const uri: string | undefined = process.env.MONGO_CONNECTION_STRING;
-if (!uri) {
-    throw new Error("Missing MONGO_CONNECTION_STRING environment variable");
+const mongoUser: string | undefined = process.env.MONGO_USER;
+const mongoPassword: string | undefined = process.env.MONGO_PASSWORD;
+if (!mongoUser) {
+    throw new Error("Missing MONGO_USER environment variable");
+} else if (!mongoPassword) {
+    throw new Error("Missing MONGO_PASSWORD environment variable");
 }
+const uri: string = `mongodb+srv://${mongoUser}:${mongoPassword}@causecompass-1.xgfmikf.mongodb.net/?retryWrites=true&w=majority&appName=CauseCompass-1`;
+
 const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1,
@@ -48,8 +53,8 @@ export const getTaxExemptOrgsToSearch = async (): Promise<TaxExemptOrganization[
             .toArray();
         return profiles;
     } catch (error) {
-        console.error("Failed to retrieve orgs to search:", error);
-        return [];
+        console.error(error);
+        throw new Error("Failed to retrieve orgs to search");
     } finally {
         await client.close();
     }
@@ -69,7 +74,8 @@ export const bulkUpdateOrgs = async (orgs: TaxExemptOrganization[]): Promise<voi
         const result = await tax_exempt_organizations.bulkWrite(bulkOps);
         console.log(`${result.modifiedCount} documents were updated`);
     } catch (error) {
-        console.error("Failed to update documents:", error);
+        console.error(error);
+        throw new Error("Failed to bulk update orgs");
     } finally {
         await client.close();
     }

@@ -24,7 +24,8 @@ jobs:
             - name: Create .env file
               run: |
                   echo GOOGLE_SEARCH_API_KEY=${{secrets.GOOGLE_SEARCH_API_KEY}} >> .env
-                  echo MONGO_CONNECTION_STRING=${{secrets.MONGO_CONNECTION_STRING}} >> .env
+                  echo MONGO_USER=${{secrets.MONGO_USER}} >> .env
+                  echo MONGO_USER=${{secrets.MONGO_PASSWORD}} >> .env
                   echo SEARCH_ENGINE_ID=${{secrets.SEARCH_ENGINE_ID}} >> .env
 
             - name: Print .env file
