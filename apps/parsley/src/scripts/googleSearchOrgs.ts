@@ -10,7 +10,6 @@ const googleSearchOrgs = async () => {
         const searchResults = await googleSearch(searchQuery);
         org.searchResults = searchResults;
         org.searchedAt = new Date().toISOString();
-        console.log(org);
     }
     await bulkUpdateOrgs(orgs);
 };

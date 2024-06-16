@@ -21,14 +21,10 @@ jobs:
             - name: Install dependencies
               run: npm install
 
-            - name: Create .env file
-              run: |
-                  echo GOOGLE_SEARCH_API_KEY=${{secrets.GOOGLE_SEARCH_API_KEY}} >> .env
-                  echo MONGO_USER=${{secrets.MONGO_USER}} >> .env
-                  echo MONGO_PASSWORD=${{secrets.MONGO_PASSWORD}} >> .env
-                  echo SEARCH_ENGINE_ID=${{secrets.SEARCH_ENGINE_ID}} >> .env
-
-            - name: Print .env file
-              run: cat .env
             - name: Run script
+              env:
+                  GOOGLE_SEARCH_API_KEY: ${{ secrets.GOOGLE_SEARCH_API_KEY }}
+                  SEARCH_ENGINE_ID: ${{ secrets.SEARCH_ENGINE_ID }}
+                  MONGO_USER: ${{secrets.MONGO_USER}}
+                  MONGO_PASSWORD: ${{secrets.MONGO_PASSWORD}}
               run: npm run search-orgs

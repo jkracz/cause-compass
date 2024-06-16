@@ -1,4 +1,4 @@
-import { MongoClient, ServerApiVersion, AnyBulkWriteOperation } from "mongodb";
+import { MongoClient, ServerApiVersion, AnyBulkWriteOperation, BulkWriteResult } from "mongodb";
 import { TaxExemptOrganization } from "../types";
 import "dotenv/config";
 
@@ -71,8 +71,8 @@ export const bulkUpdateOrgs = async (orgs: TaxExemptOrganization[]): Promise<voi
             },
         }));
 
-        const result = await tax_exempt_organizations.bulkWrite(bulkOps);
-        console.log(`${result.modifiedCount} documents were updated`);
+        const result: BulkWriteResult = await tax_exempt_organizations.bulkWrite(bulkOps);
+        console.log(`${result.modifiedCount} documents were modified`);
     } catch (error) {
         console.error(error);
         throw new Error("Failed to bulk update orgs");
