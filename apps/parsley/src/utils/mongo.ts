@@ -49,7 +49,7 @@ export const getTaxExemptOrgsToSearch = async (): Promise<TaxExemptOrganization[
                 ],
                 $or: [{ searchedAt: { $exists: false } }, { searchedAt: undefined }],
             })
-            .limit(2)
+            .limit(60)
             .toArray();
         return profiles;
     } catch (error) {
