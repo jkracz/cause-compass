@@ -5,7 +5,7 @@ import { googleSearch } from "../utils/googleSearch";
 import "dotenv/config";
 
 const googleSearchOrgs = async () => {
-    const orgs: TaxExemptOrganization[] = await getTaxExemptOrgsToSearch();
+    const orgs: TaxExemptOrganization[] = await getTaxExemptOrgsToSearch(100);
     const processedIds: ObjectId[] = [];
     for (const org of orgs) {
         const searchQuery: string = `${org.name} ${org.city} ${org.state}`;

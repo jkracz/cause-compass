@@ -34,7 +34,7 @@ export const insertManyTaxExemptOrgs = async (documents: TaxExemptOrganization[]
     }
 };
 
-export const getTaxExemptOrgsToSearch = async (): Promise<TaxExemptOrganization[]> => {
+export const getTaxExemptOrgsToSearch = async (limit: number): Promise<TaxExemptOrganization[]> => {
     try {
         await client.connect();
         const profiles = await tax_exempt_organizations
@@ -49,7 +49,7 @@ export const getTaxExemptOrgsToSearch = async (): Promise<TaxExemptOrganization[
                 ],
                 $or: [{ searchedAt: { $exists: false } }, { searchedAt: undefined }],
             })
-            .limit(60)
+            .limit(limit)
             .toArray();
         return profiles;
     } catch (error) {
