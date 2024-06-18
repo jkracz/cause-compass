@@ -1,4 +1,4 @@
-import { MongoClient, ServerApiVersion, AnyBulkWriteOperation, BulkWriteResult } from "mongodb";
+import { MongoClient, ServerApiVersion, AnyBulkWriteOperation, BulkWriteResult, Filter } from "mongodb";
 import { TaxExemptOrganization } from "../types";
 import "dotenv/config";
 
@@ -34,27 +34,17 @@ export const insertManyTaxExemptOrgs = async (documents: TaxExemptOrganization[]
     }
 };
 
-export const getTaxExemptOrgsToSearch = async (limit: number): Promise<TaxExemptOrganization[]> => {
+export const findTaxExemptOrgs = async (
+    limit: number,
+    filter: Filter<TaxExemptOrganization>
+): Promise<TaxExemptOrganization[]> => {
     try {
         await client.connect();
-        const profiles = await tax_exempt_organizations
-            .find({
-                $nor: [
-                    { "deductibility.code": { $ne: "1" } },
-                    { "activityCodes.category": { $in: ["Religious Activities"] } },
-                    { "affiliation.code": "9" },
-                    { "filingReqCode.code": { $in: ["06", "13", "14", "00"] } },
-                    { "foundation.code": { $in: ["02", "03", "04", "10"] } },
-                    { "status.code": { $in: ["12", "25"] } },
-                ],
-                $or: [{ searchedAt: { $exists: false } }, { searchedAt: undefined }],
-            })
-            .limit(limit)
-            .toArray();
+        const profiles = await tax_exempt_organizations.find(filter).limit(limit).toArray();
         return profiles;
     } catch (error) {
         console.error(error);
-        throw new Error("Failed to retrieve orgs to search");
+        throw new Error("Failed to retrieve orgs from DB");
     } finally {
         await client.close();
     }

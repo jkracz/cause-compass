@@ -1,7 +1,8 @@
 import "dotenv/config";
+import { parseSearchResults } from "./scripts/parseSearchResults";
 
 const main = async () => {
-    console.log("main");
+    await parseSearchResults();
 };
 
 main().catch(console.error);

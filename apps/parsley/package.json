@@ -25,24 +25,24 @@
     },
     "homepage": "https://github.com/CauseCompass/np-data-parser#readme",
     "dependencies": {
-        "@supabase/supabase-js": "^2.43.4",
+        "@supabase/supabase-js": "^2.43.5",
         "axios": "^1.7.2",
         "csv-parse": "^5.5.6",
         "dotenv": "^16.4.5",
-        "drizzle-orm": "^0.31.1",
-        "googleapis": "^139.0.0",
+        "drizzle-orm": "^0.31.2",
+        "googleapis": "^140.0.0",
         "mongo": "^0.1.0",
         "nanoid": "^5.0.7",
-        "openai": "^4.48.1",
+        "openai": "^4.51.0",
         "postgres": "^3.4.4",
-        "puppeteer": "^22.10.0",
+        "puppeteer": "^22.11.0",
         "slugify": "^1.6.6",
         "title-case": "^4.3.1",
         "yargs": "^17.7.2"
     },
     "devDependencies": {
         "@types/node": "^20.14.2",
-        "drizzle-kit": "^0.22.2",
-        "tsx": "^4.11.2"
+        "drizzle-kit": "^0.22.7",
+        "tsx": "^4.15.5"
     }
 }
