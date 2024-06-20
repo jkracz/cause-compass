@@ -56,7 +56,7 @@ export const bulkUpdateOrgs = async (orgs: TaxExemptOrganization[]): Promise<voi
 
         const bulkOps: AnyBulkWriteOperation<TaxExemptOrganization>[] = orgs.map((org) => ({
             updateOne: {
-                filter: { _id: org._id }, // Assuming _id is the identifier field
+                filter: { _id: org._id },
                 update: { $set: org },
             },
         }));

@@ -35,7 +35,7 @@ export interface TaxExemptOrganization {
     revenueAmt?: number; // Revenue Amount
     nteeCode?: NteeCode; // NTEE Code
     sortName?: string; // Sort Name (Secondary Name Line)
-    searchResults?: object; // Placeholder for search results
+    searchResults?: SearchResult[];
     aiGeneratedContent?: AIGeneratedContent; // Placeholder for AI-generated content
 }
 
@@ -111,4 +111,17 @@ export interface FilingRequirementCode {
     code: string;
     description: string;
     form_number: string;
+}
+
+export interface SearchResult {
+    kind: string;
+    title: string;
+    htmlTitle: string;
+    link: string;
+    displayLink: string;
+    snippet: string;
+    htmlSnippet: string;
+    formattedUrl: string;
+    htmlFormattedUrl: string;
+    pagemap: object;
 }
