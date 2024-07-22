@@ -3,7 +3,7 @@ import { findTaxExemptOrgs } from "../utils/mongo";
 
 export const parseSearchResults = async () => {
     // Retrieve organizations from MongoDB
-    const orgs: TaxExemptOrganization[] = await findTaxExemptOrgs(6, { searchResults: { $exists: true } });
+    const orgs: TaxExemptOrganization[] = await findTaxExemptOrgs(20, { searchResults: { $exists: true } });
 
     // Process each organization
     for (const org of orgs) {
@@ -67,20 +67,62 @@ const scoreUrl = (url: string, orgName: string, acronym: string): number => {
     const normalizedUrl = normalize(url);
     const normalizedOrgName = normalize(orgName);
     const normalizedAcronym = normalize(acronym);
+    const keywords = orgName.split(/\s+/).map(normalize);
 
     let score = 0;
 
+    // Exact matches for org name and acronym
     if (normalizedUrl.includes(normalizedOrgName)) score += 100;
     if (normalizedUrl.includes(normalizedAcronym)) score += 50;
+
+    // Partial matches for keywords
+    for (const keyword of keywords) {
+        if (normalizedUrl.includes(keyword)) score += 20;
+        if (normalizedUrl.startsWith(keyword)) score += 10;
+    }
+
+    // Domain scoring
     if (normalizedUrl.includes("org")) score += 20;
+    if (normalizedUrl.includes("com")) score += 10;
     if (normalizedUrl.includes("net")) score += 10;
+
+    // Prefer shorter URLs
+    score -= normalizedUrl.length / 10;
 
     return score;
 };
 
 const findBestUrls = (org: TaxExemptOrganization, acronym: string): string[] => {
+    const excludePatterns = [
+        /(www\.)?linkedin\.com\/?/,
+        /(www\.)?youtube\.com/,
+        /(www\.)?x\.com\/?/,
+        /(www\.)?twitter\.com\/?/,
+        /(www\.)?instagram\.com\/?/,
+        /(www\.)?threads\.net\/?/,
+        /(www\.)?facebook\.com\/?/,
+        /(www\.)?en.wikipedia\.org/,
+        /(www\.)?guidestar\.org\/?/,
+        /(www\.)?greatnonprofits\.org\/?/,
+        /(www\.)?irs\.gov/,
+        /(www\.)?sec\.gov/,
+        /(www\.)?zillow\.com/,
+    ];
     if (org.searchResults) {
-        const scoredResults = org.searchResults.map((result) => {
+        // Filter out social media URLs and duplicates
+        const seenUrls = new Set<string>();
+        const filteredResults = org.searchResults.filter((result) => {
+            const normalizedUrl = normalize(result.displayLink);
+            const isSocialMedia = excludePatterns.some((pattern) => pattern.test(result.displayLink));
+            const isDuplicate = seenUrls.has(normalizedUrl);
+
+            if (!isSocialMedia && !isDuplicate) {
+                seenUrls.add(normalizedUrl);
+                return true;
+            }
+            return false;
+        });
+        const scoredResults = filteredResults.map((result) => {
             return {
                 link: result.displayLink,
                 score: scoreUrl(result.displayLink, org.name, acronym),
