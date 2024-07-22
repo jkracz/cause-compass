@@ -125,3 +125,12 @@ export interface SearchResult {
     htmlFormattedUrl: string;
     pagemap: object;
 }
+
+export interface Socials {
+    linkedin?: string;
+    youtube?: string;
+    x?: string;
+    instagram?: string;
+    threads?: string;
+    facebook?: string;
+}
