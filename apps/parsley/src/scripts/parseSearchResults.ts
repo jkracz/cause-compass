@@ -1,23 +1,21 @@
 import { TaxExemptOrganization, SearchResult, Socials } from "../types";
 import { findTaxExemptOrgs } from "../utils/mongo";
+import { parse } from "tldts";
 
 export const parseSearchResults = async () => {
-    // Retrieve organizations from MongoDB
-    const orgs: TaxExemptOrganization[] = await findTaxExemptOrgs(20, { searchResults: { $exists: true } });
+    const orgs: TaxExemptOrganization[] = await findTaxExemptOrgs(30, { searchResults: { $exists: true } });
 
-    // Process each organization
     for (const org of orgs) {
         console.log("org:", org.name);
         const acronym = createAcronym(org.name);
         console.log("acronym:", acronym);
+        console.log("city & state:", org.city, org.state);
 
-        // Extract search results and identify social media links
         const searchResult: SearchResult[] = org.searchResults || [];
         const socials: Socials = extractSocials(searchResult);
 
         console.log("Socials:", socials);
 
-        // Determine and print the best URLs for the organization
         try {
             const bestUrls = findBestUrls(org, acronym);
             console.log("Best URLs:", bestUrls);
@@ -59,8 +57,14 @@ const createAcronym = (str: string) => {
         .join("");
 };
 
-const normalize = (str: string): string => {
-    return str.toLowerCase().replace(/[^a-z0-9]/g, "");
+const normalize = (url: string): string => {
+    const parsed = parse(url);
+    return parsed.domain ? parsed.domain.toLowerCase() : url.toLowerCase().replace(/[^a-z0-9]/g, "");
+};
+
+const hasSubdomain = (url: string): boolean => {
+    const parsed = parse(url);
+    return parsed.subdomain !== "www" && parsed.subdomain !== "";
 };
 
 const scoreUrl = (url: string, orgName: string, acronym: string): number => {
@@ -83,11 +87,9 @@ const scoreUrl = (url: string, orgName: string, acronym: string): number => {
 
     // Domain scoring
     if (normalizedUrl.includes("org")) score += 20;
-    if (normalizedUrl.includes("com")) score += 10;
-    if (normalizedUrl.includes("net")) score += 10;
 
-    // Prefer shorter URLs
-    score -= normalizedUrl.length / 10;
+    // Penalize for subdomains
+    if (hasSubdomain(url)) score -= 40;
 
     return score;
 };
@@ -108,8 +110,8 @@ const findBestUrls = (org: TaxExemptOrganization, acronym: string): string[] => 
         /(www\.)?sec\.gov/,
         /(www\.)?zillow\.com/,
     ];
+
     if (org.searchResults) {
-        // Filter out social media URLs and duplicates
         const seenUrls = new Set<string>();
         const filteredResults = org.searchResults.filter((result) => {
             const normalizedUrl = normalize(result.displayLink);
@@ -122,12 +124,14 @@ const findBestUrls = (org: TaxExemptOrganization, acronym: string): string[] => 
             }
             return false;
         });
+
         const scoredResults = filteredResults.map((result) => {
             return {
                 link: result.displayLink,
                 score: scoreUrl(result.displayLink, org.name, acronym),
             };
         });
+
         scoredResults.sort((a, b) => b.score - a.score);
         return scoredResults.map((result) => result.link);
     } else {
