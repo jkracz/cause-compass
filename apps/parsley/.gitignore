@@ -3,3 +3,4 @@
 *.DS_Store
 /src/data/raw/*
 /src/data/nonprofitProfiles/*
+storage

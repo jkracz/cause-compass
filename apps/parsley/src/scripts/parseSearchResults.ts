@@ -3,7 +3,7 @@ import { findTaxExemptOrgs } from "../utils/mongo";
 import { parse } from "tldts";
 
 export const parseSearchResults = async () => {
-    const orgs: TaxExemptOrganization[] = await findTaxExemptOrgs(30, { searchResults: { $exists: true } });
+    const orgs: TaxExemptOrganization[] = await findTaxExemptOrgs(1, { searchResults: { $exists: true } });
 
     for (const org of orgs) {
         console.log("org:", org.name);
@@ -20,7 +20,7 @@ export const parseSearchResults = async () => {
             const bestUrls = findBestUrls(org, acronym);
             console.log("Best URLs:", bestUrls);
         } catch (error) {
-            console.error("Error finding best URLs:", error.message);
+            console.error("Error finding best URLs:", error);
         }
     }
 };
