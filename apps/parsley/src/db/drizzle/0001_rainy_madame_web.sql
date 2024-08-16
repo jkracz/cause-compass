@@ -1,1 +1,0 @@
-ALTER TABLE "tax_exempt_organizations" ALTER COLUMN "searched_at" DROP DEFAULT;

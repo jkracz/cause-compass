@@ -1,6 +1,6 @@
 import { TaxExemptOrganization } from "../types";
 import { ObjectId } from "mongodb";
-import { bulkUpdateOrgs, findTaxExemptOrgs } from "../utils/mongo";
+import { bulkUpdateOrgs, findTaxExemptOrgs } from "../db/mongo";
 import { googleSearch } from "../utils/googleSearch";
 import "dotenv/config";
 

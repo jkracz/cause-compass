@@ -1,5 +1,5 @@
 import { TaxExemptOrganization, SearchResult, Socials } from "../types";
-import { findTaxExemptOrgs } from "../utils/mongo";
+import { findTaxExemptOrgs } from "../db/mongo";
 import { parse } from "tldts";
 
 export const parseSearchResults = async () => {

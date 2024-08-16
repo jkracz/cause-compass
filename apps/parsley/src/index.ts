@@ -1,8 +1,8 @@
 import "dotenv/config";
 import { parseSearchResults } from "./scripts/parseSearchResults";
-import { findTaxExemptOrgs, bulkUpdateOrgs } from "./utils/mongo";
+import { findTaxExemptOrgs, bulkUpdateOrgs } from "./db/mongo";
 import { TaxExemptOrganization } from "./types";
-import { crawler } from "./scripts/crawlee";
+import { createCrawler } from "./utils/crawlee";
 
 const main = async () => {
     // await parseSearchResults();
@@ -13,6 +13,7 @@ const main = async () => {
     // }
     // bulkUpdateOrgs(teo);
     // await crawler.run(["https://www.duoduoproject.org/"]);
+    const crawler = createCrawler(5, false);
     await crawler.run(["https://www.makernexus.org/"]);
 };
 

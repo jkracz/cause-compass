@@ -4,7 +4,7 @@ import { jsonFileWrite } from "../utils/fileWrite";
 import { TaxExemptOrganization } from "../types";
 import slugify from "slugify";
 import * as path from "path";
-import { insertManyTaxExemptOrgs } from "../utils/mongo";
+import { insertManyTaxExemptOrgs } from "../db/mongo";
 
 const yargs = require("yargs");
 const { hideBin } = require("yargs/helpers");
