@@ -12,11 +12,12 @@ const main = async () => {
     //     org.searchResults = org.searchResults.items;
     // }
     // bulkUpdateOrgs(teo);
-    // await crawler.run(["https://www.duoduoproject.org/"]);
     const crawler = createCrawler(5, true);
+    // await crawler.run(["https://www.fabmo.org/"]);
+    // await crawler.run(["https://www.duoduoproject.org/"]);
     await crawler.run(["https://www.makernexus.org/"]);
     const data = await getLatestCrawlData();
-    console.log(data);
+    // console.log(data);
 };
 
 main().catch(console.error);

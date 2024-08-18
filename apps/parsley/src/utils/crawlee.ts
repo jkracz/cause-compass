@@ -1,7 +1,6 @@
 import { PlaywrightCrawler, Dataset } from "crawlee";
 
-// PlaywrightCrawler crawls the web using a headless
-// browser controlled by the Playwright library.
+// PlaywrightCrawler crawls the web using a headless browser controlled by the Playwright library.
 
 /**
  * Creates a PlaywrightCrawler instance configured for web crawling.
@@ -27,7 +26,7 @@ export const createCrawler = (maxRequestsPerCrawl: number = 5, headless: boolean
                 const urls: string[] = [];
                 socialMediaPatterns.forEach((pattern) => {
                     document.querySelectorAll("a").forEach((anchor) => {
-                        if (pattern.test(anchor.href)) {
+                        if (pattern.test(anchor.href) && !urls.includes(anchor.href)) {
                             urls.push(anchor.href);
                         }
                     });
@@ -42,10 +41,85 @@ export const createCrawler = (maxRequestsPerCrawl: number = 5, headless: boolean
                 return emailInput !== null && submitButton !== null;
             });
 
+            // Find donation links
+            const donationLinks = await page.evaluate(() => {
+                const donationPatterns = [/donate/i, /support/i, /contribute/i, /give/i, /fund/i];
+                const links: any[] = [];
+                document.querySelectorAll("a, button").forEach((element) => {
+                    if (
+                        donationPatterns.some((pattern) => pattern.test((element as HTMLElement).innerText)) &&
+                        !links.includes((element as HTMLAnchorElement).href || element.closest("a")?.href)
+                    ) {
+                        links.push((element as HTMLAnchorElement).href || element.closest("a")?.href);
+                    }
+                });
+                return links.filter((link) => link); // Filter out undefined links
+            });
+
+            // Find email addresses
+            const emailAddresses: string[] = await page.evaluate(() => {
+                // Regex to match email addresses
+                const emailPattern = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/g;
+                const excludeDomains = ["wixpress", "sentry.io"];
+                const emails: string[] = [];
+                document.querySelectorAll("body *").forEach((element) => {
+                    const text = (element as HTMLElement).innerText;
+                    if (text) {
+                        const foundEmails = text.match(emailPattern);
+                        if (foundEmails) {
+                            foundEmails.forEach((email) => {
+                                if (
+                                    !emails.includes(email) &&
+                                    !excludeDomains.some((domain) => email.endsWith(domain))
+                                ) {
+                                    emails.push(email);
+                                }
+                            });
+                        }
+                    }
+                });
+                return emails;
+            });
+
+            // Find logo links
+            const logoLinks: string[] = await page.evaluate(() => {
+                const logos: Set<string> = new Set();
+                const logoSelectors = [
+                    'header img[alt*="logo"]',
+                    'header img[alt*="brand"]',
+                    'nav img[alt*="logo"]',
+                    'nav img[alt*="brand"]',
+                    "img.logo",
+                    "img.brand",
+                    'img[src*="logo"]',
+                    'img[src*="brand"]',
+                ];
+                logoSelectors.forEach((selector) => {
+                    document.querySelectorAll(selector).forEach((img) => {
+                        logos.add((img as HTMLImageElement).src);
+                    });
+                });
+
+                // Additional check for class names containing 'logo'
+                const logoClassPattern = /logo/i;
+                document.querySelectorAll("img").forEach((img) => {
+                    let element: HTMLElement | null = img;
+                    while (element) {
+                        if (logoClassPattern.test(element.className)) {
+                            logos.add(img.src);
+                            break;
+                        }
+                        element = element.parentElement;
+                    }
+                });
+
+                return Array.from(logos);
+            });
+
             const title = await page.title();
             const textContent = await page.$eval("body", (element) => {
                 const excludedTags = ["NAV", "HEADER", "FOOTER", "A"];
-                const popUpSelectors = [".modal", ".overlay", ".popup"]; // Add common selectors for pop-ups
+                const popUpSelectors = [".modal", ".overlay", ".popup"];
 
                 // Remove elements matching excluded tags
                 excludedTags.forEach((tag) => {
@@ -66,8 +140,6 @@ export const createCrawler = (maxRequestsPerCrawl: number = 5, headless: boolean
                 return element.innerText.trim();
             });
 
-            log.info(`Title of ${request.loadedUrl} is '${title}'`);
-
             // Save results as JSON to ./storage/datasets/default
             await Dataset.pushData({
                 title,
@@ -75,6 +147,9 @@ export const createCrawler = (maxRequestsPerCrawl: number = 5, headless: boolean
                 textContent,
                 socialMediaUrls,
                 hasNewsletterSignup,
+                donationLinks,
+                emailAddresses,
+                logoLinks,
             });
 
             // Extract links from the current page
