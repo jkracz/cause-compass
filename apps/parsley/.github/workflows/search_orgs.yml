@@ -19,7 +19,7 @@ jobs:
                   node-version: "20.14.0"
 
             - name: Install dependencies
-              run: npm install
+              run: pnpm install
 
             - name: Run script
               env:
