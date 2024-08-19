@@ -15,7 +15,8 @@ const main = async () => {
     const crawler = createCrawler(5, true);
     // await crawler.run(["https://www.fabmo.org/"]);
     // await crawler.run(["https://www.duoduoproject.org/"]);
-    await crawler.run(["https://www.makernexus.org/"]);
+    // await crawler.run(["https://www.makernexus.org/"]);
+    await crawler.run(["https://myhero.com/"]);
     const data = await getLatestCrawlData();
     // console.log(data);
 };
