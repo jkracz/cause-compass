@@ -22,6 +22,12 @@ const client = new MongoClient(uri, {
 const db = client.db("CauseCompass-1");
 const tax_exempt_organizations = db.collection<TaxExemptOrganization>("tax_exempt_organizations");
 
+/**
+ * Inserts many tax exempt organizations into the database.
+ *
+ * @param {TaxExemptOrganization[]} documents - The org documents to insert. Should be pre-validated.
+ * @returns {Promise<void>} A configured instance of PlaywrightCrawler.
+ */
 export const insertManyTaxExemptOrgs = async (documents: TaxExemptOrganization[]): Promise<void> => {
     try {
         await client.connect();
@@ -34,6 +40,13 @@ export const insertManyTaxExemptOrgs = async (documents: TaxExemptOrganization[]
     }
 };
 
+/**
+ * Finds tax exempt organizations in the database based on the provided filter.
+ *
+ * @param {Filter<TaxExemptOrganization>} filter - The filter to use for the query.
+ * @param {number} limit - The maximum number of documents to return.
+ * @returns {Promise<TaxExemptOrganization[]>} Orgs that match the filter.
+ */
 export const findTaxExemptOrgs = async (
     limit: number,
     filter: Filter<TaxExemptOrganization>
@@ -50,6 +63,12 @@ export const findTaxExemptOrgs = async (
     }
 };
 
+/**
+ * Updates many tax exempt organizations in the database based on the provided filter.
+ *
+ * @param {TaxExemptOrganization[]} orgs - The orgs to update. Should be pre-validated.
+ * @returns {Promise<void>} Nothing.
+ */
 export const bulkUpdateOrgs = async (orgs: TaxExemptOrganization[]): Promise<void> => {
     try {
         await client.connect();

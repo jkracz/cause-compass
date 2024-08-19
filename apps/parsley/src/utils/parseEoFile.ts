@@ -40,6 +40,21 @@ const orgTypesDict = orgTypes as Record<string, OrgCode>;
 const pfFilingReqCodesDict = pfFilingReqCodes as Record<string, FilingRequirementCode>;
 const eoStatusCodesDict = eoStatusCodes as Record<string, EOStatusCode>;
 
+/**
+ * Parses a CSV file containing information about tax-exempt organizations
+ * and transforms each row into a TaxExemptOrganization object.
+ *
+ * This function reads the specified CSV file, processes each row, and
+ * constructs a record of TaxExemptOrganization objects indexed by their EIN.
+ * It utilizes a CSV parser to handle the input data and applies necessary
+ * transformations to the fields, such as converting names to title case.
+ *
+ * @param {string} fileName - The name of the CSV file to be parsed.
+ * @returns {Promise<Record<string, TaxExemptOrganization>>} A promise that resolves
+ *          to a record of TaxExemptOrganization objects, where the keys are the EINs.
+ * @throws {Error} Throws an error if the file cannot be read or parsed.
+ */
+
 export const parseEoFile = async (fileName: string): Promise<Record<string, TaxExemptOrganization>> => {
     const currentPath = join(__dirname, "../data/raw", fileName);
 
