@@ -137,7 +137,7 @@ export const createCrawler = (maxRequestsPerCrawl: number = 5, headless: boolean
                     }
                 });
 
-                return element.innerText.trim();
+                return element.innerText.replace(/\n/g, " ").trim();
             });
 
             // Save results as JSON to ./storage/datasets/default

@@ -1,31 +1,35 @@
 import { TaxExemptOrganization, SearchResult, Socials } from "../types";
 import { findTaxExemptOrgs } from "../db/mongo";
 import { parse } from "tldts";
+import { createCrawler, getLatestCrawlData } from "../utils/crawlee";
+import { confirmWebsite } from "./chat";
 
 export const parseSearchResults = async () => {
     const orgs: TaxExemptOrganization[] = await findTaxExemptOrgs(1, { searchResults: { $exists: true } });
+    const oneTimeCrawler = createCrawler(1);
+    const crawler = createCrawler(5);
 
     for (const org of orgs) {
-        console.log("org:", org.name);
+        // Based on the search results, we create an acronym, try to parse out socials,
+        // and find the URLs most likely to be the org's website
         const acronym = createAcronym(org.name);
-        console.log("acronym:", acronym);
-        console.log("city & state:", org.city, org.state);
-
         const searchResult: SearchResult[] = org.searchResults || [];
-        const socials: Socials = extractSocials(searchResult);
-
+        const socials: Socials = extractSocialsFromSearchResults(searchResult);
         console.log("Socials:", socials);
 
-        try {
-            const bestUrls = findBestUrls(org, acronym);
-            console.log("Best URLs:", bestUrls);
-        } catch (error) {
-            console.error("Error finding best URLs:", error);
+        const bestUrls = findBestUrls(org, acronym);
+        console.log("Best URLs:", bestUrls);
+        for (const url of bestUrls) {
+            await oneTimeCrawler.run([url]);
         }
+        const crawlItems = (await getLatestCrawlData()).items;
+        console.log("Crawl items:", crawlItems);
+        const { title, url, textContent, socialMediaUrls } = crawlItems[1];
+        await confirmWebsite(url, title, textContent, org, socialMediaUrls);
     }
 };
 
-const extractSocials = (searchResults: SearchResult[]): Socials => {
+const extractSocialsFromSearchResults = (searchResults: SearchResult[]): Socials => {
     const socialUrls = {
         linkedin: /https?:\/\/(www\.)?linkedin\.com\/company\/?/,
         youtube: /https?:\/\/(www\.)?youtube\.com\/channel\/?/,
@@ -109,6 +113,7 @@ const findBestUrls = (org: TaxExemptOrganization, acronym: string): string[] => 
         /(www\.)?irs\.gov/,
         /(www\.)?sec\.gov/,
         /(www\.)?zillow\.com/,
+        /(www\.)?volunteermatch\.org/,
     ];
 
     if (org.searchResults) {
@@ -128,13 +133,18 @@ const findBestUrls = (org: TaxExemptOrganization, acronym: string): string[] => 
         const scoredResults = filteredResults.map((result) => {
             return {
                 link: result.displayLink,
+                fullLink: result.link,
                 score: scoreUrl(result.displayLink, org.name, acronym),
             };
         });
-
+        // console.log("Scored results:", scoredResults);
         scoredResults.sort((a, b) => b.score - a.score);
-        return scoredResults.map((result) => result.link);
-    } else {
-        throw new Error("No search results");
+        return scoredResults.map((result) => {
+            result.link;
+            return result.fullLink.startsWith("https://") || result.fullLink.startsWith("http://")
+                ? `https://${result.link}`
+                : `http://${result.link}`;
+        });
     }
+    return [];
 };

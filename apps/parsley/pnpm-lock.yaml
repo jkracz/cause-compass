@@ -28,7 +28,7 @@ importers:
         version: 5.0.7
       openai:
         specifier: ^4.56.0
-        version: 4.56.0
+        version: 4.56.0(zod@3.23.8)
       playwright:
         specifier: ^1.46.1
         version: 1.46.1
@@ -39,15 +39,18 @@ importers:
         specifier: ^4.3.1
         version: 4.3.1
       tldts:
-        specifier: ^6.1.39
-        version: 6.1.39
+        specifier: ^6.1.40
+        version: 6.1.40
       yargs:
         specifier: ^17.7.2
         version: 17.7.2
+      zod:
+        specifier: ^3.23.8
+        version: 3.23.8
     devDependencies:
       '@types/node':
-        specifier: ^22.4.0
-        version: 22.4.0
+        specifier: ^22.4.1
+        version: 22.4.1
       tsx:
         specifier: ^4.17.0
         version: 4.17.0
@@ -360,8 +363,8 @@ packages:
   '@types/node@18.19.4':
     resolution: {integrity: sha512-xNzlUhzoHotIsnFoXmJB+yWmBvFZgKCI9TtPIEdYIMM1KWfwuY8zh7wvc1u1OAXlC7dlf6mZVx/s+Y5KfFz19A==}
 
-  '@types/node@22.4.0':
-    resolution: {integrity: sha512-49AbMDwYUz7EXxKU/r7mXOsxwFr4BYbvB7tWYxVuLdb2ibd30ijjXINSMAHiEEZk5PCRBmW1gUeisn2VMKt3cQ==}
+  '@types/node@22.4.1':
+    resolution: {integrity: sha512-1tbpb9325+gPnKK0dMm+/LMriX0vKxf6RnB0SZUqfyVkQ4fMgUSySqhxE/y8Jvs4NyF1yHzTfG9KlnkIODxPKg==}
 
   '@types/sax@1.2.7':
     resolution: {integrity: sha512-rO73L89PJxeYM3s3pPPjiPgVVcymqU490g0YO5n5By0k2Erzj6tay/4lr1CHAAU4JyOWd1rpQ8bCf6cZfHU96A==}
@@ -1381,11 +1384,11 @@ packages:
   title-case@4.3.1:
     resolution: {integrity: sha512-VnPxQ+/j0X2FZ4ceGq1oLruTLjtN5Ul4sam5ypd4mDZLm1eHwkwip1gLxqhON/j4qyTlUlfPKslE/t4NPSlxhg==}
 
-  tldts-core@6.1.39:
-    resolution: {integrity: sha512-+Qib8VaRq6F56UjP4CJXd30PI4s3hFumDywUlsbiEWoA8+lfAaWNTLr3e6/zZOgHzVyon4snHaybeFHd8C0j/A==}
+  tldts-core@6.1.40:
+    resolution: {integrity: sha512-csGlF+5GtK0qDvkqhZHbMflIvvMqs7JS3Y3KMrfBuhDAjI+oqH90p4KYMeiCPVF7akTeNoLgFaQ+aPZcGBc1kg==}
 
-  tldts@6.1.39:
-    resolution: {integrity: sha512-UCGXcPhYIUELc+FifEeDXYkoTWNU6iOEdM/Q5LsvkTz2SnpQ3q5onA+DiiZlR5YDskMhfK1YBQDeWL7PH9/miQ==}
+  tldts@6.1.40:
+    resolution: {integrity: sha512-SAvDKQxzqoi2gaC14XdC1egLtBqcCnYTe/hKM07FMXSTKw4Tti3fRDcZopWJGAhXK0H6LfuM0QWwZhECUvLKTg==}
     hasBin: true
 
   tmp@0.0.33:
@@ -1562,6 +1565,9 @@ packages:
     resolution: {integrity: sha512-cYVsTjKl8b+FrnidjibDWskAv7UKOfcwaVZdp/it9n1s9fU3IkgDbhdIRKCW4JDsAlECJY0ytoVPT3sK6kideA==}
     engines: {node: '>=18'}
 
+  zod@3.23.8:
+    resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
+
 snapshots:
 
   '@apify/consts@2.29.0': {}
@@ -1600,7 +1606,7 @@ snapshots:
       fs-extra: 11.2.0
       got-scraping: 4.0.6
       ow: 0.28.2
-      tldts: 6.1.39
+      tldts: 6.1.40
       tslib: 2.6.3
       type-fest: 4.23.0
 
@@ -1681,7 +1687,7 @@ snapshots:
       ow: 0.28.2
       stream-chain: 2.2.5
       stream-json: 1.8.0
-      tldts: 6.1.39
+      tldts: 6.1.40
       tough-cookie: 4.1.4
       tslib: 2.6.3
       type-fest: 4.23.0
@@ -1919,26 +1925,26 @@ snapshots:
 
   '@types/jsdom@21.1.7':
     dependencies:
-      '@types/node': 22.4.0
+      '@types/node': 22.4.1
       '@types/tough-cookie': 4.0.5
       parse5: 7.1.2
 
   '@types/node-fetch@2.6.10':
     dependencies:
-      '@types/node': 22.4.0
+      '@types/node': 22.4.1
       form-data: 4.0.0
 
   '@types/node@18.19.4':
     dependencies:
       undici-types: 5.26.5
 
-  '@types/node@22.4.0':
+  '@types/node@22.4.1':
     dependencies:
       undici-types: 6.19.6
 
   '@types/sax@1.2.7':
     dependencies:
-      '@types/node': 22.4.0
+      '@types/node': 22.4.1
 
   '@types/tough-cookie@4.0.5': {}
 
@@ -2764,7 +2770,7 @@ snapshots:
     dependencies:
       mimic-fn: 2.1.0
 
-  openai@4.56.0:
+  openai@4.56.0(zod@3.23.8):
     dependencies:
       '@types/node': 18.19.4
       '@types/node-fetch': 2.6.10
@@ -2773,6 +2779,8 @@ snapshots:
       form-data-encoder: 1.7.2
       formdata-node: 4.4.1
       node-fetch: 2.7.0
+    optionalDependencies:
+      zod: 3.23.8
     transitivePeerDependencies:
       - encoding
 
@@ -3029,11 +3037,11 @@ snapshots:
 
   title-case@4.3.1: {}
 
-  tldts-core@6.1.39: {}
+  tldts-core@6.1.40: {}
 
-  tldts@6.1.39:
+  tldts@6.1.40:
     dependencies:
-      tldts-core: 6.1.39
+      tldts-core: 6.1.40
 
   tmp@0.0.33:
     dependencies:
@@ -3183,3 +3191,5 @@ snapshots:
   yocto-queue@0.1.0: {}
 
   yoctocolors-cjs@2.1.2: {}
+
+  zod@3.23.8: {}
