@@ -1,13 +1,17 @@
 import { google } from "googleapis";
+import { GoogleSearchApiKeyType } from "../types";
 import "dotenv/config";
 
-const searchEngineId: string | undefined = process.env.SEARCH_ENGINE_ID;
-const searchApiKey = process.env.GOOGLE_SEARCH_API_KEY;
-if (!searchEngineId) {
-    throw new Error("Missing SEARCH_ENGINE_ID environment variable");
-} else if (!searchApiKey) {
-    throw new Error("Missing GOOGLE_SEARCH_API_KEY environment variable");
-}
+const keySets = {
+    [GoogleSearchApiKeyType.CC]: {
+        searchEngineId: process.env.SEARCH_ENGINE_ID,
+        searchApiKey: process.env.GOOGLE_SEARCH_API_KEY,
+    },
+    [GoogleSearchApiKeyType.PERSONAL]: {
+        searchEngineId: process.env.SEARCH_ENGINE_ID_PERSONAL,
+        searchApiKey: process.env.GOOGLE_SEARCH_API_KEY_PERSONAL,
+    },
+} as const;
 
 /**
  * Performs a Google search using the Google Custom Search API.
@@ -17,11 +21,18 @@ if (!searchEngineId) {
  * ID and API key to authenticate the request.
  *
  * @param {string} query - The search query string to be sent to the Google Custom Search API.
+ * @param {GoogleSearchApiKeyType} keyFrom - The Google API key to use for the searching. Helpful when respecting the free limits.
  * @returns {Promise<any>} A promise that resolves to the search results returned by the API.
  * @throws {Error} Throws an error if the API request fails.
  */
+export const googleSearch = async (query: string, keyFrom: GoogleSearchApiKeyType): Promise<any> => {
+    const { searchEngineId, searchApiKey } = keySets[keyFrom];
+    if (!searchEngineId) {
+        throw new Error("Missing SEARCH_ENGINE_ID environment variable");
+    } else if (!searchApiKey) {
+        throw new Error("Missing GOOGLE_SEARCH_API_KEY environment variable");
+    }
 
-export const googleSearch = async (query: string): Promise<any> => {
     const customsearch = google.customsearch("v1");
     try {
         const res = await customsearch.cse.list({

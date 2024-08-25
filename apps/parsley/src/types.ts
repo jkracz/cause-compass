@@ -134,3 +134,8 @@ export interface Socials {
     threads?: string;
     facebook?: string;
 }
+
+export enum GoogleSearchApiKeyType {
+    CC = "CC",
+    PERSONAL = "PERSONAL",
+}
