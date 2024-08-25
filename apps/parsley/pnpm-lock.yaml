@@ -39,8 +39,8 @@ importers:
         specifier: ^4.3.1
         version: 4.3.1
       tldts:
-        specifier: ^6.1.40
-        version: 6.1.40
+        specifier: ^6.1.41
+        version: 6.1.41
       yargs:
         specifier: ^17.7.2
         version: 17.7.2
@@ -49,11 +49,11 @@ importers:
         version: 3.23.8
     devDependencies:
       '@types/node':
-        specifier: ^22.4.1
-        version: 22.4.1
+        specifier: ^22.5.0
+        version: 22.5.0
       tsx:
-        specifier: ^4.17.0
-        version: 4.17.0
+        specifier: ^4.18.0
+        version: 4.18.0
 
 packages:
 
@@ -363,8 +363,8 @@ packages:
   '@types/node@18.19.4':
     resolution: {integrity: sha512-xNzlUhzoHotIsnFoXmJB+yWmBvFZgKCI9TtPIEdYIMM1KWfwuY8zh7wvc1u1OAXlC7dlf6mZVx/s+Y5KfFz19A==}
 
-  '@types/node@22.4.1':
-    resolution: {integrity: sha512-1tbpb9325+gPnKK0dMm+/LMriX0vKxf6RnB0SZUqfyVkQ4fMgUSySqhxE/y8Jvs4NyF1yHzTfG9KlnkIODxPKg==}
+  '@types/node@22.5.0':
+    resolution: {integrity: sha512-DkFrJOe+rfdHTqqMg0bSNlGlQ85hSoh2TPzZyhHsXnMtligRWpxUySiyw8FY14ITt24HVCiQPWxS3KO/QlGmWg==}
 
   '@types/sax@1.2.7':
     resolution: {integrity: sha512-rO73L89PJxeYM3s3pPPjiPgVVcymqU490g0YO5n5By0k2Erzj6tay/4lr1CHAAU4JyOWd1rpQ8bCf6cZfHU96A==}
@@ -1384,11 +1384,11 @@ packages:
   title-case@4.3.1:
     resolution: {integrity: sha512-VnPxQ+/j0X2FZ4ceGq1oLruTLjtN5Ul4sam5ypd4mDZLm1eHwkwip1gLxqhON/j4qyTlUlfPKslE/t4NPSlxhg==}
 
-  tldts-core@6.1.40:
-    resolution: {integrity: sha512-csGlF+5GtK0qDvkqhZHbMflIvvMqs7JS3Y3KMrfBuhDAjI+oqH90p4KYMeiCPVF7akTeNoLgFaQ+aPZcGBc1kg==}
+  tldts-core@6.1.41:
+    resolution: {integrity: sha512-SkwZgo1ZzMp2ziMBwci5VBnLR9VywCi02jSgMX5TO5kf9fdaBsxZkblLff3NlJNTcH0vfvEsgw2B7jVR556Vgw==}
 
-  tldts@6.1.40:
-    resolution: {integrity: sha512-SAvDKQxzqoi2gaC14XdC1egLtBqcCnYTe/hKM07FMXSTKw4Tti3fRDcZopWJGAhXK0H6LfuM0QWwZhECUvLKTg==}
+  tldts@6.1.41:
+    resolution: {integrity: sha512-RNpUkL5fYD2DTQQCdr8QMDp6UL0ThtpXT3q3+qPE05dIT+RK2I3M0VByVbQN1dEhLUGzimivVwxK2By9epLk6w==}
     hasBin: true
 
   tmp@0.0.33:
@@ -1417,8 +1417,8 @@ packages:
   tslib@2.6.3:
     resolution: {integrity: sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==}
 
-  tsx@4.17.0:
-    resolution: {integrity: sha512-eN4mnDA5UMKDt4YZixo9tBioibaMBpoxBkD+rIPAjVmYERSG0/dWEY1CEFuV89CgASlKL499q8AhmkMnnjtOJg==}
+  tsx@4.18.0:
+    resolution: {integrity: sha512-a1jaKBSVQkd6yEc1/NI7G6yHFfefIcuf3QJST7ZEyn4oQnxLYrZR5uZAM8UrwUa3Ge8suiZHcNS1gNrEvmobqg==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
@@ -1606,7 +1606,7 @@ snapshots:
       fs-extra: 11.2.0
       got-scraping: 4.0.6
       ow: 0.28.2
-      tldts: 6.1.40
+      tldts: 6.1.41
       tslib: 2.6.3
       type-fest: 4.23.0
 
@@ -1687,7 +1687,7 @@ snapshots:
       ow: 0.28.2
       stream-chain: 2.2.5
       stream-json: 1.8.0
-      tldts: 6.1.40
+      tldts: 6.1.41
       tough-cookie: 4.1.4
       tslib: 2.6.3
       type-fest: 4.23.0
@@ -1925,26 +1925,26 @@ snapshots:
 
   '@types/jsdom@21.1.7':
     dependencies:
-      '@types/node': 22.4.1
+      '@types/node': 22.5.0
       '@types/tough-cookie': 4.0.5
       parse5: 7.1.2
 
   '@types/node-fetch@2.6.10':
     dependencies:
-      '@types/node': 22.4.1
+      '@types/node': 22.5.0
       form-data: 4.0.0
 
   '@types/node@18.19.4':
     dependencies:
       undici-types: 5.26.5
 
-  '@types/node@22.4.1':
+  '@types/node@22.5.0':
     dependencies:
       undici-types: 6.19.6
 
   '@types/sax@1.2.7':
     dependencies:
-      '@types/node': 22.4.1
+      '@types/node': 22.5.0
 
   '@types/tough-cookie@4.0.5': {}
 
@@ -3037,11 +3037,11 @@ snapshots:
 
   title-case@4.3.1: {}
 
-  tldts-core@6.1.40: {}
+  tldts-core@6.1.41: {}
 
-  tldts@6.1.40:
+  tldts@6.1.41:
     dependencies:
-      tldts-core: 6.1.40
+      tldts-core: 6.1.41
 
   tmp@0.0.33:
     dependencies:
@@ -3071,7 +3071,7 @@ snapshots:
 
   tslib@2.6.3: {}
 
-  tsx@4.17.0:
+  tsx@4.18.0:
     dependencies:
       esbuild: 0.23.0
       get-tsconfig: 4.7.5

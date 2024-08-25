@@ -6,11 +6,12 @@ import { PlaywrightCrawler, Dataset } from "crawlee";
  * Creates a PlaywrightCrawler instance configured for web crawling.
  *
  * @param {number} maxRequestsPerCrawl - The maximum number of requests to be made per crawl. Default is 5.
- * @param {boolean} headless - Whether to run the browser in headless mode. False means the browser will be visible. Default is true.
+ * @param {boolean} headless - Controls if the browser runs in headless mode. False means the browser will be visible. Default is true.
+ * @param {boolean} addLinks - Controls the queuing of links found on the page. Default is true.
  * @returns {PlaywrightCrawler} A configured instance of PlaywrightCrawler.
  */
 
-export const createCrawler = (maxRequestsPerCrawl: number = 5, headless: boolean = true) => {
+export const createCrawler = (maxRequestsPerCrawl: number = 5, headless: boolean = true, addLinks: boolean = true) => {
     return new PlaywrightCrawler({
         // Use the requestHandler to process each of the crawled pages.
         async requestHandler({ request, page, enqueueLinks, log }) {
@@ -118,8 +119,22 @@ export const createCrawler = (maxRequestsPerCrawl: number = 5, headless: boolean
 
             const title = await page.title();
             const textContent = await page.$eval("body", (element) => {
-                const excludedTags = ["NAV", "HEADER", "FOOTER", "A"];
-                const popUpSelectors = [".modal", ".overlay", ".popup"];
+                const excludedTags = [
+                    "nav",
+                    "header",
+                    "footer",
+                    "button",
+                    "form",
+                    "input",
+                    "textarea",
+                    "select",
+                    "aside",
+                    "script",
+                    "video",
+                    "table",
+                    "img",
+                ];
+                const popUpSelectors = [".modal", ".overlay", ".popup", "[role='dialog']", ".cookie-banner"];
 
                 // Remove elements matching excluded tags
                 excludedTags.forEach((tag) => {
@@ -137,7 +152,35 @@ export const createCrawler = (maxRequestsPerCrawl: number = 5, headless: boolean
                     }
                 });
 
-                return element.innerText.replace(/\n/g, " ").trim();
+                // Remove elements with specific classes
+                const regexClassSelectors = [/header/i, /footer/i, /menu/i, /btn/i, /cookie/i];
+                regexClassSelectors.forEach((regex) => {
+                    const elements = element.querySelectorAll("*");
+                    elements.forEach((el) => {
+                        // Ensure className is a string and split into individual class names
+                        const classNames =
+                            el.className && typeof el.className === "string" ? el.className.split(/\s+/) : [];
+                        if (classNames.some((className) => regex.test(className))) {
+                            el.remove();
+                        }
+                    });
+                });
+
+                // Get the remaining text content and clean it up
+                let content = element.innerText
+                    .replace(/\n/g, " ") // Remove multiple newlines
+                    .replace(/\t/g, " ") // Replace tabs with spaces
+                    .replace(/ {2,}/g, " ") // Replace multiple spaces with a single space
+                    .replace(/\s+([.,!?;:])/g, "$1") // Remove space before punctuation
+                    .replace(/^\s+|\s+$/g, "") // Trim leading and trailing whitespace
+                    .trim();
+
+                // Final clean-up for any lingering extra spaces or formatting issues
+                content = content.replace(/\s{2,}/g, " ").trim();
+
+                return content;
+
+                // return element.innerText.replace(/\n/g, " ").trim();
             });
 
             // Save results as JSON to ./storage/datasets/default
@@ -152,9 +195,10 @@ export const createCrawler = (maxRequestsPerCrawl: number = 5, headless: boolean
                 logoLinks,
             });
 
-            // Extract links from the current page
-            // and add them to the crawling queue.
-            await enqueueLinks();
+            if (addLinks) {
+                // Extract links from the current page and add them to the crawling queue.
+                await enqueueLinks();
+            }
         },
         headless: headless,
         // Let's limit our crawls to make our tests shorter and safer.
