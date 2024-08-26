@@ -6,9 +6,8 @@ import "dotenv/config";
 
 // Define multiple keys
 const apiKeys = [
-    GoogleSearchApiKeyType.CC,
+    // GoogleSearchApiKeyType.CC,
     GoogleSearchApiKeyType.PERSONAL,
-    // Add more keys here
 ];
 
 const googleSearchOrgs = async () => {
@@ -59,22 +58,26 @@ const googleSearchOrgs = async () => {
             const searchResults = await googleSearch(searchQuery, keyType);
             org.searchResults = searchResults?.items || searchResults;
             org.searchedAt = new Date().toISOString();
-            if (org._id) processedIds.push(org._id);
         });
+
+        // Wait for all searches to complete
         await Promise.all(searchPromises);
+
+        // Bulk update after each key's search
+        const processedOrgs = orgs.slice(startIndex, endIndex);
+        const processedIds = processedOrgs.map((org) => org._id).filter(Boolean) as ObjectId[];
+
+        await bulkUpdateOrgs(processedOrgs);
+        console.log(`Documents IDs Processed for ${keyType}:`, processedIds);
     };
 
-    // Distribute the search across all keys
-    const searchTasks = apiKeys.map((key, index) => {
-        const start = index * SEARCH_LIMIT_PER_KEY;
+    // Process and save results for each key sequentially
+    for (let i = 0; i < apiKeys.length; i++) {
+        const keyType = apiKeys[i];
+        const start = i * SEARCH_LIMIT_PER_KEY;
         const end = start + SEARCH_LIMIT_PER_KEY;
-        return searchOrgsWithKey(start, end, key);
-    });
-
-    await Promise.all(searchTasks);
-
-    await bulkUpdateOrgs(orgs);
-    console.log("Documents IDs Processed:", processedIds);
+        await searchOrgsWithKey(start, end, keyType);
+    }
 };
 
 googleSearchOrgs().catch(console.error);
