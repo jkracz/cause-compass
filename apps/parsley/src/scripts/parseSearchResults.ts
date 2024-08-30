@@ -5,11 +5,12 @@ import { createCrawler, getLatestCrawlData } from "../utils/crawlee";
 import { confirmWebsite } from "./chat";
 
 export const parseSearchResults = async () => {
-    const orgs: TaxExemptOrganization[] = await findTaxExemptOrgs(1, { searchResults: { $exists: true } });
-    const oneTimeCrawler = createCrawler(1);
+    const orgs: TaxExemptOrganization[] = await findTaxExemptOrgs(20, { searchResults: { $exists: true } });
+    const confirmationCrawler = createCrawler(2, false);
     const crawler = createCrawler(5);
 
     for (const org of orgs) {
+        console.log(org.name);
         // Based on the search results, we create an acronym, try to parse out socials,
         // and find the URLs most likely to be the org's website
         const acronym = createAcronym(org.name);
@@ -19,13 +20,13 @@ export const parseSearchResults = async () => {
 
         const bestUrls = findBestUrls(org, acronym);
         console.log("Best URLs:", bestUrls);
-        for (const url of bestUrls) {
-            await oneTimeCrawler.run([url]);
-        }
-        const crawlItems = (await getLatestCrawlData()).items;
-        console.log("Crawl items:", crawlItems);
-        const { title, url, textContent, socialMediaUrls } = crawlItems[1];
-        await confirmWebsite(url, title, textContent, org, socialMediaUrls);
+
+        // await confirmationCrawler.run(bestUrls);
+        // const crawlItems = (await getLatestCrawlData()).items;
+        // console.log("Crawl items:", crawlItems);
+        // const { title, url, textContent, socialMediaUrls } = crawlItems[1];
+
+        // await confirmWebsite(url, title, textContent, org, socialMediaUrls);
     }
 };
 

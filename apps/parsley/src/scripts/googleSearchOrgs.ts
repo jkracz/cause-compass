@@ -5,7 +5,12 @@ import { googleSearch } from "../utils/googleSearch";
 import "dotenv/config";
 
 // Define multiple keys
-const apiKeys = [GoogleSearchApiKeyType.CC, GoogleSearchApiKeyType.PERSONAL];
+const apiKeys = [
+    GoogleSearchApiKeyType.CC,
+    GoogleSearchApiKeyType.PERSONAL,
+    GoogleSearchApiKeyType.JKRACZ,
+    GoogleSearchApiKeyType.SF,
+];
 
 const googleSearchOrgs = async () => {
     const orgFilter = {

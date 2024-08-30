@@ -6,7 +6,6 @@ import { TaxExemptOrganization } from "../types";
 const WebsiteConfirmation = z.object({
     isCorrectWebiste: z.boolean(),
     reasoning: z.string(),
-    mission: z.string(),
 });
 export const confirmWebsite = async (
     webpageUrl: string,
@@ -29,7 +28,7 @@ export const confirmWebsite = async (
                 {
                     role: "system",
                     content:
-                        "You are an expert at analyzing and interpreting a webpage's content. You will be given unstructured text from a webpage and some information about a nonprofit organization. Your task is to determine whether the webpage belongs to the organization, provide a mission statement for the organization based on the webpage content, and explain your reasoning, all within the given structure.",
+                        "You are an expert at analyzing and interpreting a webpage's content. You will be given unstructured text from some webpages and some information about a nonprofit organization. Your task is to determine whether the webpage belongs to the organization and explain your reasoning for your decision, all within the given structure. Use all of the data at your disposal to make a thorough and accurate choice.",
                 },
                 {
                     role: "user",
@@ -40,7 +39,7 @@ export const confirmWebsite = async (
                           state: ${state}, 
                           ntee code OR activity code description: ${codeDescription};
                           
-                          WEBPAGE CONTENT: 
+                          HOMEPAGE CONTENT: 
                           webpage url: ${webpageUrl},
                           webpage title: ${webpageTitle},
                           webpage text: ${webpageText},

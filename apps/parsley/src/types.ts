@@ -138,4 +138,6 @@ export interface Socials {
 export enum GoogleSearchApiKeyType {
     CC = "CC",
     PERSONAL = "PERSONAL",
+    JKRACZ = "JKRACZ",
+    SF = "SF",
 }

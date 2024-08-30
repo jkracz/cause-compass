@@ -1,19 +1,17 @@
-import { PlaywrightCrawler, Dataset } from "crawlee";
-
-// PlaywrightCrawler crawls the web using a headless browser controlled by the Playwright library.
+import { PlaywrightCrawler, Dataset, RequestQueue, EnqueueLinksOptions } from "crawlee";
 
 /**
  * Creates a PlaywrightCrawler instance configured for web crawling.
  *
  * @param {number} maxRequestsPerCrawl - The maximum number of requests to be made per crawl. Default is 5.
- * @param {boolean} headless - Controls if the browser runs in headless mode. False means the browser will be visible. Default is true.
  * @param {boolean} addLinks - Controls the queuing of links found on the page. Default is true.
  * @returns {PlaywrightCrawler} A configured instance of PlaywrightCrawler.
  */
 
-export const createCrawler = (maxRequestsPerCrawl: number = 5, headless: boolean = true, addLinks: boolean = true) => {
+export const createCrawler = async (maxRequestsPerCrawl: number = 5, addLinks: boolean = true) => {
+    const requestQueue = await RequestQueue.open();
     return new PlaywrightCrawler({
-        // Use the requestHandler to process each of the crawled pages.
+        requestQueue,
         async requestHandler({ request, page, enqueueLinks, log }) {
             // Find social media URLs
             const socialMediaUrls: string[] = await page.evaluate(() => {
@@ -117,6 +115,46 @@ export const createCrawler = (maxRequestsPerCrawl: number = 5, headless: boolean
                 return Array.from(logos);
             });
 
+            // Find about links
+            const aboutLinks = await page.evaluate(() => {
+                const aboutPatterns = [/about/i, /about-us/i, /history/i];
+                const currentDomain = window.location.hostname;
+                const links: string[] = [];
+                const seenLinks = new Set<string>();
+
+                document.querySelectorAll("a").forEach((element) => {
+                    const href = (element as HTMLAnchorElement).href;
+
+                    // Check if the URL matches the "about" patterns
+                    if (aboutPatterns.some((pattern) => pattern.test(href))) {
+                        const url = new URL(href);
+                        const pathSegments = url.pathname.split("/").filter((segment) => segment !== "");
+
+                        // Convert URL to lowercase for comparison and filtering
+                        const lowerCaseHref = href.toLowerCase();
+
+                        if (
+                            url.hostname === currentDomain && // Check if it's the same domain
+                            !href.includes("#") && // Exclude links with #
+                            pathSegments.length <= 1 && // Limit to one directory depth
+                            !seenLinks.has(lowerCaseHref) // Exclude duplicates
+                        ) {
+                            links.push(href);
+                            seenLinks.add(lowerCaseHref);
+                        }
+                    }
+                });
+
+                return links;
+            });
+            // Add the aboutLinks to the front of the queue, but only if they haven't been handled yet
+            for (const aboutLink of aboutLinks) {
+                const alreadyHandled = await requestQueue.isHandled({ url: aboutLink });
+                if (!alreadyHandled) {
+                    await requestQueue.addRequest({ url: aboutLink }, { forefront: true });
+                }
+            }
+
             const title = await page.title();
             const textContent = await page.$eval("body", (element) => {
                 const excludedTags = [
@@ -179,11 +217,8 @@ export const createCrawler = (maxRequestsPerCrawl: number = 5, headless: boolean
                 content = content.replace(/\s{2,}/g, " ").trim();
 
                 return content;
-
-                // return element.innerText.replace(/\n/g, " ").trim();
             });
 
-            // Save results as JSON to ./storage/datasets/default
             await Dataset.pushData({
                 title,
                 url: request.loadedUrl,
@@ -193,14 +228,14 @@ export const createCrawler = (maxRequestsPerCrawl: number = 5, headless: boolean
                 donationLinks,
                 emailAddresses,
                 logoLinks,
+                aboutLinks,
             });
 
             if (addLinks) {
-                // Extract links from the current page and add them to the crawling queue.
                 await enqueueLinks();
             }
         },
-        headless: headless,
+        headless: true,
         // Let's limit our crawls to make our tests shorter and safer.
         maxRequestsPerCrawl: maxRequestsPerCrawl,
     });
