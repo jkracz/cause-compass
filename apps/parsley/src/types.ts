@@ -141,3 +141,15 @@ export enum GoogleSearchApiKeyType {
     JKRACZ = "JKRACZ",
     SF = "SF",
 }
+
+export interface CrawlItem {
+    title: string;
+    url: string;
+    textContent: string;
+    socialMediaUrls?: string[];
+    hasNewsletterSignup?: boolean;
+    donationLinks?: string[];
+    emailAddresses?: string[];
+    logoLinks?: string[];
+    aboutLinks?: string[];
+}

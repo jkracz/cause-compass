@@ -1,26 +1,29 @@
 import { openai } from "../utils/openAi";
 import { z } from "zod";
 import { zodResponseFormat } from "openai/helpers/zod";
-import { TaxExemptOrganization } from "../types";
+import { TaxExemptOrganization, CrawlItem } from "../types";
 
 const WebsiteConfirmation = z.object({
-    isCorrectWebiste: z.boolean(),
+    hasCorrectWebsite: z.boolean(),
+    correctWebsiteUrl: z.string().optional(),
     reasoning: z.string(),
 });
-export const confirmWebsite = async (
-    webpageUrl: string,
-    webpageTitle: string,
-    webpageText: string,
-    org: TaxExemptOrganization,
-    socialMediaUrls: string[]
-) => {
+export const confirmWebsite = async (crawlItems: CrawlItem[], org: TaxExemptOrganization) => {
     const { name, ein, city, state, nteeCode, activityCodes } = org;
+
     let codeDescription = "";
     if (nteeCode) {
         codeDescription = nteeCode.description;
     } else if (activityCodes && activityCodes.length > 0) {
         codeDescription = activityCodes[0].description;
     }
+
+    const websiteData = crawlItems.map((item) => ({
+        title: item.title,
+        url: item.url,
+        textContent: item.textContent,
+    }));
+
     try {
         const completion = await openai.beta.chat.completions.parse({
             model: "gpt-4o-mini",
@@ -28,7 +31,7 @@ export const confirmWebsite = async (
                 {
                     role: "system",
                     content:
-                        "You are an expert at analyzing and interpreting a webpage's content. You will be given unstructured text from some webpages and some information about a nonprofit organization. Your task is to determine whether the webpage belongs to the organization and explain your reasoning for your decision, all within the given structure. Use all of the data at your disposal to make a thorough and accurate choice.",
+                        "You are an expert at analyzing and interpreting webpage content. You will be given unstructured text from several webpages and information about a nonprofit organization. Some of these webpages may come from the same website. Your task is to determine the base URL of the correct website for the organization using all the provided information. You must explain your reasoning for your decision, following the given structure. It is possible that none of the provided webpages belong to the correct website, and you should indicate that if so.",
                 },
                 {
                     role: "user",
@@ -39,11 +42,19 @@ export const confirmWebsite = async (
                           state: ${state}, 
                           ntee code OR activity code description: ${codeDescription};
                           
-                          HOMEPAGE CONTENT: 
-                          webpage url: ${webpageUrl},
-                          webpage title: ${webpageTitle},
-                          webpage text: ${webpageText},
-                          social media links pulled from the webpage: ${socialMediaUrls.toString()};`,
+                          WEBPAGE CONTENT TO ANALYZE: 
+                          ${websiteData
+                              .map(
+                                  (item, index) => `{
+                          Page ${index + 1}: 
+                          webpage url: ${item.url}, 
+                          webpage title: ${item.title}, 
+                          webpage text: ${item.textContent}, 
+                          }
+                          `
+                              )
+                              .join("\n")}
+                          `,
                 },
             ],
             response_format: zodResponseFormat(WebsiteConfirmation, "website-confirmation"),
@@ -60,10 +71,8 @@ export const confirmWebsite = async (
         }
     } catch (e: any) {
         if (e.constructor.name == "LengthFinishReasonError") {
-            // Retry with a higher max tokens
             console.log("Too many tokens: ", e.message);
         } else {
-            // Handle other exceptions
             console.log("An error occurred: ", e.message);
         }
     }

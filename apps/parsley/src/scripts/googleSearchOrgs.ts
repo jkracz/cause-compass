@@ -52,7 +52,6 @@ const googleSearchOrgs = async () => {
     const totalSearchLimit = SEARCH_LIMIT_PER_KEY * apiKeys.length;
 
     const orgs: TaxExemptOrganization[] = await findTaxExemptOrgs(totalSearchLimit, orgFilter);
-    const processedIds: ObjectId[] = [];
 
     const searchOrgsWithKey = async (startIndex: number, endIndex: number, keyType: GoogleSearchApiKeyType) => {
         const searchPromises = orgs.slice(startIndex, endIndex).map(async (org) => {

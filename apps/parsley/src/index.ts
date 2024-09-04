@@ -1,20 +1,22 @@
 import "dotenv/config";
 import { parseSearchResults } from "./scripts/parseSearchResults";
-import { createCrawler, getLatestCrawlData } from "./utils/crawlee";
 
 const main = async () => {
-    // await parseSearchResults();
+    await parseSearchResults();
 
-    const crawler = await createCrawler(10, false);
-    await crawler.run([
-        "https://www.makernexus.org/",
-        "https://myhero.com/",
-        "https://www.duoduoproject.org/",
-        "https://www.fabmo.org/",
-        "https://www.killingmylobster.com/",
-    ]);
-    const data = await getLatestCrawlData();
-    console.log(data);
+    // const crawler = await createCrawler(10, false);
+    // await crawler.run([
+    //     "https://www.makernexus.org/",
+    //     "https://myhero.com/",
+    //     "https://www.duoduoproject.org/",
+    //     "https://www.fabmo.org/",
+    //     "https://www.killingmylobster.com/",
+    // ]);
+    // const data = await getLatestCrawlData();
+    // console.log(data);
+
+    // const crawler2 = await createCrawler(20, false);
+    // await crawler2.run(["https://www.killingmylobster.com/"]);
 
     // const crawler = createCrawler(5);
     // await crawler.run(["https://www.killingmylobster.com/"]);

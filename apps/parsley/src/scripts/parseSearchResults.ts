@@ -1,32 +1,32 @@
-import { TaxExemptOrganization, SearchResult, Socials } from "../types";
+import { TaxExemptOrganization, SearchResult, Socials, CrawlItem } from "../types";
 import { findTaxExemptOrgs } from "../db/mongo";
 import { parse } from "tldts";
-import { createCrawler, getLatestCrawlData } from "../utils/crawlee";
+import { createCrawler, getCrawlDataAsArray } from "../utils/crawlee";
 import { confirmWebsite } from "./chat";
 
 export const parseSearchResults = async () => {
-    const orgs: TaxExemptOrganization[] = await findTaxExemptOrgs(20, { searchResults: { $exists: true } });
-    const confirmationCrawler = createCrawler(2, false);
-    const crawler = createCrawler(5);
+    const orgs: TaxExemptOrganization[] = await findTaxExemptOrgs(1, { searchResults: { $exists: true } });
 
     for (const org of orgs) {
         console.log(org.name);
         // Based on the search results, we create an acronym, try to parse out socials,
         // and find the URLs most likely to be the org's website
         const acronym = createAcronym(org.name);
-        const searchResult: SearchResult[] = org.searchResults || [];
-        const socials: Socials = extractSocialsFromSearchResults(searchResult);
-        console.log("Socials:", socials);
+        // const searchResult: SearchResult[] = org.searchResults || [];
+        // const socials: Socials = extractSocialsFromSearchResults(searchResult);
+        // console.log("Socials:", socials);
 
         const bestUrls = findBestUrls(org, acronym);
         console.log("Best URLs:", bestUrls);
 
-        // await confirmationCrawler.run(bestUrls);
-        // const crawlItems = (await getLatestCrawlData()).items;
-        // console.log("Crawl items:", crawlItems);
-        // const { title, url, textContent, socialMediaUrls } = crawlItems[1];
-
-        // await confirmWebsite(url, title, textContent, org, socialMediaUrls);
+        const confirmationDatasetName = `confirmation/${org.name}`;
+        const confirmationCrawler = await createCrawler({
+            addLinks: false,
+            datasetName: confirmationDatasetName,
+        });
+        await confirmationCrawler.run(bestUrls);
+        const crawlItems = await getCrawlDataAsArray(confirmationDatasetName);
+        await confirmWebsite(crawlItems, org);
     }
 };
 
@@ -93,9 +93,6 @@ const scoreUrl = (url: string, orgName: string, acronym: string): number => {
     // Domain scoring
     if (normalizedUrl.includes("org")) score += 20;
 
-    // Penalize for subdomains
-    if (hasSubdomain(url)) score -= 40;
-
     return score;
 };
 
@@ -123,8 +120,9 @@ const findBestUrls = (org: TaxExemptOrganization, acronym: string): string[] => 
             const normalizedUrl = normalize(result.displayLink);
             const isSocialMedia = excludePatterns.some((pattern) => pattern.test(result.displayLink));
             const isDuplicate = seenUrls.has(normalizedUrl);
+            const containsSubdomain = hasSubdomain(result.displayLink);
 
-            if (!isSocialMedia && !isDuplicate) {
+            if (!isSocialMedia && !isDuplicate && !containsSubdomain) {
                 seenUrls.add(normalizedUrl);
                 return true;
             }

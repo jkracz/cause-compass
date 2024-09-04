@@ -1,18 +1,24 @@
-import { PlaywrightCrawler, Dataset, RequestQueue, EnqueueLinksOptions } from "crawlee";
+import { PlaywrightCrawler, Dataset, purgeDefaultStorages } from "crawlee";
+import { CrawlItem } from "./../types";
+
+interface CrawlOptions {
+    maxRequestsPerCrawl?: number;
+    addLinks?: boolean;
+    headless?: boolean;
+    datasetName?: string;
+}
 
 /**
  * Creates a PlaywrightCrawler instance configured for web crawling.
  *
- * @param {number} maxRequestsPerCrawl - The maximum number of requests to be made per crawl. Default is 5.
- * @param {boolean} addLinks - Controls the queuing of links found on the page. Default is true.
+ * @param {CrawlOptions} options - The options for the crawler.
  * @returns {PlaywrightCrawler} A configured instance of PlaywrightCrawler.
  */
 
-export const createCrawler = async (maxRequestsPerCrawl: number = 5, addLinks: boolean = true) => {
-    const requestQueue = await RequestQueue.open();
+export const createCrawler = async (options?: CrawlOptions) => {
+    const dataset = options?.datasetName ? await Dataset.open(options.datasetName) : Dataset;
     return new PlaywrightCrawler({
-        requestQueue,
-        async requestHandler({ request, page, enqueueLinks, log }) {
+        async requestHandler({ request, page, enqueueLinks, addRequests }) {
             // Find social media URLs
             const socialMediaUrls: string[] = await page.evaluate(() => {
                 const socialMediaPatterns = [
@@ -147,12 +153,9 @@ export const createCrawler = async (maxRequestsPerCrawl: number = 5, addLinks: b
 
                 return links;
             });
-            // Add the aboutLinks to the front of the queue, but only if they haven't been handled yet
+            // Add the aboutLinks to the front of the queue if they haven't been handled yet
             for (const aboutLink of aboutLinks) {
-                const alreadyHandled = await requestQueue.isHandled({ url: aboutLink });
-                if (!alreadyHandled) {
-                    await requestQueue.addRequest({ url: aboutLink }, { forefront: true });
-                }
+                await addRequests([{ url: aboutLink }], { forefront: true });
             }
 
             const title = await page.title();
@@ -191,7 +194,7 @@ export const createCrawler = async (maxRequestsPerCrawl: number = 5, addLinks: b
                 });
 
                 // Remove elements with specific classes
-                const regexClassSelectors = [/header/i, /footer/i, /menu/i, /btn/i, /cookie/i];
+                const regexClassSelectors = [/header/i, /footer/i, /menu/i, /btn/i, /cookie/i, /calendar/i];
                 regexClassSelectors.forEach((regex) => {
                     const elements = element.querySelectorAll("*");
                     elements.forEach((el) => {
@@ -219,7 +222,7 @@ export const createCrawler = async (maxRequestsPerCrawl: number = 5, addLinks: b
                 return content;
             });
 
-            await Dataset.pushData({
+            await dataset.pushData({
                 title,
                 url: request.loadedUrl,
                 textContent,
@@ -231,16 +234,27 @@ export const createCrawler = async (maxRequestsPerCrawl: number = 5, addLinks: b
                 aboutLinks,
             });
 
-            if (addLinks) {
+            if (options?.addLinks || options?.addLinks === undefined) {
                 await enqueueLinks();
             }
         },
-        headless: true,
+        headless: options?.headless || true,
         // Let's limit our crawls to make our tests shorter and safer.
-        maxRequestsPerCrawl: maxRequestsPerCrawl,
+        maxRequestsPerCrawl: options?.maxRequestsPerCrawl || undefined,
     });
 };
 
-export const getLatestCrawlData = async () => {
-    return await Dataset.getData();
+export const getCrawlDataAsArray = async (datasetName?: string): Promise<CrawlItem[]> => {
+    const dataset = datasetName ? await Dataset.open(datasetName) : Dataset;
+    const data = await dataset.getData();
+    return data.items as CrawlItem[];
+};
+
+export const clearDataset = async (datasetName?: string) => {
+    if (datasetName) {
+        const dataset = await Dataset.open(datasetName);
+        await dataset.drop();
+    } else {
+        await purgeDefaultStorages();
+    }
 };
