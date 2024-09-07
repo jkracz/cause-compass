@@ -19,6 +19,10 @@ const keySets = {
         searchEngineId: process.env.SEARCH_ENGINE_ID_SF,
         searchApiKey: process.env.GOOGLE_SEARCH_API_KEY_SF,
     },
+    [GoogleSearchApiKeyType.JK]: {
+        searchEngineId: process.env.SEARCH_ENGINE_ID_JK,
+        searchApiKey: process.env.GOOGLE_SEARCH_API_KEY_JK,
+    },
 } as const;
 
 /**
