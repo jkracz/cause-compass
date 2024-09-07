@@ -37,6 +37,13 @@ export interface TaxExemptOrganization {
     sortName?: string; // Sort Name (Secondary Name Line)
     searchResults?: SearchResult[];
     aiGeneratedContent?: AIGeneratedContent; // Placeholder for AI-generated content
+    websiteConfirmationResponse?: any;
+    socialMediaUrls?: string[];
+    donationLinks?: string[];
+    emailAddresses?: string[];
+    logoLinks?: string[];
+    hasNewsletterSignup?: boolean;
+    websiteUrl?: string;
 }
 
 export interface AIGeneratedContent {
@@ -140,6 +147,7 @@ export enum GoogleSearchApiKeyType {
     PERSONAL = "PERSONAL",
     JKRACZ = "JKRACZ",
     SF = "SF",
+    JK = "JK",
 }
 
 export interface CrawlItem {

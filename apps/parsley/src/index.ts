@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { parseSearchResults } from "./scripts/parseSearchResults";
+import { createCrawler } from "./utils/crawlee";
 
 const main = async () => {
     await parseSearchResults();
@@ -15,7 +16,10 @@ const main = async () => {
     // const data = await getLatestCrawlData();
     // console.log(data);
 
-    // const crawler2 = await createCrawler(20, false);
+    // const crawler2 = await createCrawler({
+    //     datasetName: "test",
+    //     maxRequestsPerCrawl: 4,
+    // });
     // await crawler2.run(["https://www.killingmylobster.com/"]);
 
     // const crawler = createCrawler(5);

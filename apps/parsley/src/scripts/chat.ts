@@ -60,15 +60,11 @@ export const confirmWebsite = async (crawlItems: CrawlItem[], org: TaxExemptOrga
             response_format: zodResponseFormat(WebsiteConfirmation, "website-confirmation"),
         });
 
-        console.log("COMPLETION_CHOICES______", completion.choices[0]);
-        const confirmationResponse = completion.choices[0].message;
-        if (confirmationResponse.parsed) {
-            console.log("CONFIRMATION_RESPONSE_PARSED______", confirmationResponse.parsed);
-            // return confirmationResponse.parsed;
-        } else if (confirmationResponse.refusal) {
-            // handle refusal
-            console.log("CONFIRMATION_RESPONSE_REFUSAL______", confirmationResponse.refusal);
+        const refusal = completion.choices[0].message.refusal;
+        if (refusal) {
+            console.dir({ message: "COMPLETION REQUEST REFUSED", data: completion }, { depth: null, colors: true });
         }
+        return completion;
     } catch (e: any) {
         if (e.constructor.name == "LengthFinishReasonError") {
             console.log("Too many tokens: ", e.message);

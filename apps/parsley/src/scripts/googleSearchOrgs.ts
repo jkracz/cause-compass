@@ -10,6 +10,7 @@ const apiKeys = [
     GoogleSearchApiKeyType.PERSONAL,
     GoogleSearchApiKeyType.JKRACZ,
     GoogleSearchApiKeyType.SF,
+    GoogleSearchApiKeyType.JK,
 ];
 
 const googleSearchOrgs = async () => {

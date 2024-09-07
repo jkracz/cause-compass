@@ -7,13 +7,7 @@
         "start": "tsx src/index.ts",
         "chat": "tsx src/scripts/chat.ts",
         "create-profiles": "tsx src/scripts/createOrgsByState.ts",
-        "search-orgs": "tsx src/scripts/googleSearchOrgs.ts",
-        "introspect": "drizzle-kit introspect",
-        "db:generate": "drizzle-kit generate",
-        "db:migrate": "drizzle-kit migrate",
-        "db:push": "drizzle-kit push",
-        "db:studio": "drizzle-kit studio",
-        "migrations:drop": "drizzle-kit drop --config=drizzle.config.ts"
+        "search-orgs": "tsx src/scripts/googleSearchOrgs.ts"
     },
     "repository": {
         "type": "git",

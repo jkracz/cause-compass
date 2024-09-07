@@ -1,7 +1,7 @@
 import { TaxExemptOrganization, SearchResult, Socials, CrawlItem } from "../types";
 import { findTaxExemptOrgs } from "../db/mongo";
 import { parse } from "tldts";
-import { createCrawler, getCrawlDataAsArray } from "../utils/crawlee";
+import { createCrawler, getCrawlDataAsArray, clearDataset } from "../utils/crawlee";
 import { confirmWebsite } from "./chat";
 
 export const parseSearchResults = async () => {
@@ -25,8 +25,28 @@ export const parseSearchResults = async () => {
             datasetName: confirmationDatasetName,
         });
         await confirmationCrawler.run(bestUrls);
-        const crawlItems = await getCrawlDataAsArray(confirmationDatasetName);
-        await confirmWebsite(crawlItems, org);
+        const crawlItems: CrawlItem[] = await getCrawlDataAsArray(confirmationDatasetName);
+        const completionResponse = await confirmWebsite(crawlItems, org);
+        console.dir({ message: "Completion Response:", data: completionResponse }, { depth: null, colors: true });
+        const confirmedSite: string | null = completionResponse?.choices[0].message.parsed?.correctWebsiteUrl || null;
+        let orgSite: string | null = null;
+        // If the confirmed site is in the best URLs, set it as the org site
+        // Otherwise, I'm not sure what the chatbot returned, so we'll leave it as null
+        if (confirmedSite) {
+            const matchingUrls = bestUrls.filter((url) => {
+                const normalizedUrl = normalize(url);
+                const normalizedOrgSite = normalize(confirmedSite);
+                return normalizedUrl.includes(normalizedOrgSite) || normalizedOrgSite.includes(normalizedUrl);
+            });
+            if (matchingUrls.length > 0) {
+                orgSite = matchingUrls[0];
+            }
+            if (orgSite !== null) {
+                const correctCrawlItems = crawlItems.filter((item) => orgSite && item.url.includes(orgSite));
+                console.log("Social URLs:", correctCrawlItems[0].socialMediaUrls);
+            }
+        }
+        // await clearDataset(confirmationDatasetName);
     }
 };
 
