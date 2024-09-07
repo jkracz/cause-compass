@@ -1,79 +1,9 @@
-import { TaxExemptOrganization, SearchResult, Socials, CrawlItem } from "../types";
-import { findTaxExemptOrgs } from "../db/mongo";
+import { TaxExemptOrganization, SocialMediaUrls, CrawlItem } from "../types";
+import { findTaxExemptOrgs, bulkUpdateOrgs } from "../db/mongo";
 import { parse } from "tldts";
+import pLimit from "p-limit";
 import { createCrawler, getCrawlDataAsArray, clearDataset } from "../utils/crawlee";
 import { confirmWebsite } from "./chat";
-
-export const parseSearchResults = async () => {
-    const orgs: TaxExemptOrganization[] = await findTaxExemptOrgs(1, { searchResults: { $exists: true } });
-
-    for (const org of orgs) {
-        console.log(org.name);
-        // Based on the search results, we create an acronym, try to parse out socials,
-        // and find the URLs most likely to be the org's website
-        const acronym = createAcronym(org.name);
-        // const searchResult: SearchResult[] = org.searchResults || [];
-        // const socials: Socials = extractSocialsFromSearchResults(searchResult);
-        // console.log("Socials:", socials);
-
-        const bestUrls = findBestUrls(org, acronym);
-        console.log("Best URLs:", bestUrls);
-
-        const confirmationDatasetName = `confirmation/${org.name}`;
-        const confirmationCrawler = await createCrawler({
-            addLinks: false,
-            datasetName: confirmationDatasetName,
-        });
-        await confirmationCrawler.run(bestUrls);
-        const crawlItems: CrawlItem[] = await getCrawlDataAsArray(confirmationDatasetName);
-        const completionResponse = await confirmWebsite(crawlItems, org);
-        console.dir({ message: "Completion Response:", data: completionResponse }, { depth: null, colors: true });
-        const confirmedSite: string | null = completionResponse?.choices[0].message.parsed?.correctWebsiteUrl || null;
-        let orgSite: string | null = null;
-        // If the confirmed site is in the best URLs, set it as the org site
-        // Otherwise, I'm not sure what the chatbot returned, so we'll leave it as null
-        if (confirmedSite) {
-            const matchingUrls = bestUrls.filter((url) => {
-                const normalizedUrl = normalize(url);
-                const normalizedOrgSite = normalize(confirmedSite);
-                return normalizedUrl.includes(normalizedOrgSite) || normalizedOrgSite.includes(normalizedUrl);
-            });
-            if (matchingUrls.length > 0) {
-                orgSite = matchingUrls[0];
-            }
-            if (orgSite !== null) {
-                const correctCrawlItems = crawlItems.filter((item) => orgSite && item.url.includes(orgSite));
-                console.log("Social URLs:", correctCrawlItems[0].socialMediaUrls);
-            }
-        }
-        // await clearDataset(confirmationDatasetName);
-    }
-};
-
-const extractSocialsFromSearchResults = (searchResults: SearchResult[]): Socials => {
-    const socialUrls = {
-        linkedin: /https?:\/\/(www\.)?linkedin\.com\/company\/?/,
-        youtube: /https?:\/\/(www\.)?youtube\.com\/channel\/?/,
-        x: /https?:\/\/(www\.)?x\.com\/?/,
-        twitter: /https?:\/\/(www\.)?twitter\.com\/?/,
-        instagram: /https?:\/\/(www\.)?instagram\.com\/?/,
-        threads: /https?:\/\/(www\.)?threads\.net\/?/,
-        facebook: /https?:\/\/(www\.)?facebook\.com\/?/,
-    };
-
-    const socials: Socials = {};
-    for (const result of searchResults) {
-        for (const platform in socialUrls) {
-            if (Object.prototype.hasOwnProperty.call(socialUrls, platform)) {
-                const regex = socialUrls[platform as keyof typeof socialUrls];
-                if (regex.test(result.link)) {
-                    socials[platform as keyof typeof socials] = result.link;
-                }
-            }
-        }
-    }
-    return socials;
-};
 
 const createAcronym = (str: string) => {
     return str
@@ -166,4 +96,81 @@ const findBestUrls = (org: TaxExemptOrganization, acronym: string): string[] => 
         });
     }
     return [];
+};
+
+const extractSocialMediaUrls = (socials: string[]): SocialMediaUrls => {
+    const socialUrls = {
+        linkedin: /https?:\/\/(www\.)?linkedin\.com\/company\/?/,
+        youtube: /https?:\/\/(www\.)?youtube\.com\/channel\/?/,
+        x: /https?:\/\/(www\.)?x\.com\/?/,
+        twitter: /https?:\/\/(www\.)?twitter\.com\/?/,
+        instagram: /https?:\/\/(www\.)?instagram\.com\/?/,
+        threads: /https?:\/\/(www\.)?threads\.net\/?/,
+        facebook: /https?:\/\/(www\.)?facebook\.com\/?/,
+    };
+    const socialMediaUrls: SocialMediaUrls = {};
+    for (const social of socials) {
+        for (const platform in socialUrls) {
+            if (Object.prototype.hasOwnProperty.call(socialUrls, platform)) {
+                const regex = socialUrls[platform as keyof typeof socialUrls];
+                if (regex.test(social)) {
+                    socialMediaUrls[platform as keyof typeof socialMediaUrls] = social;
+                }
+            }
+        }
+    }
+    return socialMediaUrls;
+};
+
+export const parseSearchResults = async () => {
+    const orgs: TaxExemptOrganization[] = await findTaxExemptOrgs(1, {
+        searchResults: { $exists: true },
+        resultsParsedAt: { $exists: false },
+    });
+    const concurrentCrawlerLimit = pLimit(3);
+
+    const parseOrg = async (org: TaxExemptOrganization) => {
+        const acronym = createAcronym(org.name);
+
+        const bestUrls = findBestUrls(org, acronym);
+
+        const confirmationDatasetName = `confirmation/${org.name}`;
+        const confirmationCrawler = await createCrawler({
+            addLinks: false,
+            datasetName: confirmationDatasetName,
+        });
+        // await confirmationCrawler.run(bestUrls);
+        await concurrentCrawlerLimit(() => confirmationCrawler.run(bestUrls));
+        const crawlItems: CrawlItem[] = await getCrawlDataAsArray(confirmationDatasetName);
+        const completionResponse = await confirmWebsite(crawlItems, org);
+        const confirmedSite: string | null = completionResponse?.choices[0].message.parsed?.correctWebsiteUrl || null;
+        let orgSite: string | null = null;
+        // If the confirmed site is in the best URLs, set it as the org site
+        // Otherwise, I'm not sure what the chatbot returned, so we'll leave it as null
+        if (confirmedSite) {
+            const matchingUrls = bestUrls.filter((url) => {
+                const normalizedUrl = normalize(url);
+                const normalizedOrgSite = normalize(confirmedSite);
+                return normalizedUrl.includes(normalizedOrgSite) || normalizedOrgSite.includes(normalizedUrl);
+            });
+            if (matchingUrls.length > 0 && matchingUrls[0] !== null) {
+                orgSite = matchingUrls[0];
+                const correctCrawlItems = crawlItems.filter((item) => orgSite && item.url.includes(orgSite));
+                org.websiteUrl = correctCrawlItems[0].url;
+                org.socialMediaUrls = extractSocialMediaUrls(correctCrawlItems[0].socialMediaUrls || []);
+                org.hasNewsletterSignup = correctCrawlItems[0].hasNewsletterSignup;
+                org.donationLinks = correctCrawlItems[0].donationLinks;
+                org.emailAddresses = correctCrawlItems[0].emailAddresses;
+                org.logoLinks = correctCrawlItems[0].logoLinks;
+                org.resultsParsedAt = new Date().toISOString();
+            }
+        }
+        await clearDataset(confirmationDatasetName);
+        return org;
+    };
+
+    // const updatedOrgs = await Promise.all(orgs.map((org) => concurrentCrawlerLimit(() => parseOrg(org))));
+    const updatedOrgs = await Promise.all(orgs.map(parseOrg));
+    console.log("Updated orgs:", updatedOrgs);
+    await bulkUpdateOrgs(updatedOrgs);
 };

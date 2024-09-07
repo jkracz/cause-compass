@@ -10,7 +10,7 @@ importers:
     dependencies:
       crawlee:
         specifier: ^3.11.3
-        version: 3.11.3(playwright@1.46.1)
+        version: 3.11.3(playwright@1.47.0)
       csv-parse:
         specifier: ^5.5.6
         version: 5.5.6
@@ -21,17 +21,20 @@ importers:
         specifier: ^144.0.0
         version: 144.0.0
       mongodb:
-        specifier: ^6.8.0
-        version: 6.8.0(socks@2.8.3)
+        specifier: ^6.8.1
+        version: 6.8.1(socks@2.8.3)
       nanoid:
         specifier: ^5.0.7
         version: 5.0.7
       openai:
-        specifier: ^4.57.1
-        version: 4.57.1(zod@3.23.8)
+        specifier: ^4.58.1
+        version: 4.58.1(zod@3.23.8)
+      p-limit:
+        specifier: ^6.1.0
+        version: 6.1.0
       playwright:
-        specifier: ^1.46.1
-        version: 1.46.1
+        specifier: ^1.47.0
+        version: 1.47.0
       slugify:
         specifier: ^1.6.6
         version: 1.6.6
@@ -39,8 +42,8 @@ importers:
         specifier: ^4.3.1
         version: 4.3.1
       tldts:
-        specifier: ^6.1.41
-        version: 6.1.41
+        specifier: ^6.1.43
+        version: 6.1.43
       yargs:
         specifier: ^17.7.2
         version: 17.7.2
@@ -49,8 +52,8 @@ importers:
         version: 3.23.8
     devDependencies:
       '@types/node':
-        specifier: ^22.5.3
-        version: 22.5.3
+        specifier: ^22.5.4
+        version: 22.5.4
       tsx:
         specifier: ^4.19.0
         version: 4.19.0
@@ -363,8 +366,8 @@ packages:
   '@types/node@18.19.4':
     resolution: {integrity: sha512-xNzlUhzoHotIsnFoXmJB+yWmBvFZgKCI9TtPIEdYIMM1KWfwuY8zh7wvc1u1OAXlC7dlf6mZVx/s+Y5KfFz19A==}
 
-  '@types/node@22.5.3':
-    resolution: {integrity: sha512-njripolh85IA9SQGTAqbmnNZTdxv7X/4OYGPz8tgy5JDr8MP+uDBa921GpYEoDDnwm0Hmn5ZPeJgiiSTPoOzkQ==}
+  '@types/node@22.5.4':
+    resolution: {integrity: sha512-FDuKUJQm/ju9fT/SeX/6+gBzoPzlVCzfzmGkwKvRHQVxi4BntVbyIwf6a4Xn62mrvndLiml6z/UBXIdEVjQLXg==}
 
   '@types/qs@6.9.15':
     resolution: {integrity: sha512-uXHQKES6DQKKCLh441Xv/dwxOq1TVS3JPUMlEqoEglvlhR6Mxnlew/Xq/LRVHpLyk7iK3zODe1qYHIMltO7XGg==}
@@ -1037,8 +1040,8 @@ packages:
   mongodb-connection-string-url@3.0.1:
     resolution: {integrity: sha512-XqMGwRX0Lgn05TDB4PyG2h2kKO/FfWJyCzYQbIhXUxz7ETt0I/FqHjUeqj37irJ+Dl1ZtU82uYyj14u2XsZKfg==}
 
-  mongodb@6.8.0:
-    resolution: {integrity: sha512-HGQ9NWDle5WvwMnrvUxsFYPd3JEbqD3RgABHBQRuoCEND0qzhsd0iH5ypHsf1eJ+sXmvmyKpP+FLOKY8Il7jMw==}
+  mongodb@6.8.1:
+    resolution: {integrity: sha512-qsS+gl5EJb+VzJqUjXSZ5Y5rbuM/GZlZUEJ2OIVYP10L9rO9DQ0DGp+ceTzsmoADh6QYMWd9MSdG9IxRyYUkEA==}
     engines: {node: '>=16.20.1'}
     peerDependencies:
       '@aws-sdk/credential-providers': ^3.188.0
@@ -1117,8 +1120,8 @@ packages:
     resolution: {integrity: sha512-kbpaSSGJTWdAY5KPVeMOKXSrPtr8C8C7wodJbcsd51jRnmD+GZu8Y0VoU6Dm5Z4vWr0Ig/1NKuWRKf7j5aaYSg==}
     engines: {node: '>=6'}
 
-  openai@4.57.1:
-    resolution: {integrity: sha512-7q+4U9A/klaAT40bqL6sPFhIKb4jsUJ8udddCzaf8mdwICYeBG7grps/zDcrOUfkwCxCzR6fxfDDah3WqHoVUA==}
+  openai@4.58.1:
+    resolution: {integrity: sha512-n9fN4RIjbj4PbZU6IN/FOBBbxHbHEcW18rDZ4nW2cDNfZP2+upm/FM20UCmRNMQTvhOvw/2Tw4vgioQyQb5nlA==}
     hasBin: true
     peerDependencies:
       zod: ^3.23.8
@@ -1153,6 +1156,10 @@ packages:
   p-limit@3.1.0:
     resolution: {integrity: sha512-TYOanM3wGwNGsZN2cVTYPArw454xnXj5qmWF1bEoAc4+cU/ol7GVh7odevjp1FNHduHc3KZMcFduxU5Xc6uJRQ==}
     engines: {node: '>=10'}
+
+  p-limit@6.1.0:
+    resolution: {integrity: sha512-H0jc0q1vOzlEk0TqAKXKZxdl7kX3OFUzCnNVUnq5Pc3DGo0kpeaMuPqxQn235HibwBEb0/pm9dgKTjXy66fBkg==}
+    engines: {node: '>=18'}
 
   p-locate@4.1.0:
     resolution: {integrity: sha512-R79ZZ/0wAxKGu3oYMlz8jy/kbhsNrS7SKZ7PxEHBgJ5+F2mtFW2fK2cOtBh1cHYkQsbzFV7I+EoRKe6Yt0oK7A==}
@@ -1190,13 +1197,13 @@ packages:
     resolution: {integrity: sha512-HRDzbaKjC+AOWVXxAU/x54COGeIv9eb+6CkDSQoNTt4XyWoIJvuPsXizxu/Fr23EiekbtZwmh1IcIG/l/a10GQ==}
     engines: {node: '>=8'}
 
-  playwright-core@1.46.1:
-    resolution: {integrity: sha512-h9LqIQaAv+CYvWzsZ+h3RsrqCStkBHlgo6/TJlFst3cOTlLghBQlJwPOZKQJTKNaD3QIB7aAVQ+gfWbN3NXB7A==}
+  playwright-core@1.47.0:
+    resolution: {integrity: sha512-1DyHT8OqkcfCkYUD9zzUTfg7EfTd+6a8MkD/NWOvjo0u/SCNd5YmY/lJwFvUZOxJbWNds+ei7ic2+R/cRz/PDg==}
     engines: {node: '>=18'}
     hasBin: true
 
-  playwright@1.46.1:
-    resolution: {integrity: sha512-oPcr1yqoXLCkgKtD5eNUPLiN40rYEM39odNpIb6VE6S7/15gJmA1NzVv6zJYusV0e7tzvkU/utBFNa/Kpxmwng==}
+  playwright@1.47.0:
+    resolution: {integrity: sha512-jOWiRq2pdNAX/mwLiwFYnPHpEZ4rM+fRSQpRHwEwZlP2PUANvL3+aJOF/bvISMhFD30rqMxUB4RJx9aQbfh4Ww==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -1390,11 +1397,11 @@ packages:
   title-case@4.3.1:
     resolution: {integrity: sha512-VnPxQ+/j0X2FZ4ceGq1oLruTLjtN5Ul4sam5ypd4mDZLm1eHwkwip1gLxqhON/j4qyTlUlfPKslE/t4NPSlxhg==}
 
-  tldts-core@6.1.41:
-    resolution: {integrity: sha512-SkwZgo1ZzMp2ziMBwci5VBnLR9VywCi02jSgMX5TO5kf9fdaBsxZkblLff3NlJNTcH0vfvEsgw2B7jVR556Vgw==}
+  tldts-core@6.1.43:
+    resolution: {integrity: sha512-iO1G3F2NqtmJUYlTfcH2liSdaqDnjpYn6iGftbLRNx8DF6IRIjbknVt+q0ijwZ2KGZX3J8zeYGFoiI+ZtHT5MQ==}
 
-  tldts@6.1.41:
-    resolution: {integrity: sha512-RNpUkL5fYD2DTQQCdr8QMDp6UL0ThtpXT3q3+qPE05dIT+RK2I3M0VByVbQN1dEhLUGzimivVwxK2By9epLk6w==}
+  tldts@6.1.43:
+    resolution: {integrity: sha512-5J2v/CbNH8CkwsQV+igsuu0+3eeTfRDn1CFf38a24ZD6FIrbm3DZFu4UrrpoOSejhuP4N1PNDNUvJcw+f4nXNw==}
     hasBin: true
 
   tmp@0.0.33:
@@ -1567,6 +1574,10 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
+  yocto-queue@1.1.1:
+    resolution: {integrity: sha512-b4JR1PFR10y1mKjhHY9LaGo6tmrgjit7hxVIeAmyMw3jegXR4dhYqLaQF5zMXZxY7tLpMyJeLjr1C4rLmkVe8g==}
+    engines: {node: '>=12.20'}
+
   yoctocolors-cjs@2.1.2:
     resolution: {integrity: sha512-cYVsTjKl8b+FrnidjibDWskAv7UKOfcwaVZdp/it9n1s9fU3IkgDbhdIRKCW4JDsAlECJY0ytoVPT3sK6kideA==}
     engines: {node: '>=18'}
@@ -1612,18 +1623,18 @@ snapshots:
       fs-extra: 11.2.0
       got-scraping: 4.0.6
       ow: 0.28.2
-      tldts: 6.1.41
+      tldts: 6.1.43
       tslib: 2.6.3
       type-fest: 4.23.0
 
-  '@crawlee/browser-pool@3.11.3(playwright@1.46.1)':
+  '@crawlee/browser-pool@3.11.3(playwright@1.47.0)':
     dependencies:
       '@apify/log': 2.5.5
       '@apify/timeout': 0.3.1
       '@crawlee/core': 3.11.3
       '@crawlee/types': 3.11.3
       fingerprint-generator: 2.1.54
-      fingerprint-injector: 2.1.54(playwright@1.46.1)
+      fingerprint-injector: 2.1.54(playwright@1.47.0)
       lodash.merge: 4.6.2
       nanoid: 3.3.7
       ow: 0.28.2
@@ -1633,22 +1644,22 @@ snapshots:
       tiny-typed-emitter: 2.1.0
       tslib: 2.6.3
     optionalDependencies:
-      playwright: 1.46.1
+      playwright: 1.47.0
     transitivePeerDependencies:
       - supports-color
 
-  '@crawlee/browser@3.11.3(playwright@1.46.1)':
+  '@crawlee/browser@3.11.3(playwright@1.47.0)':
     dependencies:
       '@apify/timeout': 0.3.1
       '@crawlee/basic': 3.11.3
-      '@crawlee/browser-pool': 3.11.3(playwright@1.46.1)
+      '@crawlee/browser-pool': 3.11.3(playwright@1.47.0)
       '@crawlee/types': 3.11.3
       '@crawlee/utils': 3.11.3
       ow: 0.28.2
       tslib: 2.6.3
       type-fest: 4.23.0
     optionalDependencies:
-      playwright: 1.46.1
+      playwright: 1.47.0
     transitivePeerDependencies:
       - supports-color
 
@@ -1693,7 +1704,7 @@ snapshots:
       ow: 0.28.2
       stream-chain: 3.1.0
       stream-json: 1.8.0
-      tldts: 6.1.41
+      tldts: 6.1.43
       tough-cookie: 4.1.4
       tslib: 2.6.3
       type-fest: 4.23.0
@@ -1756,13 +1767,13 @@ snapshots:
       proper-lockfile: 4.1.2
       tslib: 2.6.3
 
-  '@crawlee/playwright@3.11.3(playwright@1.46.1)':
+  '@crawlee/playwright@3.11.3(playwright@1.47.0)':
     dependencies:
       '@apify/datastructures': 2.0.2
       '@apify/log': 2.5.5
       '@apify/timeout': 0.3.1
-      '@crawlee/browser': 3.11.3(playwright@1.46.1)
-      '@crawlee/browser-pool': 3.11.3(playwright@1.46.1)
+      '@crawlee/browser': 3.11.3(playwright@1.47.0)
+      '@crawlee/browser-pool': 3.11.3(playwright@1.47.0)
       '@crawlee/core': 3.11.3
       '@crawlee/types': 3.11.3
       '@crawlee/utils': 3.11.3
@@ -1776,17 +1787,17 @@ snapshots:
       string-comparison: 1.3.0
       tslib: 2.6.3
     optionalDependencies:
-      playwright: 1.46.1
+      playwright: 1.47.0
     transitivePeerDependencies:
       - puppeteer
       - supports-color
 
-  '@crawlee/puppeteer@3.11.3(playwright@1.46.1)':
+  '@crawlee/puppeteer@3.11.3(playwright@1.47.0)':
     dependencies:
       '@apify/datastructures': 2.0.2
       '@apify/log': 2.5.5
-      '@crawlee/browser': 3.11.3(playwright@1.46.1)
-      '@crawlee/browser-pool': 3.11.3(playwright@1.46.1)
+      '@crawlee/browser': 3.11.3(playwright@1.47.0)
+      '@crawlee/browser-pool': 3.11.3(playwright@1.47.0)
       '@crawlee/types': 3.11.3
       '@crawlee/utils': 3.11.3
       cheerio: 1.0.0-rc.12
@@ -1931,20 +1942,20 @@ snapshots:
 
   '@types/jsdom@21.1.7':
     dependencies:
-      '@types/node': 22.5.3
+      '@types/node': 22.5.4
       '@types/tough-cookie': 4.0.5
       parse5: 7.1.2
 
   '@types/node-fetch@2.6.10':
     dependencies:
-      '@types/node': 22.5.3
+      '@types/node': 22.5.4
       form-data: 4.0.0
 
   '@types/node@18.19.4':
     dependencies:
       undici-types: 5.26.5
 
-  '@types/node@22.5.3':
+  '@types/node@22.5.4':
     dependencies:
       undici-types: 6.19.6
 
@@ -1952,7 +1963,7 @@ snapshots:
 
   '@types/sax@1.2.7':
     dependencies:
-      '@types/node': 22.5.3
+      '@types/node': 22.5.4
 
   '@types/tough-cookie@4.0.5': {}
 
@@ -2120,24 +2131,24 @@ snapshots:
 
   content-type@1.0.5: {}
 
-  crawlee@3.11.3(playwright@1.46.1):
+  crawlee@3.11.3(playwright@1.47.0):
     dependencies:
       '@crawlee/basic': 3.11.3
-      '@crawlee/browser': 3.11.3(playwright@1.46.1)
-      '@crawlee/browser-pool': 3.11.3(playwright@1.46.1)
+      '@crawlee/browser': 3.11.3(playwright@1.47.0)
+      '@crawlee/browser-pool': 3.11.3(playwright@1.47.0)
       '@crawlee/cheerio': 3.11.3
       '@crawlee/cli': 3.11.3
       '@crawlee/core': 3.11.3
       '@crawlee/http': 3.11.3
       '@crawlee/jsdom': 3.11.3
       '@crawlee/linkedom': 3.11.3
-      '@crawlee/playwright': 3.11.3(playwright@1.46.1)
-      '@crawlee/puppeteer': 3.11.3(playwright@1.46.1)
+      '@crawlee/playwright': 3.11.3(playwright@1.47.0)
+      '@crawlee/puppeteer': 3.11.3(playwright@1.47.0)
       '@crawlee/utils': 3.11.3
       import-local: 3.1.0
       tslib: 2.6.3
     optionalDependencies:
-      playwright: 1.46.1
+      playwright: 1.47.0
     transitivePeerDependencies:
       - bufferutil
       - canvas
@@ -2312,12 +2323,12 @@ snapshots:
       header-generator: 2.1.54
       tslib: 2.6.3
 
-  fingerprint-injector@2.1.54(playwright@1.46.1):
+  fingerprint-injector@2.1.54(playwright@1.47.0):
     dependencies:
       fingerprint-generator: 2.1.54
       tslib: 2.6.3
     optionalDependencies:
-      playwright: 1.46.1
+      playwright: 1.47.0
 
   form-data-encoder@1.7.2: {}
 
@@ -2738,7 +2749,7 @@ snapshots:
       '@types/whatwg-url': 11.0.5
       whatwg-url: 13.0.0
 
-  mongodb@6.8.0(socks@2.8.3):
+  mongodb@6.8.1(socks@2.8.3):
     dependencies:
       '@mongodb-js/saslprep': 1.1.7
       bson: 6.7.0
@@ -2778,7 +2789,7 @@ snapshots:
     dependencies:
       mimic-fn: 2.1.0
 
-  openai@4.57.1(zod@3.23.8):
+  openai@4.58.1(zod@3.23.8):
     dependencies:
       '@types/node': 18.19.4
       '@types/node-fetch': 2.6.10
@@ -2834,6 +2845,10 @@ snapshots:
     dependencies:
       yocto-queue: 0.1.0
 
+  p-limit@6.1.0:
+    dependencies:
+      yocto-queue: 1.1.1
+
   p-locate@4.1.0:
     dependencies:
       p-limit: 2.3.0
@@ -2865,11 +2880,11 @@ snapshots:
     dependencies:
       find-up: 4.1.0
 
-  playwright-core@1.46.1: {}
+  playwright-core@1.47.0: {}
 
-  playwright@1.46.1:
+  playwright@1.47.0:
     dependencies:
-      playwright-core: 1.46.1
+      playwright-core: 1.47.0
     optionalDependencies:
       fsevents: 2.3.2
 
@@ -3049,11 +3064,11 @@ snapshots:
 
   title-case@4.3.1: {}
 
-  tldts-core@6.1.41: {}
+  tldts-core@6.1.43: {}
 
-  tldts@6.1.41:
+  tldts@6.1.43:
     dependencies:
-      tldts-core: 6.1.41
+      tldts-core: 6.1.43
 
   tmp@0.0.33:
     dependencies:
@@ -3201,6 +3216,8 @@ snapshots:
       yargs-parser: 21.1.1
 
   yocto-queue@0.1.0: {}
+
+  yocto-queue@1.1.1: {}
 
   yoctocolors-cjs@2.1.2: {}
 

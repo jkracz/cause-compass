@@ -5,7 +5,7 @@ import { createCrawler } from "./utils/crawlee";
 const main = async () => {
     await parseSearchResults();
 
-    // const crawler = await createCrawler(10, false);
+    // const crawler = await createCrawler({ addLinks: false });
     // await crawler.run([
     //     "https://www.makernexus.org/",
     //     "https://myhero.com/",

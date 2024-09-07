@@ -60,9 +60,10 @@ export const confirmWebsite = async (crawlItems: CrawlItem[], org: TaxExemptOrga
             response_format: zodResponseFormat(WebsiteConfirmation, "website-confirmation"),
         });
 
+        console.dir({ message: "COMPLETION RESPONSE", data: completion }, { depth: null, colors: true });
         const refusal = completion.choices[0].message.refusal;
         if (refusal) {
-            console.dir({ message: "COMPLETION REQUEST REFUSED", data: completion }, { depth: null, colors: true });
+            console.error("COMPLETION REFUSED", refusal);
         }
         return completion;
     } catch (e: any) {

@@ -36,14 +36,13 @@ export interface TaxExemptOrganization {
     nteeCode?: NteeCode; // NTEE Code
     sortName?: string; // Sort Name (Secondary Name Line)
     searchResults?: SearchResult[];
-    aiGeneratedContent?: AIGeneratedContent; // Placeholder for AI-generated content
-    websiteConfirmationResponse?: any;
-    socialMediaUrls?: string[];
+    socialMediaUrls?: SocialMediaUrls;
     donationLinks?: string[];
     emailAddresses?: string[];
     logoLinks?: string[];
     hasNewsletterSignup?: boolean;
     websiteUrl?: string;
+    resultsParsedAt?: string;
 }
 
 export interface AIGeneratedContent {
@@ -133,7 +132,7 @@ export interface SearchResult {
     pagemap: object;
 }
 
-export interface Socials {
+export interface SocialMediaUrls {
     linkedin?: string;
     youtube?: string;
     x?: string;
