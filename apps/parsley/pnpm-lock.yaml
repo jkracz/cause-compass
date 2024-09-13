@@ -21,14 +21,14 @@ importers:
         specifier: ^144.0.0
         version: 144.0.0
       mongodb:
-        specifier: ^6.8.1
-        version: 6.8.1(socks@2.8.3)
+        specifier: ^6.9.0
+        version: 6.9.0(socks@2.8.3)
       nanoid:
         specifier: ^5.0.7
         version: 5.0.7
       openai:
-        specifier: ^4.58.1
-        version: 4.58.1(zod@3.23.8)
+        specifier: ^4.60.1
+        version: 4.60.1(zod@3.23.8)
       p-limit:
         specifier: ^6.1.0
         version: 6.1.0
@@ -42,8 +42,8 @@ importers:
         specifier: ^4.3.1
         version: 4.3.1
       tldts:
-        specifier: ^6.1.43
-        version: 6.1.43
+        specifier: ^6.1.44
+        version: 6.1.44
       yargs:
         specifier: ^17.7.2
         version: 17.7.2
@@ -55,8 +55,8 @@ importers:
         specifier: ^22.5.4
         version: 22.5.4
       tsx:
-        specifier: ^4.19.0
-        version: 4.19.0
+        specifier: ^4.19.1
+        version: 4.19.1
 
 packages:
 
@@ -1040,8 +1040,8 @@ packages:
   mongodb-connection-string-url@3.0.1:
     resolution: {integrity: sha512-XqMGwRX0Lgn05TDB4PyG2h2kKO/FfWJyCzYQbIhXUxz7ETt0I/FqHjUeqj37irJ+Dl1ZtU82uYyj14u2XsZKfg==}
 
-  mongodb@6.8.1:
-    resolution: {integrity: sha512-qsS+gl5EJb+VzJqUjXSZ5Y5rbuM/GZlZUEJ2OIVYP10L9rO9DQ0DGp+ceTzsmoADh6QYMWd9MSdG9IxRyYUkEA==}
+  mongodb@6.9.0:
+    resolution: {integrity: sha512-UMopBVx1LmEUbW/QE0Hw18u583PEDVQmUmVzzBRH0o/xtE9DBRA5ZYLOjpLIa03i8FXjzvQECJcqoMvCXftTUA==}
     engines: {node: '>=16.20.1'}
     peerDependencies:
       '@aws-sdk/credential-providers': ^3.188.0
@@ -1120,8 +1120,8 @@ packages:
     resolution: {integrity: sha512-kbpaSSGJTWdAY5KPVeMOKXSrPtr8C8C7wodJbcsd51jRnmD+GZu8Y0VoU6Dm5Z4vWr0Ig/1NKuWRKf7j5aaYSg==}
     engines: {node: '>=6'}
 
-  openai@4.58.1:
-    resolution: {integrity: sha512-n9fN4RIjbj4PbZU6IN/FOBBbxHbHEcW18rDZ4nW2cDNfZP2+upm/FM20UCmRNMQTvhOvw/2Tw4vgioQyQb5nlA==}
+  openai@4.60.1:
+    resolution: {integrity: sha512-j7aZOpgN0MtflPgNaBlSnOyok4jwto0GVOxVC5g0jCfa0lvywYx+LhlFim/dXzPtyi8MjKozyLshSj93617vNQ==}
     hasBin: true
     peerDependencies:
       zod: ^3.23.8
@@ -1397,11 +1397,11 @@ packages:
   title-case@4.3.1:
     resolution: {integrity: sha512-VnPxQ+/j0X2FZ4ceGq1oLruTLjtN5Ul4sam5ypd4mDZLm1eHwkwip1gLxqhON/j4qyTlUlfPKslE/t4NPSlxhg==}
 
-  tldts-core@6.1.43:
-    resolution: {integrity: sha512-iO1G3F2NqtmJUYlTfcH2liSdaqDnjpYn6iGftbLRNx8DF6IRIjbknVt+q0ijwZ2KGZX3J8zeYGFoiI+ZtHT5MQ==}
+  tldts-core@6.1.44:
+    resolution: {integrity: sha512-DMOTcn8pGmuY65zDPH+M1xAOVtBj7Phrah0HxuspKEu33hOArCDmk3R4UEVymtuN+HveeUlVgX0+RNf4mFkoAw==}
 
-  tldts@6.1.43:
-    resolution: {integrity: sha512-5J2v/CbNH8CkwsQV+igsuu0+3eeTfRDn1CFf38a24ZD6FIrbm3DZFu4UrrpoOSejhuP4N1PNDNUvJcw+f4nXNw==}
+  tldts@6.1.44:
+    resolution: {integrity: sha512-Id5Kq3vy4fAHgrMasofrYZ4ghMa9rX64BfstBFgnGN+CAPdXYeZ0xWA2BXk3F+VgS+/jJ9PdYEQrP8LEZvGrCw==}
     hasBin: true
 
   tmp@0.0.33:
@@ -1430,8 +1430,8 @@ packages:
   tslib@2.6.3:
     resolution: {integrity: sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==}
 
-  tsx@4.19.0:
-    resolution: {integrity: sha512-bV30kM7bsLZKZIOCHeMNVMJ32/LuJzLVajkQI/qf92J2Qr08ueLQvW00PUZGiuLPP760UINwupgUj8qrSCPUKg==}
+  tsx@4.19.1:
+    resolution: {integrity: sha512-0flMz1lh74BR4wOvBjuh9olbnwqCPc35OOlfyzHba0Dc+QNUeWX/Gq2YTbnwcWPO3BMd8fkzRVrHcsR+a7z7rA==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
@@ -1623,7 +1623,7 @@ snapshots:
       fs-extra: 11.2.0
       got-scraping: 4.0.6
       ow: 0.28.2
-      tldts: 6.1.43
+      tldts: 6.1.44
       tslib: 2.6.3
       type-fest: 4.23.0
 
@@ -1704,7 +1704,7 @@ snapshots:
       ow: 0.28.2
       stream-chain: 3.1.0
       stream-json: 1.8.0
-      tldts: 6.1.43
+      tldts: 6.1.44
       tough-cookie: 4.1.4
       tslib: 2.6.3
       type-fest: 4.23.0
@@ -2749,7 +2749,7 @@ snapshots:
       '@types/whatwg-url': 11.0.5
       whatwg-url: 13.0.0
 
-  mongodb@6.8.1(socks@2.8.3):
+  mongodb@6.9.0(socks@2.8.3):
     dependencies:
       '@mongodb-js/saslprep': 1.1.7
       bson: 6.7.0
@@ -2789,7 +2789,7 @@ snapshots:
     dependencies:
       mimic-fn: 2.1.0
 
-  openai@4.58.1(zod@3.23.8):
+  openai@4.60.1(zod@3.23.8):
     dependencies:
       '@types/node': 18.19.4
       '@types/node-fetch': 2.6.10
@@ -3064,11 +3064,11 @@ snapshots:
 
   title-case@4.3.1: {}
 
-  tldts-core@6.1.43: {}
+  tldts-core@6.1.44: {}
 
-  tldts@6.1.43:
+  tldts@6.1.44:
     dependencies:
-      tldts-core: 6.1.43
+      tldts-core: 6.1.44
 
   tmp@0.0.33:
     dependencies:
@@ -3098,7 +3098,7 @@ snapshots:
 
   tslib@2.6.3: {}
 
-  tsx@4.19.0:
+  tsx@4.19.1:
     dependencies:
       esbuild: 0.23.0
       get-tsconfig: 4.7.5

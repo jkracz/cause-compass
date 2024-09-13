@@ -17,25 +17,6 @@ const googleSearchOrgs = async () => {
     const orgFilter = {
         $and: [
             {
-                city: {
-                    $in: [
-                        "San Francisco",
-                        "Oakland",
-                        "San Jose",
-                        "Berkeley",
-                        "Palo Alto",
-                        "Mountain View",
-                        "Sunnyvale",
-                        "Santa Clara",
-                        "Redwood City",
-                        "Fremont",
-                        "Hayward",
-                        "Cupertino",
-                        "Menlo Park",
-                    ],
-                },
-            },
-            {
                 $nor: [
                     { "deductibility.code": { $ne: "1" } },
                     { "activityCodes.category": { $in: ["Religious Activities"] } },
