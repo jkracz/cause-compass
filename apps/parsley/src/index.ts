@@ -1,9 +1,30 @@
 import "dotenv/config";
 import { parseSearchResults } from "./scripts/parseSearchResults";
-import { createCrawler } from "./utils/crawlee";
+// import { createCrawler } from "./crawlee/crawler";
 
 const main = async () => {
+    console.time("fork");
     await parseSearchResults();
+    console.timeEnd("fork");
+
+    // const aboutPatterns = [/about/i, /about-us/i, /history/i, /mission/i];
+    // const href = "https://taiwaneseamericanhistory.org/culture-3/";
+    // const url = new URL(href);
+
+    // if (aboutPatterns.some((pattern) => pattern.test(url.pathname))) {
+    //     const pathSegments = url.pathname.split("/").filter((segment) => segment !== "");
+
+    //     // Convert URL to lowercase for comparison and filtering
+    //     const lowerCaseHref = href.toLowerCase();
+    //     console.log("lowerCaseHref", lowerCaseHref);
+
+    //     if (
+    //         !href.includes("#") && // Exclude links with #
+    //         pathSegments.length <= 1 // Limit to one directory depth
+    //     ) {
+    //         console.log("pathSegments", pathSegments);
+    //     }
+    // }
 
     // const crawler = await createCrawler({ addLinks: false });
     // await crawler.run([

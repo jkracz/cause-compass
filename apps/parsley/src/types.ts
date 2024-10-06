@@ -36,13 +36,15 @@ export interface TaxExemptOrganization {
     nteeCode?: NteeCode; // NTEE Code
     sortName?: string; // Sort Name (Secondary Name Line)
     searchResults?: SearchResult[];
+    resultsParsedAt?: string;
+    confirmationCrawlItems?: CrawlItem[];
+    aiConfirmationResponse?: any;
     socialMediaUrls?: SocialMediaUrls;
     donationLinks?: string[];
     emailAddresses?: string[];
     logoLinks?: string[];
     hasNewsletterSignup?: boolean;
     websiteUrl?: string;
-    resultsParsedAt?: string;
 }
 
 export interface AIGeneratedContent {

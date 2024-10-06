@@ -17,7 +17,7 @@ import * as path from "path";
 export const jsonFileWrite = async (directoryPath: string, content: object, fileName: string) => {
     try {
         await fs.access(directoryPath);
-    } catch (error) {
+    } catch {
         // If the directory does not exist, create it
         await fs.mkdir(directoryPath, { recursive: true });
     }

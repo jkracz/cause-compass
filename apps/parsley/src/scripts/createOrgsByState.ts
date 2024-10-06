@@ -23,7 +23,7 @@ const createOrgsByState = async (state: string) => {
 
         // init some metrics for logging at the end
         let totalInserted: number = 0;
-        let totalNotInserted: number = 0;
+        // let totalNotInserted: number = 0;
         let totalFilesWritten: number = 0;
         let totalProfilesParsed: number = 0;
 
@@ -52,7 +52,7 @@ const createOrgsByState = async (state: string) => {
         console.log(`Processing for ${state} completed.`);
         console.log(`- ${totalProfilesParsed} profile(s) parsed.`);
         console.log(`- ${totalInserted} profile(s) inserted.`);
-        console.log(`- ${totalNotInserted} profile(s) selectively NOT inserted.`);
+        // console.log(`- ${totalNotInserted} profile(s) selectively NOT inserted.`);
         console.log(`- ${totalFilesWritten} file(s) written.`);
     } catch (error) {
         console.error(`Error processing ${state} profiles.`, error);

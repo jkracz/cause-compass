@@ -66,11 +66,13 @@ export const confirmWebsite = async (crawlItems: CrawlItem[], org: TaxExemptOrga
             console.error("COMPLETION REFUSED", refusal);
         }
         return completion;
-    } catch (e: any) {
-        if (e.constructor.name == "LengthFinishReasonError") {
+    } catch (e: unknown) {
+        if (e instanceof Error && e.name === "LengthFinishReasonError") {
             console.log("Too many tokens: ", e.message);
-        } else {
+        } else if (e instanceof Error) {
             console.log("An error occurred: ", e.message);
+        } else {
+            console.log("An unknown error occurred.");
         }
     }
 };

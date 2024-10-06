@@ -64,12 +64,14 @@ export const findTaxExemptOrgs = async (
 };
 
 /**
- * Updates many tax exempt organizations in the database based on the provided filter.
+ * Updates many tax exempt organizations in the database.
  *
  * @param {TaxExemptOrganization[]} orgs - The orgs to update. Should be pre-validated.
  * @returns {Promise<void>} Nothing.
  */
 export const bulkUpdateOrgs = async (orgs: TaxExemptOrganization[]): Promise<void> => {
+    if (orgs.length === 0) return;
+
     try {
         await client.connect();
 
@@ -79,13 +81,38 @@ export const bulkUpdateOrgs = async (orgs: TaxExemptOrganization[]): Promise<voi
                 update: { $set: org },
             },
         }));
+        console.dir(bulkOps, { depth: null });
 
         const result: BulkWriteResult = await tax_exempt_organizations.bulkWrite(bulkOps);
-        console.log(`${result.modifiedCount} documents were modified`);
+        console.log(`${result.modifiedCount} documents were modified, ${result.upsertedCount} were upserted`);
     } catch (error) {
-        console.error(error);
+        console.error("Failed to bulk update orgs:", error);
         throw new Error("Failed to bulk update orgs");
     } finally {
         await client.close();
     }
 };
+
+/**
+ * Updates a single tax exempt organization in the database.
+ *
+ * @param {TaxExemptOrganization} org - The organization to update. Should be pre-validated.
+ * @returns {Promise<void>} Nothing.
+ */
+export const updateOrg = async (org: TaxExemptOrganization): Promise<void> => {
+    try {
+        await client.connect();
+        const result = await tax_exempt_organizations.updateOne({ _id: org._id }, { $set: org });
+        if (result.modifiedCount === 0) {
+            console.warn(`No documents were modified for org with id: ${org._id}`);
+        } else {
+            console.log(`Successfully updated org with id: ${org._id}`);
+        }
+    } catch (error) {
+        console.error(error);
+        throw new Error("Failed to update org in DB");
+    } finally {
+        await client.close();
+    }
+};
+
