@@ -4,11 +4,11 @@ import { fork, ChildProcess } from "child_process";
 import pLimit from "p-limit";
 
 const THREAD_LIMIT = 20;
-const MAX_ORGS = 5;
-const BATCH_SIZE = 4;
+const MAX_ORGS = 1000;
+const BATCH_SIZE = 100;
 
-export const parseSearchResults = async () => {
-    const orgs = await findTaxExemptOrgs(MAX_ORGS, {
+export const parseSearchResults = async (maxOrgs: number = MAX_ORGS) => {
+    const orgs = await findTaxExemptOrgs(maxOrgs, {
         searchResults: { $exists: true },
         resultsParsedAt: { $exists: false },
     });
@@ -29,7 +29,7 @@ export const parseSearchResults = async () => {
             const orgsToUpdate = [...updatedOrgs];
             updatedOrgs.length = 0; // Clear the array
             console.log("Updating batch of", orgsToUpdate.length, "organizations");
-            // await bulkUpdateOrgs(orgsToUpdate);
+            await bulkUpdateOrgs(orgsToUpdate);
         }
     };
 

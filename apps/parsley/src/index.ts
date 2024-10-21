@@ -1,11 +1,12 @@
 import "dotenv/config";
-import { parseSearchResults } from "./scripts/parseSearchResults";
+import { writeConfirmationFile } from "./scripts/generateBatchConfirmationFile";
 // import { createCrawler } from "./crawlee/crawler";
 
 const main = async () => {
-    console.time("fork");
-    await parseSearchResults();
-    console.timeEnd("fork");
+    // console.time("fork");
+    // await parseSearchResults();
+    // console.timeEnd("fork");
+    await writeConfirmationFile();
 
     // const aboutPatterns = [/about/i, /about-us/i, /history/i, /mission/i];
     // const href = "https://taiwaneseamericanhistory.org/culture-3/";
@@ -47,6 +48,7 @@ const main = async () => {
     // await crawler.run(["https://www.killingmylobster.com/"]);
     // const data = await getLatestCrawlData();
     // console.log(data);
+    process.exit(0);
 };
 
 main().catch(console.error);

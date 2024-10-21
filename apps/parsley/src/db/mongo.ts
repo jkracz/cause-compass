@@ -1,4 +1,4 @@
-import { MongoClient, ServerApiVersion, AnyBulkWriteOperation, BulkWriteResult, Filter } from "mongodb";
+import { MongoClient, ServerApiVersion, AnyBulkWriteOperation, BulkWriteResult, Filter, Db, ObjectId } from "mongodb";
 import { TaxExemptOrganization } from "../types";
 import "dotenv/config";
 
@@ -11,97 +11,85 @@ if (!mongoUser) {
 }
 const uri: string = `mongodb+srv://${mongoUser}:${mongoPassword}@causecompass-1.xgfmikf.mongodb.net/?retryWrites=true&w=majority&appName=CauseCompass-1`;
 
-const client = new MongoClient(uri, {
-    serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-    },
-});
+let client: MongoClient;
+let db: Db;
+let tax_exempt_organizations: any;
 
-const db = client.db("CauseCompass-1");
-const tax_exempt_organizations = db.collection<TaxExemptOrganization>("tax_exempt_organizations");
-
-/**
- * Inserts many tax exempt organizations into the database.
- *
- * @param {TaxExemptOrganization[]} documents - The org documents to insert. Should be pre-validated.
- * @returns {Promise<void>} A configured instance of PlaywrightCrawler.
- */
-export const insertManyTaxExemptOrgs = async (documents: TaxExemptOrganization[]): Promise<void> => {
-    try {
+export const connectToDatabase = async () => {
+    if (!client) {
+        client = new MongoClient(uri, {
+            serverApi: {
+                version: ServerApiVersion.v1,
+                strict: true,
+                deprecationErrors: true,
+            },
+        });
         await client.connect();
-        const result = await tax_exempt_organizations.insertMany(documents);
-        console.log(`${result.insertedCount} documents were inserted`);
-    } catch (error) {
-        console.error("Failed to insert documents:", error);
-    } finally {
+        db = client.db("CauseCompass-1");
+        tax_exempt_organizations = db.collection<TaxExemptOrganization>("tax_exempt_organizations");
+    }
+};
+
+export const disconnectFromDatabase = async () => {
+    if (client) {
         await client.close();
     }
 };
 
-/**
- * Finds tax exempt organizations in the database based on the provided filter.
- *
- * @param {Filter<TaxExemptOrganization>} filter - The filter to use for the query.
- * @param {number} limit - The maximum number of documents to return.
- * @returns {Promise<TaxExemptOrganization[]>} Orgs that match the filter.
- */
+// Update other functions to use connectToDatabase
+export const insertManyTaxExemptOrgs = async (documents: TaxExemptOrganization[]): Promise<void> => {
+    try {
+        await connectToDatabase();
+        const result = await tax_exempt_organizations.insertMany(documents);
+        console.log(`${result.insertedCount} documents were inserted`);
+    } catch (error) {
+        console.error("Failed to insert documents:", error);
+    }
+};
+
 export const findTaxExemptOrgs = async (
     limit: number,
     filter: Filter<TaxExemptOrganization>
 ): Promise<TaxExemptOrganization[]> => {
     try {
-        await client.connect();
+        await connectToDatabase();
         const profiles = await tax_exempt_organizations.find(filter).limit(limit).toArray();
         return profiles;
     } catch (error) {
         console.error(error);
         throw new Error("Failed to retrieve orgs from DB");
-    } finally {
-        await client.close();
     }
 };
 
-/**
- * Updates many tax exempt organizations in the database.
- *
- * @param {TaxExemptOrganization[]} orgs - The orgs to update. Should be pre-validated.
- * @returns {Promise<void>} Nothing.
- */
 export const bulkUpdateOrgs = async (orgs: TaxExemptOrganization[]): Promise<void> => {
     if (orgs.length === 0) return;
+    console.log(orgs[0]._id);
 
     try {
-        await client.connect();
+        await connectToDatabase();
 
-        const bulkOps: AnyBulkWriteOperation<TaxExemptOrganization>[] = orgs.map((org) => ({
-            updateOne: {
-                filter: { _id: org._id },
-                update: { $set: org },
-            },
-        }));
-        console.dir(bulkOps, { depth: null });
+        const bulkOps: AnyBulkWriteOperation<TaxExemptOrganization>[] = orgs.map((org) => {
+            const { _id, ...updateData } = org;
+            return {
+                updateOne: {
+                    filter: { _id: new ObjectId(_id) },
+                    update: { $set: updateData },
+                },
+            };
+        });
 
         const result: BulkWriteResult = await tax_exempt_organizations.bulkWrite(bulkOps);
         console.log(`${result.modifiedCount} documents were modified, ${result.upsertedCount} were upserted`);
+        await disconnectFromDatabase();
     } catch (error) {
         console.error("Failed to bulk update orgs:", error);
         throw new Error("Failed to bulk update orgs");
-    } finally {
-        await client.close();
     }
 };
 
-/**
- * Updates a single tax exempt organization in the database.
- *
- * @param {TaxExemptOrganization} org - The organization to update. Should be pre-validated.
- * @returns {Promise<void>} Nothing.
- */
 export const updateOrg = async (org: TaxExemptOrganization): Promise<void> => {
     try {
-        await client.connect();
+        await connectToDatabase();
         const result = await tax_exempt_organizations.updateOne({ _id: org._id }, { $set: org });
         if (result.modifiedCount === 0) {
             console.warn(`No documents were modified for org with id: ${org._id}`);
@@ -111,8 +99,6 @@ export const updateOrg = async (org: TaxExemptOrganization): Promise<void> => {
     } catch (error) {
         console.error(error);
         throw new Error("Failed to update org in DB");
-    } finally {
-        await client.close();
     }
 };
 

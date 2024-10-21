@@ -5,3 +5,4 @@
 /src/data/nonprofitProfiles/*
 storage
 .env.local
+/batchConfirms

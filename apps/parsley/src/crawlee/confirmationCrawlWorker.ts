@@ -28,7 +28,7 @@ import { CrawlItem } from "../types";
     process.send!(org);
 
     // Clean up the storage
-    // await cleanupCrawlerStorage(org.name, true);
+    await cleanupCrawlerStorage(org.name, true);
     await confirmationCrawler.teardown();
     process.exit(0);
 })();

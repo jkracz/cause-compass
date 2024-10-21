@@ -82,7 +82,7 @@ export const findBestUrls = (org: TaxExemptOrganization, acronym: string): strin
                 score: scoreUrl(result.displayLink, org.name, acronym),
             };
         });
-        // console.log("Scored results:", scoredResults);
+
         scoredResults.sort((a, b) => b.score - a.score);
         return scoredResults.map((result) => {
             return result.fullLink.startsWith("https://") || result.fullLink.startsWith("http://")
