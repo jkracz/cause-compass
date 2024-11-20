@@ -6,3 +6,4 @@
 storage
 .env.local
 /batchConfirms
+logs/*

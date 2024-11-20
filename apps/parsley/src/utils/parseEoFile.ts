@@ -2,6 +2,7 @@ import * as fs from "fs";
 import { parse } from "csv-parse";
 import { join } from "path";
 import { convertToTitleCase } from "./titleCase";
+import { logger } from "@/utils/logger";
 
 import {
     TaxExemptOrganization,
@@ -71,11 +72,11 @@ export const parseEoFile = async (fileName: string): Promise<Record<string, TaxE
                 profiles[npProfile.ein] = npProfile;
             })
             .on("error", (err) => {
-                console.error(err);
+                logger.error(err);
                 reject(err);
             })
             .on("end", () => {
-                console.log("Finished parsing the CSV file.");
+                logger.info("Finished parsing the CSV file.");
                 resolve(profiles);
             });
     });

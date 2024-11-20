@@ -8,6 +8,7 @@
         "chat": "tsx src/scripts/chat.ts",
         "create-profiles": "tsx src/scripts/createOrgsByState.ts",
         "search-orgs": "tsx src/scripts/googleSearchOrgs.ts",
+        "confirm-crawl-websites": "tsx src/scripts/parseSearchResults.ts",
         "start": "tsx src/index.ts"
     },
     "repository": {
@@ -21,29 +22,30 @@
     },
     "homepage": "https://github.com/CauseCompass/np-data-parser#readme",
     "dependencies": {
-        "crawlee": "^3.11.5",
+        "crawlee": "^3.12.0",
         "csv-parse": "^5.5.6",
         "dotenv": "^16.4.5",
         "googleapis": "^144.0.0",
-        "mongodb": "^6.9.0",
-        "nanoid": "^5.0.7",
-        "openai": "^4.68.1",
+        "mongodb": "^6.10.0",
+        "nanoid": "^5.0.8",
+        "openai": "^4.72.0",
         "p-limit": "^6.1.0",
-        "playwright": "^1.48.1",
+        "playwright": "^1.49.0",
         "slugify": "^1.6.6",
         "title-case": "^4.3.2",
-        "tldts": "^6.1.52",
+        "tldts": "^6.1.61",
+        "winston": "^3.17.0",
         "yargs": "^17.7.2",
         "zod": "^3.23.8"
     },
     "devDependencies": {
-        "@eslint/js": "^9.13.0",
+        "@eslint/js": "^9.15.0",
         "@types/aws-lambda": "8.10.145",
-        "@types/node": "^22.7.7",
-        "eslint": "^9.13.0",
-        "globals": "^15.11.0",
+        "@types/node": "^22.9.1",
+        "eslint": "^9.15.0",
+        "globals": "^15.12.0",
         "ts-node": "^10.9.2",
-        "tsx": "^4.19.1",
-        "typescript-eslint": "^8.10.0"
+        "tsx": "^4.19.2",
+        "typescript-eslint": "^8.15.0"
     }
 }
