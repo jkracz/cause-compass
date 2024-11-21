@@ -15,9 +15,17 @@ const uri: string = `mongodb+srv://${mongoUser}:${mongoPassword}@causecompass-1.
 let client: MongoClient;
 let db: Db;
 let tax_exempt_organizations: any;
+let isConnecting: Promise<void> | null = null;
 
 export const connectToDatabase = async () => {
-    if (!client) {
+    if (client) return;
+    
+    if (isConnecting) {
+        await isConnecting;
+        return;
+    }
+
+    isConnecting = (async () => {
         try {
             client = new MongoClient(uri, {
                 serverApi: {
@@ -32,8 +40,12 @@ export const connectToDatabase = async () => {
         } catch (error) {
             logger.error("Failed to connect to database:", error);
             throw error;
+        } finally {
+            isConnecting = null;
         }
-    }
+    })();
+
+    await isConnecting;
 };
 
 export const disconnectFromDatabase = async () => {
@@ -89,8 +101,6 @@ export const bulkUpdateOrgs = async (orgs: TaxExemptOrganization[]): Promise<voi
     } catch (error) {
         logger.error("Failed to bulk update orgs:", error);
         throw error;
-    } finally {
-        await disconnectFromDatabase();
     }
 };
 
@@ -108,3 +118,27 @@ export const updateOrg = async (org: TaxExemptOrganization): Promise<void> => {
         throw new Error("Failed to update org in DB");
     }
 };
+
+process.on('SIGINT', async () => {
+    await disconnectFromDatabase();
+    process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+    await disconnectFromDatabase();
+    process.exit(0);
+});
+
+// Handle cleanup on normal exit
+process.on('exit', () => {
+    if (client) {
+        client.close(true); // Force close
+    }
+});
+
+// Handle cleanup on unhandled rejections
+process.on('unhandledRejection', async (reason) => {
+    logger.error('Unhandled Rejection at:', reason);
+    await disconnectFromDatabase();
+    process.exit(1);
+});
