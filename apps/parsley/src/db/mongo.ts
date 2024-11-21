@@ -1,6 +1,7 @@
 import { MongoClient, ServerApiVersion, AnyBulkWriteOperation, BulkWriteResult, Filter, Db, ObjectId } from "mongodb";
-import { TaxExemptOrganization } from "../types";
+import { TaxExemptOrganization } from "@/types";
 import "dotenv/config";
+import { logger } from "@/utils/logger";
 
 const mongoUser: string | undefined = process.env.MONGO_USER;
 const mongoPassword: string | undefined = process.env.MONGO_PASSWORD;
@@ -17,16 +18,21 @@ let tax_exempt_organizations: any;
 
 export const connectToDatabase = async () => {
     if (!client) {
-        client = new MongoClient(uri, {
-            serverApi: {
-                version: ServerApiVersion.v1,
-                strict: true,
-                deprecationErrors: true,
-            },
-        });
-        await client.connect();
-        db = client.db("CauseCompass-1");
-        tax_exempt_organizations = db.collection<TaxExemptOrganization>("tax_exempt_organizations");
+        try {
+            client = new MongoClient(uri, {
+                serverApi: {
+                    version: ServerApiVersion.v1,
+                    strict: true,
+                    deprecationErrors: true,
+                },
+            });
+            await client.connect();
+            db = client.db("CauseCompass-1");
+            tax_exempt_organizations = db.collection<TaxExemptOrganization>("tax_exempt_organizations");
+        } catch (error) {
+            logger.error("Failed to connect to database:", error);
+            throw error;
+        }
     }
 };
 
@@ -41,9 +47,9 @@ export const insertManyTaxExemptOrgs = async (documents: TaxExemptOrganization[]
     try {
         await connectToDatabase();
         const result = await tax_exempt_organizations.insertMany(documents);
-        console.log(`${result.insertedCount} documents were inserted`);
+        logger.info(`${result.insertedCount} documents were inserted`);
     } catch (error) {
-        console.error("Failed to insert documents:", error);
+        logger.error("Failed to insert documents:", error);
     }
 };
 
@@ -56,14 +62,14 @@ export const findTaxExemptOrgs = async (
         const profiles = await tax_exempt_organizations.find(filter).limit(limit).toArray();
         return profiles;
     } catch (error) {
-        console.error(error);
+        logger.error("Failed to retrieve orgs from DB:", error);
         throw new Error("Failed to retrieve orgs from DB");
     }
 };
 
 export const bulkUpdateOrgs = async (orgs: TaxExemptOrganization[]): Promise<void> => {
     if (orgs.length === 0) return;
-    console.log(orgs[0]._id);
+    logger.info(`Updating ${orgs.length} organizations`);
 
     try {
         await connectToDatabase();
@@ -79,11 +85,12 @@ export const bulkUpdateOrgs = async (orgs: TaxExemptOrganization[]): Promise<voi
         });
 
         const result: BulkWriteResult = await tax_exempt_organizations.bulkWrite(bulkOps);
-        console.log(`${result.modifiedCount} documents were modified, ${result.upsertedCount} were upserted`);
-        await disconnectFromDatabase();
+        logger.info(`${result.modifiedCount} documents were modified, ${result.upsertedCount} were upserted`);
     } catch (error) {
-        console.error("Failed to bulk update orgs:", error);
-        throw new Error("Failed to bulk update orgs");
+        logger.error("Failed to bulk update orgs:", error);
+        throw error;
+    } finally {
+        await disconnectFromDatabase();
     }
 };
 
@@ -92,13 +99,12 @@ export const updateOrg = async (org: TaxExemptOrganization): Promise<void> => {
         await connectToDatabase();
         const result = await tax_exempt_organizations.updateOne({ _id: org._id }, { $set: org });
         if (result.modifiedCount === 0) {
-            console.warn(`No documents were modified for org with id: ${org._id}`);
+            logger.warn(`No documents were modified for org with id: ${org._id}`);
         } else {
-            console.log(`Successfully updated org with id: ${org._id}`);
+            logger.info(`Successfully updated org with id: ${org._id}`);
         }
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         throw new Error("Failed to update org in DB");
     }
 };
-
