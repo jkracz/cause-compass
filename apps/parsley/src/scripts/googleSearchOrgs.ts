@@ -41,6 +41,7 @@ const googleSearchOrgs = async () => {
                 const searchQuery = `${org.name} ${org.city} ${org.state}`;
                 const searchResults = await googleSearch(searchQuery, keyType);
                 org.searchResults = searchResults?.items || searchResults;
+                org.searchKey = keyType;
                 org.searchedAt = new Date().toISOString();
             });
 
@@ -52,7 +53,7 @@ const googleSearchOrgs = async () => {
             const processedIds = processedOrgs.map((org) => org._id).filter(Boolean) as ObjectId[];
 
             await bulkUpdateOrgs(processedOrgs);
-            console.log(`Documents IDs Processed for ${keyType}:`, processedIds);
+            console.log(`Documents IDs Processed for ${keyType}:`, processedIds.map(id => id.toString()));
         };
 
         // Process and save results for each key sequentially

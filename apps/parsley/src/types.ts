@@ -36,6 +36,7 @@ export interface TaxExemptOrganization {
     nteeCode?: NteeCode; // NTEE Code
     sortName?: string; // Sort Name (Secondary Name Line)
     searchResults?: SearchResult[];
+    searchKey?: GoogleSearchApiKeyType;
     resultsParsedAt?: string;
     confirmationCrawlItems?: CrawlItem[];
     aiConfirmationResponse?: any;
