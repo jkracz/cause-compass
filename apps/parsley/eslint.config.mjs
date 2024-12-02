@@ -9,12 +9,12 @@ export default [
     pluginJs.configs.recommended,
     ...tseslint.configs.recommended,
     {
-        // Adding custom rules for TypeScript
         rules: {
             "@typescript-eslint/no-explicit-any": "warn",
             "@typescript-eslint/no-unused-vars": "warn",
             "@typescript-eslint/no-require-imports": "off",
             "@typescript-eslint/triple-slash-reference": "off",
+            "quotes": ["error", "double"],
         },
     },
 ];

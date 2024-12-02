@@ -3,16 +3,22 @@ import { findTaxExemptOrgs, bulkUpdateOrgs } from "@/db/mongo";
 import { fork, ChildProcess } from "child_process";
 import pLimit from "p-limit";
 import { logger } from "@/utils/logger";
+import fs from "fs";
+import path from "path";
 
-const THREAD_LIMIT = 30;
-const MAX_ORGS = 5000;
-const BATCH_SIZE = 50;
+const THREAD_LIMIT = 20;
+const MAX_ORGS = 60;
+const BATCH_SIZE = 20;
+const WORKER_TIMEOUT = 6 * 60 * 1000;
 
 export const parseSearchResults = async (maxOrgs: number = MAX_ORGS) => {
     try {
         const orgs = await findTaxExemptOrgs(maxOrgs, {
-            searchResults: { $exists: true },
-            resultsParsedAt: { $exists: false },
+            $and: [
+                { searchResults: { $exists: true } },
+                { searchResults: { $type: "array" } },
+                { resultsParsedAt: { $exists: false } },
+            ],
         });
         const threadLimit = pLimit(THREAD_LIMIT);
 
@@ -29,8 +35,8 @@ export const parseSearchResults = async (maxOrgs: number = MAX_ORGS) => {
         const updateBatch = async () => {
             if (updatedOrgs.length > 0) {
                 const orgsToUpdate = [...updatedOrgs];
-                updatedOrgs.length = 0; // Clear the array
-                console.log("Updating batch of", orgsToUpdate.length, "organizations");
+                updatedOrgs.length = 0;
+                logger.info("Updating batch of", orgsToUpdate.length, "organizations");
                 await bulkUpdateOrgs(orgsToUpdate);
             }
         };
@@ -39,16 +45,44 @@ export const parseSearchResults = async (maxOrgs: number = MAX_ORGS) => {
             threadLimit(
                 () =>
                     new Promise<void>((resolve, reject) => {
+                        let workerFinished = false;
+
                         const worker = fork("./src/crawlee/confirmationCrawlWorker.ts", [], {
                             env: { ...process.env, ORG_DATA: JSON.stringify(org), WORKER_INDEX: `${org.name}` },
                         });
                         workers.push(worker);
 
+                        const workerTimeout = setTimeout(() => {
+                            if (!workerFinished) {
+                                logger.error(`Worker timeout for org ${org.name}`);
+                                worker.send({ action: "shutdown" });
+                                setTimeout(() => {
+                                    if (workers.includes(worker)) {
+                                        worker.kill("SIGKILL");
+                                    }
+                                }, 5000);
+                            }
+                        }, WORKER_TIMEOUT);
+
+                        const cleanup = () => {
+                            if (!workerFinished) {
+                                workerFinished = true;
+                                clearTimeout(workerTimeout);
+                                cleanupWorker(worker, workers);
+                            }
+                        };
+
                         worker.on("message", (message) => {
                             if (typeof message === "object" && "error" in message) {
-                                logger.error(`Worker error for org ${org.name}:`, message.error);
-                                reject(new Error(message?.error as string));
-                            } else {
+                                cleanup();
+                                logger.error(`Worker error for org ${org.name}:`, {
+                                    error: message.error,
+                                    stack: (message as { error: unknown; stack?: string }).stack,
+                                    orgData: (message as { error: unknown; orgData?: unknown }).orgData,
+                                });
+                                reject(new Error(message.error as string));
+                            } else if (typeof message === "object" && "confirmationCrawlItems" in message) {
+                                cleanup();
                                 updatedOrgs.push(message as TaxExemptOrganization);
                                 if (updatedOrgs.length >= BATCH_SIZE) {
                                     if (batchUpdatePromise === null) {
@@ -60,16 +94,17 @@ export const parseSearchResults = async (maxOrgs: number = MAX_ORGS) => {
                                 resolve();
                             }
                         });
+
                         worker.on("error", (error) => {
+                            cleanup();
                             logger.error(`Worker error for org ${org.name}:`, error);
                             reject(error);
                         });
+
                         worker.on("exit", (code) => {
-                            if (code !== 0) {
-                                logger.warn(`Worker for org ${org.name} exited with code ${code}`);
+                            cleanup();
+                            if (code !== 0 && !workerFinished) {
                                 reject(new Error(`Worker exited with code ${code}`));
-                            } else {
-                                resolve();
                             }
                         });
                     })
@@ -85,6 +120,52 @@ export const parseSearchResults = async (maxOrgs: number = MAX_ORGS) => {
         throw error;
     }
 };
-console.time("confirm-websites");
-parseSearchResults();
-console.timeEnd("confirm-websites");
+
+const cleanupWorker = (worker: ChildProcess, workers: ChildProcess[]) => {
+    const workerIndex = workers.indexOf(worker);
+    if (workerIndex > -1) {
+        workers.splice(workerIndex, 1);
+        try {
+            worker.kill("SIGTERM");
+        } catch (error) {
+            logger.warn("Error killing worker:", error);
+        }
+    }
+};
+
+const cleanupStorage = async () => {
+    try {
+        const storageDir = path.resolve(__dirname, "../../storage");
+        if (fs.existsSync(storageDir)) {
+            await fs.promises.rm(storageDir, { recursive: true, force: true });
+            logger.info("Storage directory cleaned up successfully");
+        }
+    } catch (error) {
+        logger.error("Error cleaning up storage directory:", error);
+    }
+};
+
+process.on("SIGINT", async () => {
+    logger.info("Received SIGINT. Cleaning up...");
+    await cleanupStorage();
+    process.exit();
+});
+
+process.on("SIGTERM", async () => {
+    logger.info("Received SIGTERM. Cleaning up...");
+    await cleanupStorage();
+    process.exit();
+});
+
+const main = async () => {
+    console.time("confirm-websites");
+    await parseSearchResults();
+    await cleanupStorage();
+    console.timeEnd("confirm-websites");
+    process.exit(0);
+};
+
+main().catch((error) => {
+    logger.error("Error in main:", error);
+    process.exit(1);
+});

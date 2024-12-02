@@ -92,6 +92,6 @@ export const writeConfirmationFile = async () => {
                 response_format: zodResponseFormat(WebsiteConfirmation, "website-confirmation"),
             },
         };
-        fs.appendFileSync(`batchConfirms/test.jsonl`, JSON.stringify(line) + "\n");
+        fs.appendFileSync("batchConfirms/test.jsonl", JSON.stringify(line) + "\n");
     });
 };

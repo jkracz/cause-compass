@@ -19,7 +19,7 @@ let isConnecting: Promise<void> | null = null;
 
 export const connectToDatabase = async () => {
     if (client) return;
-    
+
     if (isConnecting) {
         await isConnecting;
         return;
@@ -119,26 +119,26 @@ export const updateOrg = async (org: TaxExemptOrganization): Promise<void> => {
     }
 };
 
-process.on('SIGINT', async () => {
+process.on("SIGINT", async () => {
     await disconnectFromDatabase();
     process.exit(0);
 });
 
-process.on('SIGTERM', async () => {
+process.on("SIGTERM", async () => {
     await disconnectFromDatabase();
     process.exit(0);
 });
 
 // Handle cleanup on normal exit
-process.on('exit', () => {
+process.on("exit", () => {
     if (client) {
         client.close(true); // Force close
     }
 });
 
 // Handle cleanup on unhandled rejections
-process.on('unhandledRejection', async (reason) => {
-    logger.error('Unhandled Rejection at:', reason);
+process.on("unhandledRejection", async (reason) => {
+    logger.error("Unhandled Rejection at:", reason);
     await disconnectFromDatabase();
     process.exit(1);
 });

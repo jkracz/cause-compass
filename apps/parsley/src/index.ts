@@ -1,54 +1,41 @@
 import "dotenv/config";
 import { writeConfirmationFile } from "./scripts/generateBatchConfirmationFile";
-// import { createCrawler } from "./crawlee/crawler";
+import { parseSearchResults } from "./scripts/parseSearchResults";
+import { logger } from "@/utils/logger";
+import path from "path";
 
 const main = async () => {
-    // console.time("fork");
-    // await parseSearchResults();
-    // console.timeEnd("fork");
-    await writeConfirmationFile();
+    try {
+        console.log("Starting the application");
 
-    // const aboutPatterns = [/about/i, /about-us/i, /history/i, /mission/i];
-    // const href = "https://taiwaneseamericanhistory.org/culture-3/";
-    // const url = new URL(href);
+        // Test different log levels
+        logger.error("This is an error log");
+        logger.warn("This is a warning log");
+        logger.info("This is an info logoooooooppppps");
+        logger.debug("This is a debug log");
 
-    // if (aboutPatterns.some((pattern) => pattern.test(url.pathname))) {
-    //     const pathSegments = url.pathname.split("/").filter((segment) => segment !== "");
+        // Check if log files were created
+        const logsDir = path.join(process.cwd(), "logs");
+        console.log("Checking log files in:", logsDir);
 
-    //     // Convert URL to lowercase for comparison and filtering
-    //     const lowerCaseHref = href.toLowerCase();
-    //     console.log("lowerCaseHref", lowerCaseHref);
+        // if (fs.existsSync(logsDir)) {
+        //     const files = fs.readdirSync(logsDir);
+        //     console.log("Log files found:", files);
+        // } else {
+        //     console.log("Logs directory does not exist");
+        // }
 
-    //     if (
-    //         !href.includes("#") && // Exclude links with #
-    //         pathSegments.length <= 1 // Limit to one directory depth
-    //     ) {
-    //         console.log("pathSegments", pathSegments);
-    //     }
-    // }
+        // Uncomment and use these functions as needed
+        // await parseSearchResults();
+        // await writeConfirmationFile();
 
-    // const crawler = await createCrawler({ addLinks: false });
-    // await crawler.run([
-    //     "https://www.makernexus.org/",
-    //     "https://myhero.com/",
-    //     "https://www.duoduoproject.org/",
-    //     "https://www.fabmo.org/",
-    //     "https://www.killingmylobster.com/",
-    // ]);
-    // const data = await getLatestCrawlData();
-    // console.log(data);
-
-    // const crawler2 = await createCrawler({
-    //     datasetName: "test",
-    //     maxRequestsPerCrawl: 4,
-    // });
-    // await crawler2.run(["https://www.killingmylobster.com/"]);
-
-    // const crawler = createCrawler(5);
-    // await crawler.run(["https://www.killingmylobster.com/"]);
-    // const data = await getLatestCrawlData();
-    // console.log(data);
-    process.exit(0);
+        console.log("Application completed successfully");
+    } catch (error) {
+        console.error("An error occurred in the main function", error);
+    }
 };
 
-main().catch(console.error);
+main().catch((error) => {
+    console.error("Unhandled error in main", error);
+    process.exit(1);
+});
