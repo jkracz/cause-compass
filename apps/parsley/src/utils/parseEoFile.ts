@@ -56,8 +56,9 @@ const eoStatusCodesDict = eoStatusCodes as Record<string, EOStatusCode>;
  * @throws {Error} Throws an error if the file cannot be read or parsed.
  */
 
+const DATA_DIR = "data";
 export const parseEoFile = async (fileName: string): Promise<Record<string, TaxExemptOrganization>> => {
-    const currentPath = join(__dirname, "../data/raw", fileName);
+    const currentPath = join(__dirname, `${DATA_DIR}/raw`, fileName);
 
     return new Promise((resolve, reject) => {
         const profiles: Record<string, TaxExemptOrganization> = {};

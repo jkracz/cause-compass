@@ -6,9 +6,9 @@ import { logger } from "@/utils/logger";
 import fs from "fs";
 import path from "path";
 
-const THREAD_LIMIT = 20;
-const MAX_ORGS = 60;
-const BATCH_SIZE = 20;
+const THREAD_LIMIT = 35;
+const MAX_ORGS = 5000;
+const BATCH_SIZE = 50;
 const WORKER_TIMEOUT = 6 * 60 * 1000;
 
 export const parseSearchResults = async (maxOrgs: number = MAX_ORGS) => {
@@ -26,9 +26,13 @@ export const parseSearchResults = async (maxOrgs: number = MAX_ORGS) => {
         const workers: ChildProcess[] = [];
         let batchUpdatePromise: Promise<void> | null = null;
 
-        process.on("SIGINT", () => {
+        process.on("SIGINT", async () => {
             console.log("Cancelling...");
+            if (updatedOrgs.length > 0) {
+                await updateBatch();
+            }
             workers.forEach((worker) => worker.kill());
+            cleanupStorage();
             process.exit();
         });
 
@@ -133,11 +137,11 @@ const cleanupWorker = (worker: ChildProcess, workers: ChildProcess[]) => {
     }
 };
 
-const cleanupStorage = async () => {
+const cleanupStorage = () => {
     try {
         const storageDir = path.resolve(__dirname, "../../storage");
         if (fs.existsSync(storageDir)) {
-            await fs.promises.rm(storageDir, { recursive: true, force: true });
+            fs.rmSync(storageDir, { recursive: true, force: true });
             logger.info("Storage directory cleaned up successfully");
         }
     } catch (error) {
@@ -145,15 +149,9 @@ const cleanupStorage = async () => {
     }
 };
 
-process.on("SIGINT", async () => {
-    logger.info("Received SIGINT. Cleaning up...");
-    await cleanupStorage();
-    process.exit();
-});
-
 process.on("SIGTERM", async () => {
     logger.info("Received SIGTERM. Cleaning up...");
-    await cleanupStorage();
+    cleanupStorage();
     process.exit();
 });
 

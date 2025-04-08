@@ -13,6 +13,7 @@ const { hideBin } = require("yargs/helpers");
 const argv = yargs(hideBin(process.argv)).argv;
 
 const BATCH_SIZE = 5000;
+const DATA_DIR = "data";
 
 const meetsCriteria = (eo: TaxExemptOrganization) => {
     const { deductibility, activityCodes, affiliation, filingReqCode, foundation, status } = eo;
@@ -73,7 +74,7 @@ const createOrgsByState = async (state: string) => {
             logger.info(`Inserted final batch of ${dbBatch.length} records to the database.`);
             dbBatch = [];
         }
-        const outputDirectoryPath: string = path.join(__dirname, "../data/nonprofitProfiles");
+        const outputDirectoryPath: string = path.join(__dirname, `${DATA_DIR}/nonprofitProfiles`);
         await jsonFileWrite(outputDirectoryPath, parsedProfiles, state);
         totalFilesWritten += 1;
         logger.info(`Processing for ${state} completed.`);

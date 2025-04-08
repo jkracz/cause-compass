@@ -93,8 +93,93 @@ export const findBestUrls = (org: TaxExemptOrganization, acronym: string): strin
     return [];
 };
 
+/**
+ * Extracts social media URLs from a given array of URLs.
+ *
+ * @param socials - An array of URLs to extract social media URLs from.
+ * @returns An object containing the extracted social media URLs, keyed by platform.
+ */
 export const extractSocialMediaUrls = (socials: string[]): SocialMediaUrls => {
-    const socialUrls = {
+    if (!socials || !Array.isArray(socials) || socials.length === 0) {
+        return {};
+    }
+
+    // Skip URLs that are clearly sharing/intent URLs
+    const filteredSocials = socials.filter(
+        (url) =>
+            url &&
+            !url.includes("sharer") &&
+            !url.includes("intent/tweet") &&
+            !url.includes("shareArticle") &&
+            !url.includes("share?") &&
+            !url.includes("share.php")
+    );
+
+    // Platform-specific regex patterns for profile URLs
+    const socialUrlPatterns = {
+        facebook:
+            /^https?:\/\/(www\.)?facebook\.com\/(?!sharer|hashtag|photo\.php|share|post|story|watch|gaming|events|marketplace|groups|pages|messages|bookmarks|notifications|me\/|home\.php|campaign\/|l\.php)([^/?&]+)\/?(?!\/)(?!posts|photos|videos|about)/i,
+        instagram: /^https?:\/\/(www\.)?instagram\.com\/([^/?&]+)\/?$/i,
+        linkedin: /^https?:\/\/(www\.)?linkedin\.com\/(company|school|in)\/([^/?&]+)\/?$/i,
+        x: /^https?:\/\/(www\.)?x\.com\/([^/?&]+)\/?$/i,
+        twitter: /^https?:\/\/(www\.)?twitter\.com\/([^/?&]+)\/?$/i,
+        youtube: /^https?:\/\/(www\.)?youtube\.com\/(c\/|channel\/|user\/)?([^/?&]+)\/?$/i,
+        threads: /^https?:\/\/(www\.)?threads\.net\/@?([^/?&]+)\/?$/i,
+    };
+
+    const socialMediaUrls: SocialMediaUrls = {};
+
+    // Process each URL
+    for (const social of filteredSocials) {
+        // Extract platform-specific profile URLs
+        if (socialUrlPatterns.facebook.test(social) && !socialMediaUrls.facebook) {
+            const match = social.match(socialUrlPatterns.facebook);
+            if (match && match[2]) {
+                const username = match[2];
+                socialMediaUrls.facebook = `https://www.facebook.com/${username}`;
+            }
+        } else if (socialUrlPatterns.instagram.test(social) && !socialMediaUrls.instagram) {
+            const match = social.match(socialUrlPatterns.instagram);
+            if (match && match[2]) {
+                const username = match[2];
+                socialMediaUrls.instagram = `https://www.instagram.com/${username}`;
+            }
+        } else if (socialUrlPatterns.linkedin.test(social) && !socialMediaUrls.linkedin) {
+            const match = social.match(socialUrlPatterns.linkedin);
+            if (match) {
+                socialMediaUrls.linkedin = social.split("?")[0]; // Remove query parameters
+            }
+        } else if ((socialUrlPatterns.twitter.test(social) || socialUrlPatterns.x.test(social)) && !socialMediaUrls.x) {
+            // Handle both twitter.com and x.com URLs, but store as x
+            const match = social.match(socialUrlPatterns.twitter) || social.match(socialUrlPatterns.x);
+            if (match && match[2]) {
+                const username = match[2];
+                socialMediaUrls.x = `https://twitter.com/${username}`; // Still using twitter.com as the canonical URL
+            }
+        } else if (socialUrlPatterns.youtube.test(social) && !socialMediaUrls.youtube) {
+            // YouTube channel links can have different formats
+            if (social.includes("/channel/")) {
+                socialMediaUrls.youtube = social.split("?")[0]; // Preserve channel ID format
+            } else {
+                const match = social.match(socialUrlPatterns.youtube);
+                if (match && match[3]) {
+                    const channelOrUser = match[3];
+                    socialMediaUrls.youtube = `https://www.youtube.com/${
+                        social.includes("/user/") ? "user" : "c"
+                    }/${channelOrUser}`;
+                }
+            }
+        } else if (socialUrlPatterns.threads.test(social) && !socialMediaUrls.threads) {
+            const match = social.match(socialUrlPatterns.threads);
+            if (match && match[2]) {
+                const username = match[2];
+                socialMediaUrls.threads = `https://www.threads.net/@${username.replace(/^@/, "")}`;
+            }
+        }
+    }
+
+    // Fall back to the old method for any platforms we didn't find
+    const oldSocialUrls = {
         linkedin: /https?:\/\/(www\.)?linkedin\.com\/company\/?/,
         youtube: /https?:\/\/(www\.)?youtube\.com\/channel\/?/,
         x: /https?:\/\/(www\.)?x\.com\/?/,
@@ -103,16 +188,120 @@ export const extractSocialMediaUrls = (socials: string[]): SocialMediaUrls => {
         threads: /https?:\/\/(www\.)?threads\.net\/?/,
         facebook: /https?:\/\/(www\.)?facebook\.com\/?/,
     };
-    const socialMediaUrls: SocialMediaUrls = {};
-    for (const social of socials) {
-        for (const platform in socialUrls) {
-            if (Object.prototype.hasOwnProperty.call(socialUrls, platform)) {
-                const regex = socialUrls[platform as keyof typeof socialUrls];
+
+    for (const social of filteredSocials) {
+        for (const platform in oldSocialUrls) {
+            if (
+                Object.prototype.hasOwnProperty.call(oldSocialUrls, platform) &&
+                !socialMediaUrls[platform as keyof typeof socialMediaUrls]
+            ) {
+                const regex = oldSocialUrls[platform as keyof typeof oldSocialUrls];
                 if (regex.test(social)) {
-                    socialMediaUrls[platform as keyof typeof socialMediaUrls] = social;
+                    // Don't include sharing/post links even in the fallback
+                    if (!social.includes("sharer") && !social.includes("share")) {
+                        socialMediaUrls[platform as keyof typeof socialMediaUrls] = social;
+                    }
                 }
             }
         }
     }
+
     return socialMediaUrls;
+};
+
+export const findMainLogo = (logoUrls: string[]): string | undefined => {
+    if (!logoUrls?.length) return undefined;
+
+    // Score each potential logo URL
+    const scoredLogos = logoUrls.map((url) => {
+        const filename = url.split("/").pop()?.toLowerCase() || "";
+        const path = url.toLowerCase();
+
+        let score = 0;
+
+        // Check if "logo" is in the filename
+        if (filename.includes("logo")) score += 30;
+
+        // Look for logo.png, logo.svg, etc.
+        if (/^logo[._-]?/.test(filename)) score += 20;
+
+        // Prioritize certain file formats
+        if (filename.endsWith(".svg")) score += 15;
+        if (filename.endsWith(".png")) score += 10;
+        if (filename.endsWith(".jpg") || filename.endsWith(".jpeg")) score += 5;
+
+        // Avoid third-party logos
+        if (path.includes("guidestar") || path.includes("charity-navigator") || path.includes("partner")) score -= 50;
+
+        // Prefer logos in main image directories
+        if (path.includes("/images/logo") || path.includes("/img/logo")) score += 15;
+
+        // Prefer logos in higher-level directories
+        const depth = (url.match(/\//g) || []).length;
+        score -= depth * 2;
+
+        // Avoid thumbnails and small versions
+        if (filename.includes("thumb") || filename.includes("small") || filename.includes("icon")) score -= 15;
+
+        return { url, score };
+    });
+
+    // Sort by score (highest first) and return the best match
+    scoredLogos.sort((a, b) => b.score - a.score);
+    return scoredLogos[0]?.url;
+};
+
+export const findBestDonationLink = (links: string[]): string | undefined => {
+    if (!links?.length) return undefined;
+
+    const donationKeywords = [
+        "donate",
+        "donation",
+        "giving",
+        "support",
+        "contribute",
+        "sponsor",
+        "gift",
+        "givingtuesday",
+        "give",
+        "donor",
+    ];
+
+    // Regex for common donation processors
+    const donationServices = [
+        /paypal\.com\/donate/i,
+        /donorbox\.org/i,
+        /networkforgood\.com/i,
+        /secure\.givelively\.org/i,
+    ];
+
+    // Score each link
+    const scoredLinks = links.map((link) => {
+        if (!link) return { link, score: 0 };
+        const lowerLink = link.toLowerCase();
+
+        let score = 0;
+
+        // Highest priority: Donation services
+        if (donationServices.some((regex) => regex.test(link))) {
+            score += 100;
+        }
+
+        // Check for exact donation keywords in URL
+        donationKeywords.forEach((keyword) => {
+            if (lowerLink.includes(`/${keyword}`)) score += 30;
+            if (lowerLink.includes(`${keyword}.`)) score += 25;
+            if (lowerLink.includes(`-${keyword}`)) score += 20;
+            if (lowerLink.includes(`_${keyword}`)) score += 20;
+            if (lowerLink.includes(`=${keyword}`)) score += 15;
+        });
+
+        return { link, score };
+    });
+
+    // Sort by score (highest first)
+    scoredLinks.sort((a, b) => b.score - a.score);
+
+    // Return best match if it has a score > 0, otherwise return first link
+    return scoredLinks[0].score > 0 ? scoredLinks[0].link : links[0];
 };

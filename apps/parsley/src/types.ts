@@ -3,7 +3,6 @@ export interface TaxExemptOrganization {
     createdAt?: string;
     lastUpdated?: string;
     searchedAt?: string;
-    aiGenDate?: string;
     _id?: ObjectId;
     dbId?: string;
     slug?: string;
@@ -41,28 +40,10 @@ export interface TaxExemptOrganization {
     confirmationCrawlItems?: CrawlItem[];
     aiConfirmationResponse?: any;
     socialMediaUrls?: SocialMediaUrls;
-    donationLinks?: string[];
+    donationUrl?: string;
     emailAddresses?: string[];
-    logoLinks?: string[];
-    hasNewsletterSignup?: boolean;
+    logoUrl?: string;
     websiteUrl?: string;
-}
-
-export interface AIGeneratedContent {
-    contentName: string;
-    generatedAt: string;
-    content: string;
-    references: Reference[];
-}
-
-export interface Reference {
-    content: string;
-    sources: Source[];
-}
-
-export interface Source {
-    title: string;
-    url: string;
 }
 
 interface NteeMajorCode {
@@ -142,6 +123,7 @@ export interface SocialMediaUrls {
     instagram?: string;
     threads?: string;
     facebook?: string;
+    twitter?: string;
 }
 
 export enum GoogleSearchApiKeyType {

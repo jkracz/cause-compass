@@ -4,18 +4,38 @@ import { TaxExemptOrganization } from "../types";
 import { findTaxExemptOrgs } from "../db/mongo";
 import fs from "fs";
 
-const BATCH_SIZE = 5;
+const BATCH_SIZE = 1000;
+const BATCH_DIR = "data/batch";
+
+const Activity = z.object({
+    name: z.string(),
+    description: z.string(),
+});
+
+const GeographicFocus = z.enum(["Global", "Local", "National", "Regional"]);
 
 const WebsiteConfirmation = z.object({
     hasCorrectWebsite: z.boolean(),
     correctWebsiteUrl: z.string().optional(),
     reasoning: z.string(),
+    organizationOneSentenceSummary: z.string().optional(),
+    whySupportOrganization: z.string().optional(),
+    organizationMission: z.string().optional(),
+    organizationTagline: z.string().optional(),
+    organizationUniqueTrait: z.string().optional(),
+    organizationTargetAudience: z.string().optional(),
+    organizationGeographicFocus: GeographicFocus.optional(),
+    organizationActivities: z.array(Activity),
 });
 export const writeConfirmationFile = async () => {
     const orgs: TaxExemptOrganization[] = await findTaxExemptOrgs(BATCH_SIZE, {
         searchResults: { $exists: true },
         resultsParsedAt: { $exists: true },
+        aiConfirmationResponse: { $exists: false },
     });
+    const today = new Date().toISOString();
+    const alphanumericDate = today.replace(/[^0-9a-zA-Z]/g, "");
+
     orgs.forEach((org) => {
         const { name, ein, street, city, state, nteeCode, activityCodes, confirmationCrawlItems } = org;
 
@@ -33,7 +53,7 @@ export const writeConfirmationFile = async () => {
         }));
 
         const line = {
-            custom_id: ein,
+            custom_id: `${ein}_${today}`,
             method: "POST",
             url: "/v1/chat/completions",
             body: {
@@ -41,7 +61,7 @@ export const writeConfirmationFile = async () => {
                 messages: [
                     {
                         role: "system",
-                        content: `You are an expert at analyzing and interpreting webpage content. You will be given unstructured text from several webpages and information about a nonprofit organization. Some of these webpages may come from the same website. Your task is to determine the base URL of the correct website for the organization using all the provided information.
+                        content: `You are an expert at analyzing and interpreting webpage content. You will be given unstructured text from several webpages and information about a nonprofit organization. Some of these webpages may come from the same website. Your task is to determine the base URL of the correct website for the organization using all the provided information, and generate information like mission, unique traits, and reasons to support for the organizaiton. If you cannot find the correct website, do not make up answers for the fields that are related to the website.
                     
                     Key Guidelines:
                     
@@ -92,6 +112,16 @@ export const writeConfirmationFile = async () => {
                 response_format: zodResponseFormat(WebsiteConfirmation, "website-confirmation"),
             },
         };
-        fs.appendFileSync("batchConfirms/test.jsonl", JSON.stringify(line) + "\n");
+        fs.appendFileSync(
+            `${BATCH_DIR}/batchInput/unprocessed/batch_${alphanumericDate}_${BATCH_SIZE}.jsonl`,
+            JSON.stringify(line) + "\n"
+        );
     });
 };
+
+const main = async () => {
+    await writeConfirmationFile();
+    process.exit(0);
+};
+
+main();

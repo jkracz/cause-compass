@@ -1,9 +1,8 @@
 .env
 /node_modules
 *.DS_Store
-/src/data/raw/*
 /src/data/nonprofitProfiles/*
 storage
 .env.local
-/batchConfirms
+data/*
 logs/*
