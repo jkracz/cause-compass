@@ -4,7 +4,7 @@ import { TaxExemptOrganization } from "../types";
 import { findTaxExemptOrgs } from "../db/mongo";
 import fs from "fs";
 
-const BATCH_SIZE = 1000;
+const BATCH_SIZE = 250;
 const BATCH_DIR = "data/batch";
 
 const Activity = z.object({

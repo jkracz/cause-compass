@@ -104,16 +104,21 @@ export const extractSocialMediaUrls = (socials: string[]): SocialMediaUrls => {
         return {};
     }
 
-    // Skip URLs that are clearly sharing/intent URLs
+    // Skip URLs that are clearly sharing/intent URLs or are not strings
     const filteredSocials = socials.filter(
         (url) =>
             url &&
+            typeof url === "string" &&
             !url.includes("sharer") &&
             !url.includes("intent/tweet") &&
             !url.includes("shareArticle") &&
             !url.includes("share?") &&
             !url.includes("share.php")
     );
+
+    if (filteredSocials.length === 0) {
+        return {};
+    }
 
     // Platform-specific regex patterns for profile URLs
     const socialUrlPatterns = {
@@ -214,6 +219,11 @@ export const findMainLogo = (logoUrls: string[]): string | undefined => {
 
     // Score each potential logo URL
     const scoredLogos = logoUrls.map((url) => {
+        // Ensure url is a string
+        if (!url || typeof url !== "string") {
+            return { url: "", score: -1000 }; // Return with very low score
+        }
+
         const filename = url.split("/").pop()?.toLowerCase() || "";
         const path = url.toLowerCase();
 
@@ -248,7 +258,7 @@ export const findMainLogo = (logoUrls: string[]): string | undefined => {
 
     // Sort by score (highest first) and return the best match
     scoredLogos.sort((a, b) => b.score - a.score);
-    return scoredLogos[0]?.url;
+    return scoredLogos[0]?.score > -999 ? scoredLogos[0]?.url : undefined;
 };
 
 export const findBestDonationLink = (links: string[]): string | undefined => {
@@ -277,7 +287,11 @@ export const findBestDonationLink = (links: string[]): string | undefined => {
 
     // Score each link
     const scoredLinks = links.map((link) => {
-        if (!link) return { link, score: 0 };
+        // Ensure link is a string
+        if (!link || typeof link !== "string") {
+            return { link: "", score: -1000 }; // Return with very low score
+        }
+
         const lowerLink = link.toLowerCase();
 
         let score = 0;
@@ -302,6 +316,12 @@ export const findBestDonationLink = (links: string[]): string | undefined => {
     // Sort by score (highest first)
     scoredLinks.sort((a, b) => b.score - a.score);
 
-    // Return best match if it has a score > 0, otherwise return first link
-    return scoredLinks[0].score > 0 ? scoredLinks[0].link : links[0];
+    // Return best match if it has a score > 0, otherwise return first valid link
+    if (scoredLinks[0]?.score > 0) {
+        return scoredLinks[0].link;
+    } else {
+        // Find the first valid string link
+        const firstValidLink = links.find((link) => typeof link === "string");
+        return firstValidLink;
+    }
 };
