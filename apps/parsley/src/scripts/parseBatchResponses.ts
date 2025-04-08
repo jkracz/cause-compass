@@ -154,7 +154,7 @@ async function parseBatchResponses() {
 
                 logger.info(`Processed file: ${file}`);
                 // Move the file to the processed folder after processing
-                // fs.renameSync(filePath, path.join(processedDir, file));
+                fs.renameSync(filePath, path.join(processedDir, file));
             } catch (fileError) {
                 logger.error(`Error processing file ${file}: ${fileError}`);
             }
