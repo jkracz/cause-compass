@@ -1,5 +1,14 @@
-import { MongoClient, ServerApiVersion, AnyBulkWriteOperation, BulkWriteResult, Filter, Db, ObjectId } from "mongodb";
-import { TaxExemptOrganization } from "@/types";
+import {
+    MongoClient,
+    ServerApiVersion,
+    AnyBulkWriteOperation,
+    BulkWriteResult,
+    Filter,
+    Db,
+    ObjectId,
+    Collection,
+} from "mongodb";
+import { BatchJob, TaxExemptOrganization } from "@/types";
 import "dotenv/config";
 import { logger } from "@/utils/logger";
 
@@ -14,7 +23,7 @@ const uri: string = `mongodb+srv://${mongoUser}:${mongoPassword}@causecompass-1.
 
 let client: MongoClient;
 let db: Db;
-let tax_exempt_organizations: any;
+let tax_exempt_organizations: Collection<TaxExemptOrganization>;
 let isConnecting: Promise<void> | null = null;
 
 export const connectToDatabase = async () => {
@@ -117,6 +126,28 @@ export const updateOrg = async (org: TaxExemptOrganization): Promise<void> => {
         logger.error(error);
         throw new Error("Failed to update org in DB");
     }
+};
+
+export const getBatchCollection = async (): Promise<import("mongodb").Collection<BatchJob>> => {
+    await connectToDatabase();
+    return db.collection<BatchJob>("batches");
+};
+
+export const insertBatchJob = async (job: BatchJob): Promise<void> => {
+    const batches = await getBatchCollection();
+    await batches.insertOne(job);
+};
+
+export const updateBatchJob = async (jobId: string, updates: Partial<BatchJob>): Promise<void> => {
+    const batches = await getBatchCollection();
+    await batches.updateOne({ id: jobId }, { $set: { ...updates, updatedAt: new Date().toISOString() } });
+};
+
+export const findActiveBatchJob = async (): Promise<BatchJob | null> => {
+    const batches = await getBatchCollection();
+    return batches.findOne({
+        status: { $in: ["generating", "uploading", "processing", "downloading"] },
+    });
 };
 
 process.on("SIGINT", async () => {

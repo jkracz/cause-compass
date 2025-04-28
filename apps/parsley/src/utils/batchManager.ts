@@ -4,27 +4,18 @@ import path from "path";
 import { BatchJob, TaxExemptOrganization } from "../types";
 import { findTaxExemptOrgs } from "../db/mongo";
 import { logger } from "./logger";
-import { Collection } from "mongodb";
 import OpenAI from "openai";
 import { writeConfirmationFile } from "../scripts/generateBatchConfirmationFile";
 import { processBatchResponseFile } from "./batchResponseProcessor";
-
-// We need to use var here as it's for global declaration
-/* eslint-disable no-var */
-declare global {
-    var client: import("mongodb").MongoClient;
-}
+import { insertBatchJob, updateBatchJob, findActiveBatchJob } from "../db/mongo";
 
 export class BatchManager {
-    private batchCollection: Collection<BatchJob>;
     private openai: OpenAI;
     private tempDir: string;
 
     constructor(openaiApiKey: string, tempDir: string = path.join(process.cwd(), "temp")) {
-        // Get the collection from the existing connection
         logger.info("Initializing BatchManager");
         try {
-            this.batchCollection = global.client.db("CauseCompass-1").collection<BatchJob>("batches");
             this.openai = new OpenAI({ apiKey: openaiApiKey });
             this.tempDir = tempDir;
         } catch (error) {
@@ -46,29 +37,16 @@ export class BatchManager {
             updatedAt: new Date().toISOString(),
             batchSize,
         };
-
-        await this.batchCollection.insertOne(job);
+        await insertBatchJob(job);
         return job;
     }
 
     private async updateBatchJob(jobId: string, updates: Partial<BatchJob>): Promise<void> {
-        await this.batchCollection.updateOne(
-            { id: jobId },
-            {
-                $set: {
-                    ...updates,
-                    updatedAt: new Date().toISOString(),
-                },
-            }
-        );
+        await updateBatchJob(jobId, updates);
     }
 
     async getActiveBatchJob(): Promise<BatchJob | null> {
-        return this.batchCollection.findOne({
-            status: {
-                $in: ["generating", "uploading", "processing", "downloading"],
-            },
-        });
+        return findActiveBatchJob();
     }
 
     async checkAndProcessBatch(): Promise<void> {
