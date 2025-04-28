@@ -16,13 +16,17 @@ async function main() {
         logger.info("Connected to MongoDB");
 
         const batchManager = new BatchManager(OPENAI_API_KEY as string);
+        logger.info("BatchManager initialized");
 
         // Process batches
         await batchManager.checkAndProcessBatch();
 
         logger.info("Batch processing completed");
     } catch (error) {
-        logger.error("Error in batch processing:", error instanceof Error ? error.message : "Unknown error");
+        logger.error(
+            "Error in batch processing:",
+            error instanceof Error ? error.stack || error.message : "Unknown error"
+        );
         process.exit(1);
     } finally {
         await disconnectFromDatabase();
@@ -34,7 +38,7 @@ if (require.main === module) {
     main()
         .then(() => process.exit(0))
         .catch((error) => {
-            logger.error("Script failed:", error instanceof Error ? error.message : "Unknown error");
+            logger.error("Script failed:", error instanceof Error ? error.stack || error.message : "Unknown error");
             process.exit(1);
         });
 }

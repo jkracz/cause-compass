@@ -22,9 +22,15 @@ export class BatchManager {
 
     constructor(openaiApiKey: string, tempDir: string = path.join(process.cwd(), "temp")) {
         // Get the collection from the existing connection
-        this.batchCollection = global.client.db("CauseCompass-1").collection<BatchJob>("batches");
-        this.openai = new OpenAI({ apiKey: openaiApiKey });
-        this.tempDir = tempDir;
+        logger.info("Initializing BatchManager");
+        try {
+            this.batchCollection = global.client.db("CauseCompass-1").collection<BatchJob>("batches");
+            this.openai = new OpenAI({ apiKey: openaiApiKey });
+            this.tempDir = tempDir;
+        } catch (error) {
+            logger.error("Error initializing BatchManager:", error);
+            throw error;
+        }
 
         // Ensure temp directory exists
         if (!fs.existsSync(this.tempDir)) {
@@ -68,6 +74,7 @@ export class BatchManager {
     async checkAndProcessBatch(): Promise<void> {
         try {
             let job = await this.getActiveBatchJob();
+            logger.info(`Checking for active batch job: ${job?.id}`);
             if (!job) {
                 // Check for orgs that need processing
                 const orgsToProcess = await findTaxExemptOrgs(200, {
