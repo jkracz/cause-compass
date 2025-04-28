@@ -17,7 +17,7 @@ const GeographicFocus = z.enum(["Global", "Local", "National", "Regional"]);
 
 const WebsiteConfirmation = z.object({
     hasCorrectWebsite: z.boolean(),
-    correctWebsiteUrl: z.string().optional(),
+    correctWebsiteUrl: z.string().optional().nullable(),
     reasoning: z.string(),
     organizationOneSentenceSummary: z.string().optional().nullable(),
     whySupportOrganization: z.string().optional().nullable(),
