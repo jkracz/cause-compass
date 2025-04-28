@@ -19,14 +19,14 @@ const WebsiteConfirmation = z.object({
     hasCorrectWebsite: z.boolean(),
     correctWebsiteUrl: z.string().optional(),
     reasoning: z.string(),
-    organizationOneSentenceSummary: z.string().optional(),
-    whySupportOrganization: z.string().optional(),
-    organizationMission: z.string().optional(),
-    organizationTagline: z.string().optional(),
-    organizationUniqueTrait: z.string().optional(),
-    organizationTargetAudience: z.string().optional(),
-    organizationGeographicFocus: GeographicFocus.optional(),
-    organizationActivities: z.array(Activity),
+    organizationOneSentenceSummary: z.string().optional().nullable(),
+    whySupportOrganization: z.string().optional().nullable(),
+    organizationMission: z.string().optional().nullable(),
+    organizationTagline: z.string().optional().nullable(),
+    organizationUniqueTrait: z.string().optional().nullable(),
+    organizationTargetAudience: z.string().optional().nullable(),
+    organizationGeographicFocus: GeographicFocus.optional().nullable(),
+    organizationActivities: z.array(Activity).optional().nullable(),
 });
 
 interface WriteConfirmationFileOptions {
