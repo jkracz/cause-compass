@@ -1,0 +1,23 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Available Scripts
+
+All scripts should be run using `pnpm`. The following scripts are available:
+
+## Core Scripts
+- `pnpm start`: Run the main application
+- `pnpm lint`: Run ESLint on the codebase
+
+## Data Processing Scripts
+- `pnpm create-profiles`: Create organization profiles by state
+- `pnpm search-orgs`: Perform Google searches for organizations
+- `pnpm crawl-sites`: Parse search results
+- `pnpm chat`: Run the chat script
+
+## Batch Processing
+- `pnpm generate-batch-confirmation-file`: Generate batch confirmation file
+- `pnpm parse-batch-responses`: Parse batch responses
+- `pnpm confirm-with-local`: Confirm with local data

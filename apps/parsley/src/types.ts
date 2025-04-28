@@ -145,3 +145,20 @@ export interface CrawlItem {
     logoLinks?: string[];
     aboutLinks?: string[];
 }
+
+export interface BatchJob {
+    id: string;
+    status: "pending" | "generating" | "uploading" | "processing" | "downloading" | "completed" | "failed";
+    createdAt: string;
+    updatedAt: string;
+    batchSize: number;
+    fileId?: string; // OpenAI input file ID
+    batchId?: string; // OpenAI batch job ID
+    outputFileId?: string; // OpenAI output file ID
+    inputFile?: string;
+    outputFile?: string;
+    error?: string;
+    processedCount?: number;
+    totalCount?: number;
+    artifactId?: string; // GitHub artifact ID if stored
+}

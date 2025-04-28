@@ -1,0 +1,36 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Development Setup
+
+## Requirements
+- Node.js (Latest LTS recommended)
+- pnpm (Package manager)
+- TypeScript knowledge
+- MongoDB (for data storage)
+
+## Environment Setup
+1. Install dependencies using pnpm:
+   ```bash
+   pnpm install
+   ```
+
+2. Required environment variables:
+   - MongoDB connection string
+   - Google API credentials
+   - OpenAI API key
+
+## Development Tools
+- ESLint for code linting
+- TypeScript for type checking
+- Playwright for web crawling
+- Winston for logging
+
+## Best Practices
+- Use TypeScript for all new code
+- Follow ESLint rules
+- Use the provided type definitions in [src/types.ts](mdc:src/types.ts)
+- Log appropriately using Winston
+- Use environment variables for sensitive data

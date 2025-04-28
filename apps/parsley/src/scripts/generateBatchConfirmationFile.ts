@@ -3,9 +3,10 @@ import { zodResponseFormat } from "openai/helpers/zod";
 import { TaxExemptOrganization } from "../types";
 import { findTaxExemptOrgs } from "../db/mongo";
 import fs from "fs";
+import path from "path";
 
-const BATCH_SIZE = 250;
-const BATCH_DIR = "data/batch";
+const DEFAULT_BATCH_SIZE = 250;
+const DEFAULT_BATCH_DIR = "data/batch";
 
 const Activity = z.object({
     name: z.string(),
@@ -27,14 +28,37 @@ const WebsiteConfirmation = z.object({
     organizationGeographicFocus: GeographicFocus.optional(),
     organizationActivities: z.array(Activity),
 });
-export const writeConfirmationFile = async () => {
-    const orgs: TaxExemptOrganization[] = await findTaxExemptOrgs(BATCH_SIZE, {
-        searchResults: { $exists: true },
-        resultsParsedAt: { $exists: true },
-        aiConfirmationResponse: { $exists: false },
-    });
+
+interface WriteConfirmationFileOptions {
+    batchDir?: string;
+    batchSize?: number;
+    organizations?: TaxExemptOrganization[];
+}
+
+export const writeConfirmationFile = async (options: WriteConfirmationFileOptions = {}) => {
+    const {
+        batchDir = process.env.BATCH_DIR || DEFAULT_BATCH_DIR,
+        batchSize = DEFAULT_BATCH_SIZE,
+        organizations,
+    } = options;
+
+    // If organizations aren't provided, fetch them
+    const orgs: TaxExemptOrganization[] =
+        organizations ||
+        (await findTaxExemptOrgs(batchSize, {
+            searchResults: { $exists: true },
+            resultsParsedAt: { $exists: true },
+            aiConfirmationResponse: { $exists: false },
+        }));
+
     const today = new Date().toISOString();
     const alphanumericDate = today.replace(/[^0-9a-zA-Z]/g, "");
+
+    // Ensure the output directory exists
+    const outputDir = path.join(batchDir, "batchInput", "unprocessed");
+    fs.mkdirSync(outputDir, { recursive: true });
+
+    const outputFile = path.join(outputDir, `batch_${alphanumericDate}_${batchSize}.jsonl`);
 
     orgs.forEach((org) => {
         const { name, ein, street, city, state, nteeCode, activityCodes, confirmationCrawlItems } = org;
@@ -112,16 +136,18 @@ export const writeConfirmationFile = async () => {
                 response_format: zodResponseFormat(WebsiteConfirmation, "website-confirmation"),
             },
         };
-        fs.appendFileSync(
-            `${BATCH_DIR}/batchInput/unprocessed/batch_${alphanumericDate}_${BATCH_SIZE}.jsonl`,
-            JSON.stringify(line) + "\n"
-        );
+        fs.appendFileSync(outputFile, JSON.stringify(line) + "\n");
     });
+
+    return outputFile;
 };
 
-const main = async () => {
-    await writeConfirmationFile();
-    process.exit(0);
-};
-
-main();
+// Only run main if this is the main module
+if (require.main === module) {
+    writeConfirmationFile()
+        .then(() => process.exit(0))
+        .catch((error) => {
+            console.error("Error:", error);
+            process.exit(1);
+        });
+}

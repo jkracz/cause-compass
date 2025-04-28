@@ -11,6 +11,8 @@
         "crawl-sites": "tsx src/scripts/parseSearchResults.ts",
         "generate-batch-confirmation-file": "tsx src/scripts/generateBatchConfirmationFile.ts",
         "parse-batch-responses": "tsx src/scripts/parseBatchResponses.ts",
+        "confirm-with-local": "tsx src/scripts/confirmWithLocal.ts",
+        "cleanup": "tsx src/scripts/cleanup.ts",
         "start": "tsx src/index.ts"
     },
     "repository": {
@@ -24,32 +26,32 @@
     },
     "homepage": "https://github.com/CauseCompass/np-data-parser#readme",
     "dependencies": {
-        "@crawlee/browser-pool": "^3.13.1",
-        "axios": "^1.8.4",
-        "crawlee": "^3.13.1",
+        "@crawlee/browser-pool": "^3.13.2",
+        "axios": "^1.9.0",
+        "crawlee": "^3.13.2",
         "csv-parse": "^5.6.0",
-        "dotenv": "^16.4.7",
+        "dotenv": "^16.5.0",
         "googleapis": "^148.0.0",
-        "mongodb": "^6.15.0",
-        "mongoose": "^8.13.2",
+        "mongodb": "^6.16.0",
+        "mongoose": "^8.14.0",
         "nanoid": "^5.1.5",
-        "openai": "^4.92.1",
+        "openai": "^4.96.0",
         "p-limit": "^6.2.0",
-        "playwright": "^1.51.1",
+        "playwright": "^1.52.0",
         "slugify": "^1.6.6",
         "title-case": "^4.3.2",
-        "tldts": "^6.1.85",
+        "tldts": "^7.0.4",
         "winston": "^3.17.0",
         "yargs": "^17.7.2",
-        "zod": "^3.24.2"
+        "zod": "^3.24.3"
     },
     "devDependencies": {
-        "@eslint/js": "^9.24.0",
-        "@types/node": "^22.14.0",
-        "eslint": "^9.24.0",
+        "@eslint/js": "^9.25.1",
+        "@types/node": "^22.15.2",
+        "eslint": "^9.25.1",
         "globals": "^16.0.0",
         "ts-node": "^10.9.2",
         "tsx": "^4.19.3",
-        "typescript-eslint": "^8.29.1"
+        "typescript-eslint": "^8.31.0"
     }
 }
