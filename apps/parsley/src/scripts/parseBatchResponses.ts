@@ -4,16 +4,26 @@ import { connectToDatabase, disconnectFromDatabase } from "@/db/mongo";
 import { logger } from "@/utils/logger";
 import { processBatchResponseFile } from "@/utils/batchResponseProcessor";
 
-const BATCH_DIR = "data/batch";
+const DEFAULT_BATCH_DIR = "data/batch";
 
 async function parseBatchResponses() {
     try {
         // Connect to the database
         await connectToDatabase();
 
-        const batchOutputDir = path.join(process.cwd(), BATCH_DIR, "batchOutput", "unprocessed");
+        const batchOutputDir = path.join(
+            process.cwd(),
+            process.env.BATCH_DIR || DEFAULT_BATCH_DIR,
+            "batchOutput",
+            "unprocessed"
+        );
         // Move the file to the processed folder after processing
-        const processedDir = path.join(process.cwd(), BATCH_DIR, "batchOutput", "processed");
+        const processedDir = path.join(
+            process.cwd(),
+            process.env.BATCH_DIR || DEFAULT_BATCH_DIR,
+            "batchOutput",
+            "processed"
+        );
 
         // Ensure processed directory exists
         if (!fs.existsSync(processedDir)) {

@@ -111,12 +111,21 @@ export class BatchManager {
             const batchDir = path.join(this.tempDir, job.id);
             fs.mkdirSync(batchDir, { recursive: true });
 
+            logger.info(`Generating batch file in directory: ${batchDir}`);
+
             // Use the existing file generation logic with our parameters
             const inputFilePath = await writeConfirmationFile({
                 batchDir,
                 batchSize: orgs.length,
                 organizations: orgs,
             });
+
+            logger.info(`Generated batch file at path: ${inputFilePath}`);
+
+            // Verify the file exists
+            if (!fs.existsSync(inputFilePath)) {
+                throw new Error(`Generated file does not exist at path: ${inputFilePath}`);
+            }
 
             await this.updateBatchJob(job.id, {
                 status: "uploading",
@@ -137,6 +146,12 @@ export class BatchManager {
 
     private async uploadBatchFile(job: BatchJob): Promise<void> {
         try {
+            // Fetch the latest job data to ensure we have the updated inputFile path
+            const updatedJob = await findActiveBatchJob();
+            if (updatedJob && updatedJob.id === job.id) {
+                job = updatedJob;
+            }
+
             if (!job.inputFile) {
                 throw new Error("No input file specified");
             }

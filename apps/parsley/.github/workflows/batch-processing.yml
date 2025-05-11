@@ -41,6 +41,7 @@ jobs:
                   MONGO_USER: ${{ secrets.MONGO_USER }}
                   MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
                   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+                  BATCH_DIR: ${{ github.workspace }}/temp
 
             - name: Upload batch artifacts
               if: always()
