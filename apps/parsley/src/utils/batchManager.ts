@@ -69,6 +69,9 @@ export class BatchManager {
                     if (job && job.status === "downloading") {
                         logger.info(`Job ${job.id} is now ready for download, processing immediately`);
                         await this.downloadAndProcessResults(job);
+
+                        // After processing results, automatically start a new batch
+                        await this.startNewBatchJob();
                         return;
                     }
 
@@ -88,13 +91,17 @@ export class BatchManager {
                         // Process the results of a completed job
                         logger.info(`Processing results for job ${job.id}`);
                         await this.downloadAndProcessResults(job);
-                        break;
+
+                        // After processing results, automatically start a new batch
+                        await this.startNewBatchJob();
+                        return;
 
                     case "completed":
                     case "failed":
-                        // Job is done, we can look for new orgs to process
-                        logger.info(`Job ${job.id} is ${job.status}, looking for new organizations to process`);
-                        break;
+                        // Job is done, immediately start a new batch
+                        logger.info(`Job ${job.id} is ${job.status}, starting a new batch job`);
+                        await this.startNewBatchJob();
+                        return;
 
                     default:
                         // For any other status, just exit and wait for next run
@@ -103,36 +110,8 @@ export class BatchManager {
                 }
             }
 
-            // At this point, either there's no job or the previous job is completed/failed
-            // Check for orgs that need processing
-            const orgsToProcess = await findTaxExemptOrgs(DEFAULT_BATCH_SIZE, {
-                searchResults: { $exists: true },
-                resultsParsedAt: { $exists: true },
-                aiConfirmationResponse: { $exists: false },
-            });
-
-            if (orgsToProcess.length === 0) {
-                logger.info("No organizations need processing");
-                return;
-            }
-
-            // Create new batch job
-            job = await this.createBatchJob(orgsToProcess.length);
-            logger.info(`Created new batch job ${job.id} for ${orgsToProcess.length} organizations`);
-
-            try {
-                // Generate batch file and start the process
-                await this.generateBatchFile(job, orgsToProcess);
-                await this.uploadBatchFile(job);
-                logger.info(`Successfully initiated batch processing for job ${job.id}`);
-            } catch (processingError) {
-                logger.error(`Error in batch processing: ${processingError}`);
-                // Mark job as failed
-                await this.updateBatchJob(job.id, {
-                    status: "failed",
-                    error: processingError instanceof Error ? processingError.message : "Unknown error",
-                });
-            }
+            // No active job, start a new one
+            await this.startNewBatchJob();
         } catch (error) {
             logger.error("Error in checkAndProcessBatch:", error);
             throw error;
@@ -324,6 +303,45 @@ export class BatchManager {
                 error: error instanceof Error ? error.message : "Unknown error",
             });
             throw error;
+        }
+    }
+
+    // Helper method to check if there are organizations to process
+    private async checkForOrgsToProcess(): Promise<TaxExemptOrganization[]> {
+        return findTaxExemptOrgs(DEFAULT_BATCH_SIZE, {
+            searchResults: { $exists: true },
+            resultsParsedAt: { $exists: true },
+            aiConfirmationResponse: { $exists: false },
+        });
+    }
+
+    // Helper method to start a new batch job if organizations are available
+    private async startNewBatchJob(): Promise<boolean> {
+        const orgsToProcess = await this.checkForOrgsToProcess();
+
+        if (orgsToProcess.length === 0) {
+            logger.info("No organizations need processing");
+            return false;
+        }
+
+        // Create new batch job
+        const job = await this.createBatchJob(orgsToProcess.length);
+        logger.info(`Created new batch job ${job.id} for ${orgsToProcess.length} organizations`);
+
+        try {
+            // Generate batch file and start the process
+            await this.generateBatchFile(job, orgsToProcess);
+            await this.uploadBatchFile(job);
+            logger.info(`Successfully initiated batch processing for job ${job.id}`);
+            return true;
+        } catch (processingError) {
+            logger.error(`Error in batch processing: ${processingError}`);
+            // Mark job as failed
+            await this.updateBatchJob(job.id, {
+                status: "failed",
+                error: processingError instanceof Error ? processingError.message : "Unknown error",
+            });
+            return false;
         }
     }
 }
