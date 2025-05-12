@@ -9,7 +9,7 @@ import { writeConfirmationFile } from "../scripts/generateBatchConfirmationFile"
 import { processBatchResponseFile } from "./batchResponseProcessor";
 import { insertBatchJob, updateBatchJob, findActiveBatchJob } from "../db/mongo";
 
-const DEFAULT_BATCH_SIZE = 1;
+const DEFAULT_BATCH_SIZE = 200;
 export class BatchManager {
     private openai: OpenAI;
     private tempDir: string;
