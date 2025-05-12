@@ -9,6 +9,7 @@ import { writeConfirmationFile } from "../scripts/generateBatchConfirmationFile"
 import { processBatchResponseFile } from "./batchResponseProcessor";
 import { insertBatchJob, updateBatchJob, findActiveBatchJob } from "../db/mongo";
 
+const DEFAULT_BATCH_SIZE = 1;
 export class BatchManager {
     private openai: OpenAI;
     private tempDir: string;
@@ -53,50 +54,71 @@ export class BatchManager {
         try {
             let job = await this.getActiveBatchJob();
             logger.info(`Checking for active batch job: ${job?.id}`);
-            if (!job) {
-                // Check for orgs that need processing
-                const orgsToProcess = await findTaxExemptOrgs(200, {
-                    searchResults: { $exists: true },
-                    resultsParsedAt: { $exists: true },
-                    aiConfirmationResponse: { $exists: false },
-                });
 
-                if (orgsToProcess.length === 0) {
-                    logger.info("No organizations need processing");
-                    return;
-                }
-
-                // Create new batch job
-                job = await this.createBatchJob(orgsToProcess.length);
-                logger.info(`Created new batch job ${job.id} for ${orgsToProcess.length} organizations`);
-
-                // Generate batch file and immediately upload
-                await this.generateBatchFile(job, orgsToProcess);
-                await this.uploadBatchFile(job);
-                // Refresh job state
-                job = await this.getActiveBatchJob();
-            }
-
-            // Chain steps for existing jobs
-            let keepProcessing = true;
-            while (keepProcessing && job) {
+            if (job) {
+                // Check if the job needs to be processed or moved forward
                 switch (job.status) {
                     case "uploading":
+                        // Resume from uploading state
+                        logger.info(`Resuming upload for job ${job.id}`);
                         await this.uploadBatchFile(job);
-                        job = await this.getActiveBatchJob();
-                        break;
+                        return;
+
                     case "processing":
+                        // Check current status once, then exit
+                        logger.info(`Checking status for job ${job.id}`);
                         await this.checkBatchStatus(job);
-                        job = await this.getActiveBatchJob();
-                        break;
+                        return;
+
                     case "downloading":
+                        // Process the results of a completed job
+                        logger.info(`Processing results for job ${job.id}`);
                         await this.downloadAndProcessResults(job);
-                        job = await this.getActiveBatchJob();
+                        // After processing, we can look for new orgs to process
                         break;
+
+                    case "completed":
+                    case "failed":
+                        // Job is done, we can look for new orgs to process
+                        logger.info(`Job ${job.id} is ${job.status}, looking for new organizations to process`);
+                        break;
+
                     default:
-                        keepProcessing = false;
-                        break;
+                        // For any other status, just exit and wait for next run
+                        logger.info(`Job ${job.id} has status ${job.status}, no action needed`);
+                        return;
                 }
+            }
+
+            // At this point, either there's no job or the previous job is completed/failed
+            // Check for orgs that need processing
+            const orgsToProcess = await findTaxExemptOrgs(DEFAULT_BATCH_SIZE, {
+                searchResults: { $exists: true },
+                resultsParsedAt: { $exists: true },
+                aiConfirmationResponse: { $exists: false },
+            });
+
+            if (orgsToProcess.length === 0) {
+                logger.info("No organizations need processing");
+                return;
+            }
+
+            // Create new batch job
+            job = await this.createBatchJob(orgsToProcess.length);
+            logger.info(`Created new batch job ${job.id} for ${orgsToProcess.length} organizations`);
+
+            try {
+                // Generate batch file and start the process
+                await this.generateBatchFile(job, orgsToProcess);
+                await this.uploadBatchFile(job);
+                logger.info(`Successfully initiated batch processing for job ${job.id}`);
+            } catch (processingError) {
+                logger.error(`Error in batch processing: ${processingError}`);
+                // Mark job as failed
+                await this.updateBatchJob(job.id, {
+                    status: "failed",
+                    error: processingError instanceof Error ? processingError.message : "Unknown error",
+                });
             }
         } catch (error) {
             logger.error("Error in checkAndProcessBatch:", error);
@@ -212,11 +234,17 @@ export class BatchManager {
                         Array.isArray(batchStatus.errors) && batchStatus.errors.length > 0
                             ? batchStatus.errors[0].message
                             : JSON.stringify(batchStatus.errors) || "Unknown error";
-                    throw new Error(`OpenAI batch failed: ${errorMsg}`);
+                    logger.error(`OpenAI batch failed: ${errorMsg}`);
+                    await this.updateBatchJob(job.id, {
+                        status: "failed",
+                        error: `OpenAI batch failed: ${errorMsg}`,
+                    });
+                    break;
                 }
                 case "validating":
                 case "in_progress":
                 case "finalizing":
+                    // Only log status, no action needed
                     logger.info(`Batch job ${job.id} is still processing (status: ${batchStatus.status})`);
                     break;
                 case "expired":
@@ -233,12 +261,12 @@ export class BatchManager {
                     break;
             }
         } catch (error) {
-            logger.error(`Error checking batch status for job ${job.id}:`, error);
-            await this.updateBatchJob(job.id, {
-                status: "failed",
-                error: error instanceof Error ? error.message : "Unknown error",
-            });
-            throw error;
+            // Only log the error but don't throw it - we don't want to fail the job just because we couldn't check it
+            if (error instanceof Error && error.message.includes("429")) {
+                logger.warn(`Rate limit hit checking batch status for job ${job.id}, will retry later`);
+            } else {
+                logger.error(`Error checking batch status for job ${job.id}:`, error);
+            }
         }
     }
 

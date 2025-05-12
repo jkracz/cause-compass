@@ -5,7 +5,7 @@ import { findTaxExemptOrgs } from "../db/mongo";
 import fs from "fs";
 import path from "path";
 
-const DEFAULT_BATCH_SIZE = 250;
+const DEFAULT_BATCH_SIZE = 200;
 const DEFAULT_BATCH_DIR = "data/batch";
 
 const Activity = z.object({
@@ -17,16 +17,16 @@ const GeographicFocus = z.enum(["Global", "Local", "National", "Regional"]);
 
 const WebsiteConfirmation = z.object({
     hasCorrectWebsite: z.boolean(),
-    correctWebsiteUrl: z.string().optional().nullable(),
+    correctWebsiteUrl: z.string().optional().nullish(),
     reasoning: z.string(),
-    organizationOneSentenceSummary: z.string().optional().nullable(),
-    whySupportOrganization: z.string().optional().nullable(),
-    organizationMission: z.string().optional().nullable(),
-    organizationTagline: z.string().optional().nullable(),
-    organizationUniqueTrait: z.string().optional().nullable(),
-    organizationTargetAudience: z.string().optional().nullable(),
-    organizationGeographicFocus: GeographicFocus.optional().nullable(),
-    organizationActivities: z.array(Activity).optional().nullable(),
+    organizationOneSentenceSummary: z.string().optional().nullish(),
+    whySupportOrganization: z.string().optional().nullish(),
+    organizationMission: z.string().optional().nullish(),
+    organizationTagline: z.string().optional().nullish(),
+    organizationUniqueTrait: z.string().optional().nullish(),
+    organizationTargetAudience: z.string().optional().nullish(),
+    organizationGeographicFocus: GeographicFocus.optional().nullish(),
+    organizationActivities: z.array(Activity).optional().nullish(),
 });
 
 interface WriteConfirmationFileOptions {
