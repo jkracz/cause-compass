@@ -17,16 +17,16 @@ const GeographicFocus = z.enum(["Global", "Local", "National", "Regional"]);
 
 const WebsiteConfirmation = z.object({
     hasCorrectWebsite: z.boolean(),
-    correctWebsiteUrl: z.string().optional().nullish(),
+    correctWebsiteUrl: z.string().nullish(),
     reasoning: z.string(),
-    organizationOneSentenceSummary: z.string().optional().nullish(),
-    whySupportOrganization: z.string().optional().nullish(),
-    organizationMission: z.string().optional().nullish(),
-    organizationTagline: z.string().optional().nullish(),
-    organizationUniqueTrait: z.string().optional().nullish(),
-    organizationTargetAudience: z.string().optional().nullish(),
-    organizationGeographicFocus: GeographicFocus.optional().nullish(),
-    organizationActivities: z.array(Activity).optional().nullish(),
+    organizationOneSentenceSummary: z.string().nullish(),
+    whySupportOrganization: z.string().nullish(),
+    organizationMission: z.string().nullish(),
+    organizationTagline: z.string().nullish(),
+    organizationUniqueTrait: z.string().nullish(),
+    organizationTargetAudience: z.string().nullish(),
+    organizationGeographicFocus: GeographicFocus.nullish(),
+    organizationActivities: z.array(Activity).nullish(),
 });
 
 interface WriteConfirmationFileOptions {
