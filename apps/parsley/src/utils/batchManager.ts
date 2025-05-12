@@ -57,6 +57,26 @@ export class BatchManager {
 
             if (job) {
                 // Check if the job needs to be processed or moved forward
+                if (job.status === "processing") {
+                    // Check current status once
+                    logger.info(`Checking status for job ${job.id}`);
+                    await this.checkBatchStatus(job);
+
+                    // Refresh job status to see if it changed
+                    job = await this.getActiveBatchJob();
+
+                    // If status changed to downloading, handle it immediately in this run
+                    if (job && job.status === "downloading") {
+                        logger.info(`Job ${job.id} is now ready for download, processing immediately`);
+                        await this.downloadAndProcessResults(job);
+                        return;
+                    }
+
+                    // If still processing, just exit
+                    return;
+                }
+
+                // Handle other statuses as before
                 switch (job.status) {
                     case "uploading":
                         // Resume from uploading state
@@ -64,17 +84,10 @@ export class BatchManager {
                         await this.uploadBatchFile(job);
                         return;
 
-                    case "processing":
-                        // Check current status once, then exit
-                        logger.info(`Checking status for job ${job.id}`);
-                        await this.checkBatchStatus(job);
-                        return;
-
                     case "downloading":
                         // Process the results of a completed job
                         logger.info(`Processing results for job ${job.id}`);
                         await this.downloadAndProcessResults(job);
-                        // After processing, we can look for new orgs to process
                         break;
 
                     case "completed":
