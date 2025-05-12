@@ -7,7 +7,7 @@ import { logger } from "./logger";
 import OpenAI from "openai";
 import { writeConfirmationFile } from "../scripts/generateBatchConfirmationFile";
 import { processBatchResponseFile } from "./batchResponseProcessor";
-import { insertBatchJob, updateBatchJob, findActiveBatchJob } from "../db/mongo";
+import { insertBatchJob, updateBatchJob, findActiveBatchJob, getBatchCollection } from "../db/mongo";
 
 const DEFAULT_BATCH_SIZE = 10;
 export class BatchManager {
@@ -52,7 +52,7 @@ export class BatchManager {
 
     async checkAndProcessBatch(): Promise<void> {
         try {
-            let job = await this.getActiveBatchJob();
+            const job = await this.getActiveBatchJob();
             logger.info(`Checking for active batch job: ${job?.id}`);
 
             if (job) {
@@ -60,17 +60,30 @@ export class BatchManager {
                 if (job.status === "processing") {
                     // Check current status once
                     logger.info(`Checking status for job ${job.id}`);
+                    const jobId = job.id; // Remember the job ID
                     await this.checkBatchStatus(job);
 
-                    // Refresh job status to see if it changed
-                    job = await this.getActiveBatchJob();
+                    // After checking batch status, get all job data directly from database
+                    // since findActiveBatchJob won't return 'failed' jobs
+                    const batches = await getBatchCollection();
+                    const updatedJob = await batches.findOne({ id: jobId });
 
-                    // If status changed to downloading, handle it immediately in this run
-                    if (job && job.status === "downloading") {
-                        logger.info(`Job ${job.id} is now ready for download, processing immediately`);
-                        await this.downloadAndProcessResults(job);
+                    if (!updatedJob) {
+                        logger.error(`Job ${jobId} not found after status check`);
+                        await this.startNewBatchJob();
+                        return;
+                    }
+
+                    // Now handle both completed and failed cases
+                    if (updatedJob.status === "downloading") {
+                        logger.info(`Job ${updatedJob.id} is now ready for download, processing immediately`);
+                        await this.downloadAndProcessResults(updatedJob);
 
                         // After processing results, automatically start a new batch
+                        await this.startNewBatchJob();
+                        return;
+                    } else if (updatedJob.status === "failed") {
+                        logger.info(`Job ${updatedJob.id} has failed, starting a new batch job`);
                         await this.startNewBatchJob();
                         return;
                     }
@@ -203,7 +216,7 @@ export class BatchManager {
         }
     }
 
-    private async checkBatchStatus(job: BatchJob): Promise<void> {
+    private async checkBatchStatus(job: BatchJob): Promise<"downloading" | "failed" | "processing"> {
         try {
             if (!job.batchId) {
                 throw new Error("No batch ID specified");
@@ -211,8 +224,6 @@ export class BatchManager {
 
             const batchStatus = await this.openai.batches.retrieve(job.batchId);
 
-            // See https://platform.openai.com/docs/api-reference/batch/object#batch/object-status
-            // Possible statuses: "validating", "failed", "in_progress", "finalizing", "completed", "expired", "cancelling", "cancelled"
             switch (batchStatus.status) {
                 case "completed":
                     await this.updateBatchJob(job.id, {
@@ -220,7 +231,8 @@ export class BatchManager {
                         outputFileId: batchStatus.output_file_id,
                     });
                     logger.info(`Batch job ${job.id} is ready for download`);
-                    break;
+                    return "downloading";
+
                 case "failed": {
                     const errorMsg =
                         Array.isArray(batchStatus.errors) && batchStatus.errors.length > 0
@@ -231,7 +243,7 @@ export class BatchManager {
                         status: "failed",
                         error: `OpenAI batch failed: ${errorMsg}`,
                     });
-                    break;
+                    return "failed";
                 }
                 case "validating":
                 case "in_progress":
@@ -252,6 +264,7 @@ export class BatchManager {
                     logger.warn(`Unknown batch status: ${batchStatus.status}`);
                     break;
             }
+            return "processing";
         } catch (error) {
             // Only log the error but don't throw it - we don't want to fail the job just because we couldn't check it
             if (error instanceof Error && error.message.includes("429")) {
@@ -259,6 +272,7 @@ export class BatchManager {
             } else {
                 logger.error(`Error checking batch status for job ${job.id}:`, error);
             }
+            return "processing";
         }
     }
 
