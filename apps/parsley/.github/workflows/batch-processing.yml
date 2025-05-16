@@ -9,6 +9,7 @@ env:
     MONGO_USER: ${{ secrets.MONGO_USER }}
     MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    BATCH_SIZE: ${{ secrets.BATCH_SIZE }}
 
 jobs:
     process-batch:
@@ -42,7 +43,7 @@ jobs:
                   MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
                   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
                   BATCH_DIR: ${{ github.workspace }}/temp
-
+                  BATCH_SIZE: ${{ secrets.BATCH_SIZE }}
             - name: Upload batch artifacts
               if: always()
               uses: actions/upload-artifact@v4

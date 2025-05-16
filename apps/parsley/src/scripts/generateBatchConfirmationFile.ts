@@ -5,7 +5,7 @@ import { findTaxExemptOrgs } from "../db/mongo";
 import fs from "fs";
 import path from "path";
 
-const DEFAULT_BATCH_SIZE = 200;
+const DEFAULT_BATCH_SIZE = process.env.BATCH_SIZE ? parseInt(process.env.BATCH_SIZE) : 20;
 const DEFAULT_BATCH_DIR = "data/batch";
 
 const Activity = z.object({

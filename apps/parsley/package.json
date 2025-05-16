@@ -26,14 +26,14 @@
     },
     "homepage": "https://github.com/CauseCompass/np-data-parser#readme",
     "dependencies": {
-        "@crawlee/browser-pool": "^3.13.3",
+        "@crawlee/browser-pool": "^3.13.4",
         "axios": "^1.9.0",
-        "crawlee": "^3.13.3",
+        "crawlee": "^3.13.4",
         "csv-parse": "^5.6.0",
         "dotenv": "^16.5.0",
         "googleapis": "^148.0.0",
         "mongodb": "^6.16.0",
-        "mongoose": "^8.14.2",
+        "mongoose": "^8.14.3",
         "nanoid": "^5.1.5",
         "openai": "^4.98.0",
         "p-limit": "^6.2.0",
@@ -47,11 +47,11 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.26.0",
-        "@types/node": "^22.15.17",
+        "@types/node": "^22.15.18",
         "eslint": "^9.26.0",
         "globals": "^16.1.0",
         "ts-node": "^10.9.2",
         "tsx": "^4.19.4",
-        "typescript-eslint": "^8.32.0"
+        "typescript-eslint": "^8.32.1"
     }
 }
