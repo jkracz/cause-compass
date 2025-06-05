@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { MosaicBackground } from "@/components/mosaic-background";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Footer } from "@/components/footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,7 +27,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <MosaicBackground />
-          {children}
+          <div className="relative z-10 flex min-h-screen flex-col">
+            <div className="page-transition-wrapper flex-1">{children}</div>
+            <Footer />
+          </div>
         </ThemeProvider>
       </body>
     </html>
