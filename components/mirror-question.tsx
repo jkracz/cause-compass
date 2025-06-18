@@ -142,10 +142,5 @@ export function MirrorQuestion({
     }
   };
 
-  return (
-    <div className="space-y-4">
-      {/* Question title and description are now handled in the parent component for better centering */}
-      {renderQuestionInput()}
-    </div>
-  );
+  return <div className="space-y-4">{renderQuestionInput()}</div>;
 }

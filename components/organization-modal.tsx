@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   Drawer,
   DrawerContent,
@@ -101,7 +101,9 @@ export function OrganizationModal({
 
       <div className="p-4 sm:p-6">
         <div className="mb-4">
-          <h2 className="text-2xl font-bold">{organization.name}</h2>
+          <DialogTitle className="text-2xl font-bold">
+            {organization.name}
+          </DialogTitle>
           <p className="text-muted-foreground">{organization.location}</p>
         </div>
 
@@ -128,7 +130,7 @@ export function OrganizationModal({
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="flex flex-col gap-2 space-y-3">
           <a
             href={organization.website}
             target="_blank"
@@ -143,8 +145,8 @@ export function OrganizationModal({
           {showRemoveButton && (
             <div className="flex gap-2">
               <Button
-                variant="outline"
-                className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground flex-1"
+                variant="destructive-outline"
+                className="flex-1"
                 onClick={handleRemoveClick}
               >
                 <Heart className="mr-2 h-4 w-4 fill-current" />

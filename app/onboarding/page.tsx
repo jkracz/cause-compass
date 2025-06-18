@@ -113,7 +113,7 @@ export default function OnboardingPage() {
 
   return (
     <main className="relative min-h-screen w-full">
-      <div className="relative z-10 container flex min-h-screen flex-col items-center justify-center px-4 py-12">
+      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-12">
         <div className="mb-8 flex justify-center">
           <div className="relative h-40 w-40">
             {questions.map((_, index) => (

@@ -178,30 +178,6 @@ export function ControlPanel({
           {generateReflectionSummary()}
         </p>
 
-        {/* Mosaic visualization */}
-        {uniqueCategories.length > 0 && (
-          <div className="mb-4 flex flex-wrap gap-1.5">
-            {uniqueCategories.slice(0, 6).map((category, index) => (
-              <div
-                key={category}
-                className="h-5 w-5 transform rounded-md transition-all duration-300 hover:scale-110 hover:rotate-12"
-                style={{
-                  backgroundColor: `hsl(${(index * 60) % 360}, 80%, 65%)`,
-                  boxShadow: `0 0 12px hsla(${(index * 60) % 360}, 80%, 65%, 0.5)`,
-                }}
-                title={category}
-              />
-            ))}
-            {uniqueCategories.length > 6 && (
-              <div className="flex h-5 w-5 transform items-center justify-center rounded-md bg-white/30 transition-all duration-300 hover:scale-110">
-                <span className="text-xs font-medium text-white">
-                  +{uniqueCategories.length - 6}
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-
         <Button
           variant="outline"
           size="sm"
@@ -403,7 +379,7 @@ export function ControlPanel({
     <div
       className={cn(
         "fixed top-0 right-0 z-40 h-full transition-all duration-500 ease-in-out",
-        isCollapsed ? "w-12" : "w-96",
+        isCollapsed ? "w-8" : "w-96",
       )}
     >
       {/* Glassmorphic background with gradient overlay */}
@@ -444,7 +420,7 @@ export function ControlPanel({
       {/* Panel Content with scroll animation */}
       <div
         className={cn(
-          "relative h-full overflow-y-auto p-6 transition-all duration-500",
+          "relative h-full overflow-y-auto p-8 transition-all duration-500",
           isCollapsed ? "invisible opacity-0" : "opacity-100",
         )}
       >

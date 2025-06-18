@@ -26,7 +26,6 @@ export function MosaicBackground() {
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Award-winning color palette
       const colorPalettes = [
         [
           "rgba(255, 20, 147, 0.2)",

@@ -1,53 +1,53 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import Image from "next/image"
-import { Badge } from "@/components/ui/badge"
-import type { Organization } from "@/lib/types"
+import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
+import type { Organization } from "@/lib/types";
 
 interface OrganizationCardProps {
-  organization: Organization
-  onClick: () => void
+  organization: Organization;
+  onClick: () => void;
 }
 
-export function OrganizationCard({ organization, onClick }: OrganizationCardProps) {
+export function OrganizationCard({
+  organization,
+  onClick,
+}: OrganizationCardProps) {
   const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    console.log("Card clicked for:", organization.name) // Debug log
-    onClick()
-  }
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Card clicked for:", organization.name); // Debug log
+    onClick();
+  };
 
   return (
     <div
-      className="group h-full cursor-pointer overflow-hidden rounded-xl bg-white/10 p-0 backdrop-blur-md border border-white/20 shadow-lg transition-all duration-500 hover:shadow-2xl hover:shadow-white/10"
-      style={{
-        transform: "perspective(1000px)",
-        transition: "all 0.5s cubic-bezier(0.23, 1, 0.320, 1)",
-      }}
+      className="group h-full cursor-pointer overflow-hidden rounded-xl border border-white/20 bg-white/10 p-0 shadow-lg backdrop-blur-md transition-all duration-500 hover:shadow-2xl hover:shadow-white/10"
       onMouseEnter={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect()
-        const centerX = rect.left + rect.width / 2
-        const centerY = rect.top + rect.height / 2
-        const mouseX = e.clientX - centerX
-        const mouseY = e.clientY - centerY
+        const rect = e.currentTarget.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const mouseX = e.clientX - centerX;
+        const mouseY = e.clientY - centerY;
 
-        const rotateX = (mouseY / rect.height) * -10
-        const rotateY = (mouseX / rect.width) * 10
+        const rotateX = (mouseY / rect.height) * -10;
+        const rotateY = (mouseX / rect.width) * 10;
 
-        e.currentTarget.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(20px)`
+        e.currentTarget.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(20px)`;
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)"
+        e.currentTarget.style.transform =
+          "perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)";
       }}
       onClick={handleClick}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault()
-          onClick()
+          e.preventDefault();
+          onClick();
         }
       }}
     >
@@ -63,7 +63,9 @@ export function OrganizationCard({ organization, onClick }: OrganizationCardProp
 
       <div className="p-3">
         <h3 className="line-clamp-1 font-semibold">{organization.name}</h3>
-        <p className="line-clamp-1 text-xs text-muted-foreground">{organization.location}</p>
+        <p className="text-muted-foreground line-clamp-1 text-xs">
+          {organization.location}
+        </p>
 
         <div className="mt-2 flex flex-wrap gap-1">
           {organization.tags.slice(0, 2).map((tag) => (
@@ -79,5 +81,5 @@ export function OrganizationCard({ organization, onClick }: OrganizationCardProp
         </div>
       </div>
     </div>
-  )
+  );
 }

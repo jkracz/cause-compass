@@ -24,7 +24,6 @@ export function MosaicPiece({ index, total, isCompleted }: MosaicPieceProps) {
   const x = Math.cos(angle) * radius;
   const y = Math.sin(angle) * radius;
 
-  // Generate sophisticated colors matching the new palette
   const colorPalettes = [
     ["#FF1493", "#8A2BE2", "#4B0082"], // Pink to Purple
     ["#00BFFF", "#1E90FF", "#4169E1"], // Blue spectrum
