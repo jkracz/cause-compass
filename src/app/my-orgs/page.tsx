@@ -19,6 +19,7 @@ import { OrganizationCard } from "@/components/organization-card";
 import { ControlPanel } from "@/components/control-panel";
 import type { Organization } from "@/lib/types";
 import { OrganizationModal } from "@/components/organization-modal";
+import { api } from "@/utils/api";
 
 export default function MyOrgsPage() {
   const router = useRouter();
@@ -29,6 +30,9 @@ export default function MyOrgsPage() {
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
+
+  // tRPC API call
+  const helloQuery = api.example.hello.useQuery({ text: "from My Orgs page" });
 
   useEffect(() => {
     // Load liked organizations from localStorage
@@ -95,6 +99,11 @@ export default function MyOrgsPage() {
         <div className="relative z-10 container mx-auto px-16 py-12 pr-16 md:pr-4">
           <div className="mb-8 flex items-center justify-center">
             <h1 className="text-2xl font-bold">My Organizations</h1>
+            {helloQuery.data && (
+              <div className="ml-4 text-sm text-muted-foreground">
+                API Response: {helloQuery.data.greeting}
+              </div>
+            )}
           </div>
 
           {likedOrgs.length === 0 ? (
