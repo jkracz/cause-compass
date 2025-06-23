@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { cookies } from "next/headers";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
 import { MirrorQuestion } from "@/components/mirror-question";
 import { MosaicPiece } from "@/components/mosaic-piece";
+import { generateId } from "@/lib/utils";
 import { generateQuestions } from "@/lib/questions";
 import type { Question } from "@/lib/questions";
 
@@ -76,10 +78,8 @@ export default function OnboardingPage() {
 
   const handleNext = () => {
     if (isLastQuestion) {
-      // Save answers to localStorage
+      // Save answers to localStorage (temporary - will be replaced with server action)
       localStorage.setItem("userPreferences", JSON.stringify(answers));
-      // Set cookie to indicate user has visited
-      document.cookie = "hasVisited=true; path=/; max-age=31536000"; // 1 year
       // Navigate to discover page
       router.push("/discover");
     } else {

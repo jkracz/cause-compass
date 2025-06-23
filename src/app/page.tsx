@@ -4,10 +4,18 @@ import { ArrowRight, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
+import { createUserSession } from "@/lib/actions";
 
 export default async function Home() {
   const cookieStore = await cookies();
-  const hasVisited = cookieStore.has("hasVisited");
+  let userId = cookieStore.get("userId")?.value;
+
+  // Create user session if it doesn't exist
+  if (!userId) {
+    userId = await createUserSession();
+  }
+
+  const hasVisited = !!userId;
 
   return (
     <div className="flex min-h-screen flex-col">
