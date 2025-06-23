@@ -127,7 +127,6 @@ export interface SocialMediaUrls {
 }
 
 export enum GoogleSearchApiKeyType {
-    CC = "CC",
     PERSONAL = "PERSONAL",
     JKRACZ = "JKRACZ",
     SF = "SF",

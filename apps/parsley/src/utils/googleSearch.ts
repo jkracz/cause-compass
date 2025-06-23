@@ -3,10 +3,6 @@ import { GoogleSearchApiKeyType } from "../types";
 import "dotenv/config";
 
 const keySets = {
-    [GoogleSearchApiKeyType.CC]: {
-        searchEngineId: process.env.SEARCH_ENGINE_ID,
-        searchApiKey: process.env.GOOGLE_SEARCH_API_KEY,
-    },
     [GoogleSearchApiKeyType.PERSONAL]: {
         searchEngineId: process.env.SEARCH_ENGINE_ID_PERSONAL,
         searchApiKey: process.env.GOOGLE_SEARCH_API_KEY_PERSONAL,
