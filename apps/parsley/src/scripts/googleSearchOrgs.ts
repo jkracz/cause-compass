@@ -6,7 +6,6 @@ import "dotenv/config";
 
 // Define multiple keys
 const apiKeys = [
-    GoogleSearchApiKeyType.CC,
     GoogleSearchApiKeyType.PERSONAL,
     GoogleSearchApiKeyType.JKRACZ,
     GoogleSearchApiKeyType.SF,
@@ -53,7 +52,10 @@ const googleSearchOrgs = async () => {
             const processedIds = processedOrgs.map((org) => org._id).filter(Boolean) as ObjectId[];
 
             await bulkUpdateOrgs(processedOrgs);
-            console.log(`Documents IDs Processed for ${keyType}:`, processedIds.map(id => id.toString()));
+            console.log(
+                `Documents IDs Processed for ${keyType}:`,
+                processedIds.map((id) => id.toString())
+            );
         };
 
         // Process and save results for each key sequentially
