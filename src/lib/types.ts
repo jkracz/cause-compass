@@ -9,3 +9,19 @@ export interface Organization {
   impact: string;
   website: string;
 }
+
+export interface UserPreferences {
+  openEnded?: string;
+  causes?: string[];
+  helpMethod?: string[];
+  changeScope?: string;
+  location?: string;
+}
+
+export interface User {
+  userId: string;
+  preferences: UserPreferences;
+  likedOrganizations: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}

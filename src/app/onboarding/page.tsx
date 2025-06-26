@@ -76,12 +76,30 @@ export default function OnboardingPage() {
     handleAnswer("location", "skipped");
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (isLastQuestion) {
-      // Save answers to localStorage (temporary - will be replaced with server action)
-      localStorage.setItem("userPreferences", JSON.stringify(answers));
-      // Navigate to discover page
-      router.push("/discover");
+      // Create FormData from answers
+      const formData = new FormData();
+      
+      // Add each answer to the form data
+      Object.entries(answers).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach(v => formData.append(key, v));
+        } else {
+          formData.append(key, value as string);
+        }
+      });
+
+      try {
+        // Import and call the server action
+        const { saveUserPreferences } = await import("@/lib/actions/user");
+        await saveUserPreferences(formData);
+        // Navigation will be handled by the server action
+      } catch (error) {
+        console.error("Error saving preferences:", error);
+        // Fallback navigation in case of error
+        router.push("/discover");
+      }
     } else {
       setCurrentQuestionIndex((prev) => prev + 1);
     }

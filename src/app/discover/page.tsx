@@ -19,31 +19,52 @@ export default function DiscoverPage() {
   );
 
   useEffect(() => {
-    // Load user preferences from localStorage
-    const preferences = localStorage.getItem("userPreferences");
-    if (preferences) {
-      setUserPreferences(JSON.parse(preferences));
-    }
+    const loadUserData = async () => {
+      try {
+        // Load user preferences from database
+        const { getUserPreferencesAction, getLikedOrganizationsAction } = await import("@/lib/actions/user");
+        
+        const preferences = await getUserPreferencesAction();
+        if (preferences) {
+          setUserPreferences(preferences);
+        }
+
+        // Load liked organizations from database
+        const likedOrgIds = await getLikedOrganizationsAction();
+        // TODO: Convert IDs to full organization objects when we have the org query
+        // For now, we'll use mock data filtering
+        const likedOrgObjects = mockOrganizations.filter(org => likedOrgIds.includes(org.id));
+        setLikedOrgs(likedOrgObjects);
+        
+      } catch (error) {
+        console.error("Error loading user data:", error);
+      }
+    };
 
     // TODO: Load organizations from DB
     setOrganizations(mockOrganizations);
-
-    // Load any previously liked organizations
-    const savedLikedOrgs = localStorage.getItem("likedOrganizations");
-    if (savedLikedOrgs) {
-      setLikedOrgs(JSON.parse(savedLikedOrgs));
-    }
+    loadUserData();
   }, []);
 
-  const handleLike = () => {
+  const handleLike = async () => {
     if (currentIndex < organizations.length) {
       const org = organizations[currentIndex];
-      const updatedLikedOrgs = [...likedOrgs, org];
-      setLikedOrgs(updatedLikedOrgs);
-      localStorage.setItem(
-        "likedOrganizations",
-        JSON.stringify(updatedLikedOrgs),
-      );
+      
+      try {
+        // Add to database
+        const { addLikedOrganization } = await import("@/lib/actions/user");
+        await addLikedOrganization(org.id);
+        
+        // Update local state
+        const updatedLikedOrgs = [...likedOrgs, org];
+        setLikedOrgs(updatedLikedOrgs);
+      } catch (error) {
+        console.error("Error adding liked organization:", error);
+        // Still update local state as fallback
+        const updatedLikedOrgs = [...likedOrgs, org];
+        setLikedOrgs(updatedLikedOrgs);
+      }
+      
       setCurrentIndex(currentIndex + 1);
     }
   };

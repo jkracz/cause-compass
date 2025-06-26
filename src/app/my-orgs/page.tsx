@@ -31,17 +31,30 @@ export default function MyOrgsPage() {
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
 
   useEffect(() => {
-    // Load liked organizations from localStorage
-    const savedLikedOrgs = localStorage.getItem("likedOrganizations");
-    if (savedLikedOrgs) {
-      setLikedOrgs(JSON.parse(savedLikedOrgs));
-    }
+    const loadUserData = async () => {
+      try {
+        // Load user data from database
+        const { getUserPreferencesAction, getLikedOrganizationsAction } = await import("@/lib/actions/user");
+        const { mockOrganizations } = await import("@/lib/mock-data");
+        
+        const preferences = await getUserPreferencesAction();
+        if (preferences) {
+          setUserPreferences(preferences);
+        }
 
-    // Load user preferences from localStorage
-    const savedPreferences = localStorage.getItem("userPreferences");
-    if (savedPreferences) {
-      setUserPreferences(JSON.parse(savedPreferences));
-    }
+        // Load liked organizations from database
+        const likedOrgIds = await getLikedOrganizationsAction();
+        // TODO: Convert IDs to full organization objects when we have the org query
+        // For now, we'll use mock data filtering
+        const likedOrgObjects = mockOrganizations.filter(org => likedOrgIds.includes(org.id));
+        setLikedOrgs(likedOrgObjects);
+        
+      } catch (error) {
+        console.error("Error loading user data:", error);
+      }
+    };
+
+    loadUserData();
   }, []);
 
   const handleOpenModal = (org: Organization) => {
@@ -53,10 +66,21 @@ export default function MyOrgsPage() {
     setIsModalOpen(false);
   };
 
-  const handleRemoveOrganization = (orgId: string) => {
-    const updatedOrgs = likedOrgs.filter((org) => org.id !== orgId);
-    setLikedOrgs(updatedOrgs);
-    localStorage.setItem("likedOrganizations", JSON.stringify(updatedOrgs));
+  const handleRemoveOrganization = async (orgId: string) => {
+    try {
+      // Remove from database
+      const { removeLikedOrganization } = await import("@/lib/actions/user");
+      await removeLikedOrganization(orgId);
+      
+      // Update local state
+      const updatedOrgs = likedOrgs.filter((org) => org.id !== orgId);
+      setLikedOrgs(updatedOrgs);
+    } catch (error) {
+      console.error("Error removing organization:", error);
+      // Still update local state as fallback
+      const updatedOrgs = likedOrgs.filter((org) => org.id !== orgId);
+      setLikedOrgs(updatedOrgs);
+    }
   };
 
   const handleEditReflection = () => {
@@ -72,21 +96,19 @@ export default function MyOrgsPage() {
     router.push("/discover");
   };
 
-  const handleStartOver = () => {
-    // Clear all stored data
-    localStorage.removeItem("likedOrganizations");
-    localStorage.removeItem("userPreferences");
-
-    // Clear the hasVisited cookie
-    document.cookie =
-      "hasVisited=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-
-    // Reset local state
-    setLikedOrgs([]);
-    setUserPreferences({});
-
-    // Redirect to onboarding
-    router.push("/onboarding");
+  const handleStartOver = async () => {
+    try {
+      // Clear all user data from database
+      const { clearUserSession } = await import("@/lib/actions/user");
+      await clearUserSession();
+      // Navigation will be handled by the server action
+    } catch (error) {
+      console.error("Error clearing user data:", error);
+      // Fallback: clear local state and redirect
+      setLikedOrgs([]);
+      setUserPreferences({});
+      router.push("/onboarding");
+    }
   };
 
   return (
