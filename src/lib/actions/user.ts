@@ -27,30 +27,80 @@ export async function saveUserPreferences(formData: FormData) {
     throw new Error("No user session found");
   }
 
-  // Extract preferences from form data
-  const preferences = {
-    causes: formData.getAll("causes"),
-    location: formData.get("location"),
-    donationRange: formData.get("donationRange"),
-    involvement: formData.get("involvement"),
-  };
+  try {
+    // Process form data using utility function
+    const { processPreferencesFormData } = await import("@/lib/utils/preferences");
+    const preferences = processPreferencesFormData(formData);
 
-  // TODO: Save to MongoDB
-  console.log("Saving preferences for user:", userId, preferences);
+    // Import the database function dynamically to avoid issues with server/client boundaries
+    const { saveUserPreferences: saveToDb } = await import("@/server/db/queries/user");
+    
+    // Save to MongoDB
+    await saveToDb(userId, preferences);
 
-  // Set a cookie to indicate preferences are saved
-  cookieStore.set("hasPreferences", "true", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 60 * 60 * 24 * 365,
-  });
+    // Set a cookie to indicate preferences are saved
+    cookieStore.set("hasPreferences", "true", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 60 * 60 * 24 * 365,
+    });
 
-  redirect("/discover");
+    redirect("/discover");
+  } catch (error) {
+    console.error("Error saving user preferences:", error);
+    throw new Error("Failed to save user preferences");
+  }
+}
+
+export async function getUserPreferences() {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("userId")?.value;
+
+  if (!userId) {
+    return null;
+  }
+
+  try {
+    const { getUserPreferences: getFromDb } = await import("@/server/db/queries/user");
+    return await getFromDb(userId);
+  } catch (error) {
+    console.error("Error getting user preferences:", error);
+    return null;
+  }
+}
+
+export async function updateUserPreferences(updates: Record<string, any>) {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("userId")?.value;
+
+  if (!userId) {
+    throw new Error("No user session found");
+  }
+
+  try {
+    const { updateUserPreferences: updateInDb } = await import("@/server/db/queries/user");
+    return await updateInDb(userId, updates);
+  } catch (error) {
+    console.error("Error updating user preferences:", error);
+    throw new Error("Failed to update user preferences");
+  }
 }
 
 export async function clearUserSession() {
   const cookieStore = await cookies();
+  const userId = cookieStore.get("userId")?.value;
+
+  // If user has preferences, delete them from database
+  if (userId) {
+    try {
+      const { deleteUserPreferences } = await import("@/server/db/queries/user");
+      await deleteUserPreferences(userId);
+    } catch (error) {
+      console.error("Error deleting user preferences:", error);
+      // Continue with clearing session even if DB delete fails
+    }
+  }
 
   cookieStore.delete("userId");
   cookieStore.delete("hasPreferences");
