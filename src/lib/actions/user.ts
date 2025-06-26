@@ -2,22 +2,6 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { nanoid } from "nanoid";
-
-export async function createUserSession() {
-  const cookieStore = await cookies();
-  const userId = nanoid();
-
-  cookieStore.set("userId", userId, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 60 * 60 * 24 * 365, // 1 year
-    path: "/",
-  });
-
-  return userId;
-}
 
 export async function saveUserPreferences(formData: FormData) {
   const cookieStore = await cookies();
@@ -54,7 +38,6 @@ export async function clearUserSession() {
 
   cookieStore.delete("userId");
   cookieStore.delete("hasPreferences");
-  cookieStore.delete("hasVisited");
 
   redirect("/");
 }

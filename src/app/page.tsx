@@ -4,18 +4,12 @@ import { ArrowRight, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
-import { createUserSession } from "@/lib/actions";
 
 export default async function Home() {
   const cookieStore = await cookies();
-  let userId = cookieStore.get("userId")?.value;
 
-  // Create user session if it doesn't exist
-  if (!userId) {
-    userId = await createUserSession();
-  }
-
-  const hasVisited = !!userId;
+  // Check if user has preferences saved (determines if they're a returning user)
+  const hasPreferences = cookieStore.has("hasPreferences");
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -34,7 +28,7 @@ export default async function Home() {
               </div>
 
               <div className="space-y-4">
-                {hasVisited ? (
+                {hasPreferences ? (
                   <>
                     <Link href="/my-orgs" className="inline-block w-full">
                       <Button size="lg" className="w-full">
