@@ -1,8 +1,10 @@
-import mongoose, { Schema, Document } from 'mongoose';
-import { TaxExemptOrganization } from '../../schemas';
+import mongoose, { Schema, Document } from "mongoose";
+import { TaxExemptOrganization } from "@/lib/schemas";
 
 // Extend the TaxExemptOrganization type with Mongoose Document (omit _id to avoid conflicts)
-export interface ITaxExemptOrganization extends Omit<TaxExemptOrganization, '_id'>, Document {}
+export interface ITaxExemptOrganization
+  extends Omit<TaxExemptOrganization, "_id">,
+    Document {}
 
 // Define the Mongoose schema
 const TaxExemptOrganizationSchema = new Schema<ITaxExemptOrganization>(
@@ -35,11 +37,13 @@ const TaxExemptOrganizationSchema = new Schema<ITaxExemptOrganization>(
       code: { type: String, required: true },
       description: { type: String, required: true },
     },
-    activityCodes: [{
-      code: { type: String, required: true },
-      description: { type: String, required: true },
-      category: { type: String, required: true },
-    }],
+    activityCodes: [
+      {
+        code: { type: String, required: true },
+        description: { type: String, required: true },
+        category: { type: String, required: true },
+      },
+    ],
     organization: {
       code: { type: String, required: true },
       type: { type: String, required: true },
@@ -87,34 +91,38 @@ const TaxExemptOrganizationSchema = new Schema<ITaxExemptOrganization>(
     sortName: { type: String },
 
     // Search/Crawl Data
-    searchResults: [{
-      kind: { type: String },
-      title: { type: String },
-      htmlTitle: { type: String },
-      link: { type: String },
-      displayLink: { type: String },
-      snippet: { type: String },
-      htmlSnippet: { type: String },
-      formattedUrl: { type: String },
-      htmlFormattedUrl: { type: String },
-      pagemap: { type: Schema.Types.Mixed },
-    }],
-    searchKey: { 
-      type: String, 
-      enum: ['CC', 'PERSONAL', 'JKRACZ', 'SF', 'JK'] 
+    searchResults: [
+      {
+        kind: { type: String },
+        title: { type: String },
+        htmlTitle: { type: String },
+        link: { type: String },
+        displayLink: { type: String },
+        snippet: { type: String },
+        htmlSnippet: { type: String },
+        formattedUrl: { type: String },
+        htmlFormattedUrl: { type: String },
+        pagemap: { type: Schema.Types.Mixed },
+      },
+    ],
+    searchKey: {
+      type: String,
+      enum: ["CC", "PERSONAL", "JKRACZ", "SF", "JK"],
     },
     resultsParsedAt: { type: String },
-    confirmationCrawlItems: [{
-      title: { type: String, required: true },
-      url: { type: String, required: true },
-      textContent: { type: String, required: true },
-      socialMediaUrls: [{ type: String }],
-      hasNewsletterSignup: { type: Boolean },
-      donationLinks: [{ type: String }],
-      emailAddresses: [{ type: String }],
-      logoLinks: [{ type: String }],
-      aboutLinks: [{ type: String }],
-    }],
+    confirmationCrawlItems: [
+      {
+        title: { type: String, required: true },
+        url: { type: String, required: true },
+        textContent: { type: String, required: true },
+        socialMediaUrls: [{ type: String }],
+        hasNewsletterSignup: { type: Boolean },
+        donationLinks: [{ type: String }],
+        emailAddresses: [{ type: String }],
+        logoLinks: [{ type: String }],
+        aboutLinks: [{ type: String }],
+      },
+    ],
     aiConfirmationResponse: { type: Schema.Types.Mixed },
 
     // Organization Details
@@ -137,18 +145,22 @@ const TaxExemptOrganizationSchema = new Schema<ITaxExemptOrganization>(
   },
   {
     timestamps: true, // This adds createdAt and updatedAt automatically
-    collection: 'tax_exempt_organizations',
-  }
+    collection: "tax_exempt_organizations",
+  },
 );
 
 // Create indexes for better query performance
-TaxExemptOrganizationSchema.index({ name: 'text', ein: 1 });
+TaxExemptOrganizationSchema.index({ name: "text", ein: 1 });
 TaxExemptOrganizationSchema.index({ state: 1, city: 1 });
-TaxExemptOrganizationSchema.index({ 'nteeCode.majorCode.code': 1 });
-TaxExemptOrganizationSchema.index({ 'organization.type': 1 });
+TaxExemptOrganizationSchema.index({ "nteeCode.majorCode.code": 1 });
+TaxExemptOrganizationSchema.index({ "organization.type": 1 });
 
 // Create and export the model
-const TaxExemptOrganizationModel = mongoose.models.TaxExemptOrganization || 
-  mongoose.model<ITaxExemptOrganization>('TaxExemptOrganization', TaxExemptOrganizationSchema);
+const TaxExemptOrganizationModel =
+  mongoose.models.TaxExemptOrganization ||
+  mongoose.model<ITaxExemptOrganization>(
+    "TaxExemptOrganization",
+    TaxExemptOrganizationSchema,
+  );
 
-export default TaxExemptOrganizationModel; 
+export default TaxExemptOrganizationModel;

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from "zod/v4";
 
 // Search Result Schema
 export const SearchResultSchema = z.object({
@@ -11,7 +11,7 @@ export const SearchResultSchema = z.object({
   htmlSnippet: z.string(),
   formattedUrl: z.string(),
   htmlFormattedUrl: z.string(),
-  pagemap: z.record(z.any()),
+  pagemap: z.record(z.string(), z.any()),
 });
 
 // Social Media URLs Schema
@@ -41,7 +41,15 @@ export const CrawlItemSchema = z.object({
 // Batch Job Schema
 export const BatchJobSchema = z.object({
   id: z.string(),
-  status: z.enum(['pending', 'generating', 'uploading', 'processing', 'downloading', 'completed', 'failed']),
+  status: z.enum([
+    "pending",
+    "generating",
+    "uploading",
+    "processing",
+    "downloading",
+    "completed",
+    "failed",
+  ]),
   createdAt: z.string(),
   updatedAt: z.string(),
   batchSize: z.number(),
@@ -60,4 +68,4 @@ export const BatchJobSchema = z.object({
 export type SearchResult = z.infer<typeof SearchResultSchema>;
 export type SocialMediaUrls = z.infer<typeof SocialMediaUrlsSchema>;
 export type CrawlItem = z.infer<typeof CrawlItemSchema>;
-export type BatchJob = z.infer<typeof BatchJobSchema>; 
+export type BatchJob = z.infer<typeof BatchJobSchema>;

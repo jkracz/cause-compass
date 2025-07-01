@@ -17,16 +17,16 @@ import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
 import { OrganizationCard } from "@/components/organization-card";
 import { ControlPanel } from "@/components/control-panel";
-import type { Organization } from "@/lib/types";
+import type { MockOrganization } from "@/lib/types";
 import { OrganizationModal } from "@/components/organization-modal";
 
 export default function MyOrgsPage() {
   const router = useRouter();
-  const [likedOrgs, setLikedOrgs] = useState<Organization[]>([]);
+  const [likedOrgs, setLikedOrgs] = useState<MockOrganization[]>([]);
   const [userPreferences, setUserPreferences] = useState<Record<string, any>>(
     {},
   );
-  const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
+  const [selectedOrg, setSelectedOrg] = useState<MockOrganization | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
 
@@ -44,7 +44,7 @@ export default function MyOrgsPage() {
     }
   }, []);
 
-  const handleOpenModal = (org: Organization) => {
+  const handleOpenModal = (org: MockOrganization) => {
     setSelectedOrg(org);
     setIsModalOpen(true);
   };

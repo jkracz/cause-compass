@@ -1,4 +1,4 @@
-export interface Organization {
+export interface MockOrganization {
   id: string;
   name: string;
   description: string;

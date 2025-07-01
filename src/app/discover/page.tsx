@@ -7,13 +7,13 @@ import { Heart, X } from "lucide-react";
 import { SwipeableCard } from "@/components/swipeable-card";
 import { Button } from "@/components/ui/button";
 import { mockOrganizations } from "@/lib/mock-data";
-import type { Organization } from "@/lib/types";
+import type { MockOrganization } from "@/lib/types";
 
 export default function DiscoverPage() {
   const router = useRouter();
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [organizations, setOrganizations] = useState<MockOrganization[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [likedOrgs, setLikedOrgs] = useState<Organization[]>([]);
+  const [likedOrgs, setLikedOrgs] = useState<MockOrganization[]>([]);
   const [userPreferences, setUserPreferences] = useState<Record<string, any>>(
     {},
   );

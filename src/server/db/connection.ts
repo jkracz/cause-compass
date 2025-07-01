@@ -1,10 +1,10 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 // MongoDB connection string - you'll need to set this in your environment variables
 const MONGODB_URI = process.env.MONGODB_URI || process.env.DATABASE_URL;
 
 if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable');
+  throw new Error("Please define the MONGODB_URI environment variable");
 }
 
 // Mongoose connection with global caching for Next.js dev mode
@@ -26,6 +26,6 @@ export async function connectToMongoDB(): Promise<typeof mongoose> {
 export async function disconnectFromMongoDB(): Promise<void> {
   if (mongoose.connections[0].readyState !== 0) {
     await mongoose.disconnect();
-    console.log('Disconnected from MongoDB');
+    console.log("Disconnected from MongoDB");
   }
-} 
+}

@@ -51,7 +51,7 @@ export default function OrgPage({ params }: OrgPageProps) {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {organization.tags.map((tag) => (
+                  {organization.tags.map((tag: string) => (
                     <Badge key={tag} variant="secondary">
                       {tag}
                     </Badge>

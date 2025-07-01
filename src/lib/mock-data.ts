@@ -1,6 +1,6 @@
-import type { Organization } from "./types";
+import type { MockOrganization } from "./types";
 
-export const mockOrganizations: Organization[] = [
+export const mockOrganizations: MockOrganization[] = [
   {
     id: "1",
     name: "Ocean Conservation Alliance",

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from "zod/v4";
 
 // Activity Code Schema
 export const ActivityCodeSchema = z.object({
@@ -69,8 +69,13 @@ export const NteeCodeSchema = z.object({
 });
 
 // Google Search API Key Type Enum
-export const GoogleSearchApiKeyTypeSchema = z.enum(['CC', 'PERSONAL', 'JKRACZ', 'SF', 'JK']);
-
+export const GoogleSearchApiKeyTypeSchema = z.enum([
+  "CC",
+  "PERSONAL",
+  "JKRACZ",
+  "SF",
+  "JK",
+]);
 // Export types
 export type ActivityCode = z.infer<typeof ActivityCodeSchema>;
 export type AssetCode = z.infer<typeof AssetCodeSchema>;
@@ -82,4 +87,6 @@ export type FoundationCode = z.infer<typeof FoundationCodeSchema>;
 export type FilingRequirementCode = z.infer<typeof FilingRequirementCodeSchema>;
 export type NteeMajorCode = z.infer<typeof NteeMajorCodeSchema>;
 export type NteeCode = z.infer<typeof NteeCodeSchema>;
-export type GoogleSearchApiKeyType = z.infer<typeof GoogleSearchApiKeyTypeSchema>; 
+export type GoogleSearchApiKeyType = z.infer<
+  typeof GoogleSearchApiKeyTypeSchema
+>;
