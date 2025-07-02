@@ -29,7 +29,6 @@ const UserSchema = new Schema<IUser>(
 );
 
 // Create indexes for better query performance
-UserSchema.index({ userId: 1 });
 UserSchema.index({ "preferences.causes": 1 });
 UserSchema.index({ "preferences.changeScope": 1 });
 

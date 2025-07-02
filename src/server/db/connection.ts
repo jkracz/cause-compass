@@ -7,15 +7,21 @@ if (!MONGODB_URI) {
   throw new Error("Please define the MONGODB_URI environment variable");
 }
 
-// Mongoose connection with global caching for Next.js dev mode
+// Mongoose connection with global caching for Next.js dev mode to avoid multiple connections on hot reload
 declare global {
+  // eslint-disable-next-line no-var
   var _mongooseConnection: Promise<typeof mongoose> | undefined;
 }
 
 let cached = global._mongooseConnection;
 
 if (!cached) {
-  cached = global._mongooseConnection = mongoose.connect(MONGODB_URI);
+  try {
+    cached = global._mongooseConnection = mongoose.connect(MONGODB_URI);
+  } catch (error) {
+    console.error("Error connecting to MongoDB", error);
+    throw error;
+  }
 }
 
 export async function connectToMongoDB(): Promise<typeof mongoose> {

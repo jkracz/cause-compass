@@ -42,12 +42,12 @@ export async function saveUserPreferences(formData: FormData) {
       sameSite: "strict",
       maxAge: 60 * 60 * 24 * 365,
     });
-
-    redirect("/discover");
   } catch (error) {
     console.error("Error saving user preferences:", error);
     throw new Error("Failed to save user preferences");
   }
+
+  redirect("/discover");
 }
 
 export async function addLikedOrganization(organizationId: string) {

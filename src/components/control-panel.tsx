@@ -1,27 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import {
-  RotateCcw,
-  Sparkles,
-  Brain,
-  Sprout,
-  Edit3,
-  Menu,
-  X,
-} from "lucide-react";
+import { RotateCcw, Sparkles, Brain, Sprout, Edit3, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import type { Organization } from "@/lib/types";
+import type { MockOrganization } from "@/lib/types";
 import {
   Drawer,
   DrawerContent,
@@ -29,10 +14,11 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "./ui/drawer";
+import type { UserPreferences } from "@/lib/schemas/user";
 
 interface ControlPanelProps {
-  userPreferences: Record<string, any>;
-  likedOrgs: Organization[];
+  userPreferences: UserPreferences;
+  likedOrgs: MockOrganization[];
   onEditReflection: () => void;
   onAnswerMoreQuestions: () => void;
   onGetMoreMatches: () => void;

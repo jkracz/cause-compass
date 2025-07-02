@@ -5,10 +5,10 @@ import { motion, useMotionValue, useTransform } from "motion/react";
 import { Heart, X } from "lucide-react";
 
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
-import type { Organization } from "@/lib/types";
+import type { MockOrganization } from "@/lib/types";
 
 interface SwipeableCardProps {
-  organization: Organization;
+  organization: MockOrganization;
   onSwipeLeft: () => void;
   onSwipeRight: () => void;
 }

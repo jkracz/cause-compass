@@ -4,10 +4,10 @@ import type React from "react";
 
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-import type { Organization } from "@/lib/types";
+import type { MockOrganization } from "@/lib/types";
 
 interface OrganizationCardProps {
-  organization: Organization;
+  organization: MockOrganization;
   onClick: () => void;
 }
 
@@ -68,7 +68,7 @@ export function OrganizationCard({
         </p>
 
         <div className="mt-2 flex flex-wrap gap-1">
-          {organization.tags.slice(0, 2).map((tag) => (
+          {organization.tags.slice(0, 2).map((tag: string) => (
             <Badge key={tag} variant="outline" className="text-xs">
               {tag}
             </Badge>

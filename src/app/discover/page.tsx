@@ -14,17 +14,8 @@ export default function DiscoverPage() {
   const [organizations, setOrganizations] = useState<MockOrganization[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likedOrgs, setLikedOrgs] = useState<MockOrganization[]>([]);
-  const [userPreferences, setUserPreferences] = useState<Record<string, any>>(
-    {},
-  );
 
   useEffect(() => {
-    // Load user preferences from localStorage
-    const preferences = localStorage.getItem("userPreferences");
-    if (preferences) {
-      setUserPreferences(JSON.parse(preferences));
-    }
-
     // TODO: Load organizations from DB
     setOrganizations(mockOrganizations);
 

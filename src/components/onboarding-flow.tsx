@@ -55,7 +55,7 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
 
         setLocationPermission("granted");
         handleAnswer("location", JSON.stringify(location));
-      } catch (error) {
+      } catch (_error) {
         setLocationPermission("denied");
         handleAnswer("location", "denied");
       }

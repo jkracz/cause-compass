@@ -25,11 +25,11 @@ import {
 } from "@/components/ui/drawer";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import type { Organization } from "@/lib/types";
+import type { MockOrganization } from "@/lib/types";
 import { useMobile } from "@/hooks/use-mobile";
 
 interface OrganizationModalProps {
-  organization: Organization;
+  organization: MockOrganization;
   isOpen: boolean;
   onClose: () => void;
   onRemove?: () => void;
@@ -108,7 +108,7 @@ export function OrganizationModal({
         </div>
 
         <div className="mb-4 flex flex-wrap gap-2">
-          {organization.tags.map((tag) => (
+          {organization.tags.map((tag: string) => (
             <Badge key={tag} variant="secondary">
               {tag}
             </Badge>

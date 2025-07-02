@@ -6,9 +6,10 @@ import UserModel, { IUser } from "./model";
 // Get user preferences
 export async function getUserPreferences(
   userId: string,
-): Promise<IUser | null> {
+): Promise<IUser["preferences"]> {
   await connectToMongoDB();
-  return await UserModel.findOne({ userId }).exec();
+  const user = await UserModel.findOne({ userId }).exec();
+  return user?.preferences || {};
 }
 
 // Get liked organizations for a user
