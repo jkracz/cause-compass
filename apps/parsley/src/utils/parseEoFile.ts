@@ -58,7 +58,7 @@ const eoStatusCodesDict = eoStatusCodes as Record<string, EOStatusCode>;
 
 const DATA_DIR = "data";
 export const parseEoFile = async (fileName: string): Promise<Record<string, TaxExemptOrganization>> => {
-    const currentPath = join(__dirname, `${DATA_DIR}/raw`, fileName);
+    const currentPath = join(process.cwd(), `${DATA_DIR}/raw`, fileName);
 
     return new Promise((resolve, reject) => {
         const profiles: Record<string, TaxExemptOrganization> = {};
