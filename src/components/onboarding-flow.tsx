@@ -76,7 +76,14 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
 
       // Add each answer to the form data
       Object.entries(answers).forEach(([key, value]) => {
-        if (Array.isArray(value)) {
+        if (key === "openEnded") {
+          // For openEnded questions, we need to send both question and answer
+          const currentQuestion = questions.find((q) => q.id === "openEnded");
+          if (currentQuestion) {
+            formData.append("openEnded", currentQuestion.question);
+            formData.append("openEndedAnswer", value as string);
+          }
+        } else if (Array.isArray(value)) {
           value.forEach((v) => formData.append(key, v));
         } else {
           formData.append(key, value as string);

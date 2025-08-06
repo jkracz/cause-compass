@@ -1,4 +1,4 @@
-import * as z from "zod/v4";
+import * as z from "zod";
 
 // Search Result Schema
 export const SearchResultSchema = z.object({

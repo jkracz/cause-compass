@@ -110,7 +110,7 @@ export async function searchOrganizations(
 ): Promise<ITaxExemptOrganization[]> {
   await connectToMongoDB();
 
-  const query: any = {};
+  const query: Record<string, unknown> = {};
 
   if (filters.name) {
     query.$text = { $search: filters.name };

@@ -4,7 +4,7 @@ import { User } from "@/lib/schemas";
 // Extend the User type with Mongoose Document (omit _id to avoid conflicts)
 export interface IUser extends Omit<User, "_id">, Document {}
 
-// Define the Mongoose schema
+// Define the Mongoose schema that matches the Zod schema structure
 const UserSchema = new Schema<IUser>(
   {
     userId: {
@@ -14,11 +14,17 @@ const UserSchema = new Schema<IUser>(
       index: true,
     },
     preferences: {
-      openEnded: { type: String },
-      causes: [{ type: String }],
-      helpMethod: [{ type: String }],
-      changeScope: { type: String },
-      location: { type: String },
+      type: {
+        openEnded: {
+          question: { type: String },
+          answer: { type: String },
+        },
+        causes: [{ type: String }],
+        helpMethod: [{ type: String }],
+        changeScope: { type: String },
+        location: { type: String },
+      },
+      default: {},
     },
     likedOrganizations: [{ type: String }],
   },

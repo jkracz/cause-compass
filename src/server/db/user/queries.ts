@@ -1,23 +1,42 @@
 "server-only";
 
+import { z } from "zod";
 import { connectToMongoDB } from "../connection";
 import UserModel, { IUser } from "./model";
+import { UserPreferencesSchema, UserPreferences } from "@/lib/schemas";
 
 // Get user preferences
 export async function getUserPreferences(
   userId: string,
-): Promise<IUser["preferences"]> {
+): Promise<UserPreferences> {
   await connectToMongoDB();
-  const user = await UserModel.findOne({ userId }).exec();
-  return user?.preferences || {};
+  const result = (await UserModel.findOne({ userId })
+    .select("preferences")
+    .lean()
+    .exec()) as { preferences: IUser["preferences"] } | null;
+
+  if (!result) {
+    return {};
+  }
+  const validatedPreferences = UserPreferencesSchema.parse(
+    result.preferences || {},
+  );
+
+  return validatedPreferences;
 }
 
 // Get liked organizations for a user
 export async function getLikedOrganizations(userId: string): Promise<string[]> {
   await connectToMongoDB();
 
-  const user = await UserModel.findOne({ userId })
+  const result = (await UserModel.findOne({ userId })
     .select("likedOrganizations")
-    .exec();
-  return user?.likedOrganizations || [];
+    .lean()
+    .exec()) as { likedOrganizations: IUser["likedOrganizations"] } | null;
+
+  const validatedLikedOrganizations = z
+    .array(z.string())
+    .parse(result?.likedOrganizations || []);
+
+  return validatedLikedOrganizations;
 }

@@ -1,4 +1,6 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cause Compass
+
+A Next.js application that helps users discover and connect with organizations that match their values and interests.
 
 ## Getting Started
 
@@ -16,21 +18,123 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Type System & Schema Management
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project uses a **type-first approach** with Zod v4 for validation and Mongoose for database operations. The type system ensures consistency between validation, database schemas, and TypeScript types.
 
-## Learn More
+### Architecture Overview
 
-To learn more about Next.js, take a look at the following resources:
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Zod Schemas   │───▶│  TypeScript     │───▶│  Mongoose       │
+│   (Validation)  │    │  Types          │    │  Schemas        │
+│                 │    │                 │    │  (Database)     │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Key Files
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **`src/lib/schemas/user.ts`** - Zod schemas and TypeScript types for user data
+- **`src/server/db/user/model.ts`** - Mongoose schema that mirrors the Zod schema
+- **`src/server/db/user/mutations.ts`** - Database operations with type safety
 
-## Deploy on Vercel
+### Schema Definition Pattern
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Define Zod Schema** (Single source of truth):
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```typescript
+// src/lib/schemas/user.ts
+export const UserPreferencesSchema = z.object({
+  openEnded: OpenEndedQuestionSchema.optional(),
+  causes: z.array(z.string()).optional(),
+  helpMethod: z.array(z.string()).optional(),
+  changeScope: z.string().optional(),
+  location: z.string().optional(),
+});
+
+export const UserSchema = z.object({
+  userId: z.string(),
+  preferences: UserPreferencesSchema,
+  likedOrganizations: z.array(z.string()),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+// Generate TypeScript types
+export type UserPreferences = z.infer<typeof UserPreferencesSchema>;
+export type User = z.infer<typeof UserSchema>;
+```
+
+2. **Create Mongoose Schema** (Manual mapping for reliability):
+
+```typescript
+// src/server/db/user/model.ts
+const UserSchema = new Schema<IUser>({
+  userId: { type: String, required: true, unique: true, index: true },
+  preferences: {
+    openEnded: {
+      question: { type: String, required: true },
+      answer: { type: String, required: false },
+    },
+    causes: [{ type: String }],
+    helpMethod: [{ type: String }],
+    changeScope: { type: String },
+    location: { type: String },
+  },
+  likedOrganizations: [{ type: String }],
+}, {
+  timestamps: true,
+  collection: "users",
+});
+```
+
+3. **Type-Safe Database Operations**:
+
+```typescript
+// src/server/db/user/mutations.ts
+export async function saveUserPreferences(
+  userId: string,
+  preferences: UserPreferences, // Zod-inferred type
+): Promise<IUser> {
+  // Type-safe database operation
+  return await UserModel.findOneAndUpdate(
+    { userId },
+    { userId, preferences },
+    { new: true, upsert: true, runValidators: true }
+  ).exec();
+}
+```
+
+### Type Safety Benefits
+
+- **Validation**: Zod schemas validate data at runtime
+- **Type Inference**: TypeScript types are automatically generated from Zod schemas
+- **Database Consistency**: Mongoose schemas mirror Zod schemas
+- **API Safety**: Server actions use validated types
+- **Client Safety**: Components receive properly typed data
+
+### Best Practices
+
+1. **Single Source of Truth**: Always define schemas in Zod first
+2. **Keep Schemas in Sync**: When updating Zod schemas, remember to update Mongoose schemas
+3. **Use Inferred Types**: Prefer `z.infer<typeof Schema>` over manual type definitions
+4. **Type Database Operations**: Use proper types for all database mutations and queries
+5. **Avoid `any`**: Use `Record<string, unknown>` or specific types instead
+
+### Schema Updates
+
+When updating schemas:
+
+1. Modify the Zod schema in `src/lib/schemas/user.ts`
+2. Update the corresponding Mongoose schema in `src/server/db/user/model.ts`
+3. Update any related database operations
+4. Run type checking: `npx tsc --noEmit`
+
+### Why Manual Mapping?
+
+While libraries like `@palmetto/zod-mongoose-schema` exist, we use manual mapping because:
+
+- **Reliability**: No external dependencies that might break with updates
+- **Compatibility**: Works with Zod v4 and Mongoose 8.17.0
+- **Control**: Full control over schema customization
+- **Clarity**: Explicit and easy to understand

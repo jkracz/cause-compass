@@ -2,6 +2,7 @@
 
 import { connectToMongoDB } from "../connection";
 import UserModel, { IUser } from "./model";
+import { UserPreferences } from "@/lib/schemas";
 
 // Add a liked organization
 export async function addLikedOrganization(
@@ -49,13 +50,7 @@ export async function clearUserData(userId: string): Promise<boolean> {
 // Create or update user with preferences
 export async function saveUserPreferences(
   userId: string,
-  preferences: {
-    openEnded?: string;
-    causes?: string[];
-    helpMethod?: string[];
-    changeScope?: string;
-    location?: string;
-  },
+  preferences: UserPreferences,
 ): Promise<IUser> {
   await connectToMongoDB();
 
@@ -76,17 +71,11 @@ export async function saveUserPreferences(
 // Update user preferences (partial update)
 export async function updateUserPreferences(
   userId: string,
-  preferences: Partial<{
-    openEnded?: string;
-    causes?: string[];
-    helpMethod?: string[];
-    changeScope?: string;
-    location?: string;
-  }>,
+  preferences: Partial<UserPreferences>,
 ): Promise<IUser | null> {
   await connectToMongoDB();
 
-  const updateObject: any = {};
+  const updateObject: Record<string, unknown> = {};
   Object.keys(preferences).forEach((key) => {
     updateObject[`preferences.${key}`] =
       preferences[key as keyof typeof preferences];

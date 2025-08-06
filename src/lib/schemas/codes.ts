@@ -1,4 +1,4 @@
-import * as z from "zod/v4";
+import * as z from "zod";
 
 // Activity Code Schema
 export const ActivityCodeSchema = z.object({

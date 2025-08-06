@@ -23,17 +23,17 @@ export async function saveUserPreferences(formData: FormData) {
   const preferences: UserPreferences = {
     causes: formData.getAll("causes") as string[],
     location: formData.get("location") as string,
-    donationRange: formData.get("donationRange") as string,
-    involvement: formData.get("involvement") as string,
     helpMethod: formData.getAll("helpMethod") as string[],
     changeScope: formData.get("changeScope") as string,
-    openEnded: formData.get("openEnded") as string,
+    openEnded: {
+      question: formData.get("openEnded") as string,
+      answer: formData.get("openEndedAnswer") as string,
+    },
   };
 
   try {
     // Save to MongoDB
     await saveUserPreferencesDB(userId, preferences);
-    console.log("Successfully saved preferences for user:", userId);
 
     // Set a cookie to indicate preferences are saved
     cookieStore.set("hasPreferences", "true", {
@@ -88,7 +88,7 @@ export async function removeLikedOrganization(organizationId: string) {
 
 export async function updateUserPreferences(
   preferences: Partial<{
-    openEnded?: string;
+    openEnded?: { question: string; answer?: string };
     causes?: string[];
     helpMethod?: string[];
     changeScope?: string;
