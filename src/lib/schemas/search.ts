@@ -11,7 +11,7 @@ export const SearchResultSchema = z.object({
   htmlSnippet: z.string(),
   formattedUrl: z.string(),
   htmlFormattedUrl: z.string(),
-  pagemap: z.record(z.string(), z.any()),
+  pagemap: z.record(z.string(), z.any()).optional(),
 });
 
 // Social Media URLs Schema

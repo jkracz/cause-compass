@@ -1,8 +1,13 @@
 "server-only";
 
 import { connectToMongoDB } from "../connection";
+import { getUserPreferences } from "../user/queries";
 import TaxExemptOrganizationModel, { ITaxExemptOrganization } from "./model";
-import { OrganizationSearchFilters } from "@/lib/schemas";
+import {
+  OrganizationSearchFilters,
+  TaxExemptOrganization,
+  TaxExemptOrganizationSchema,
+} from "@/lib/schemas";
 
 // Get organization by EIN
 export async function getOrganizationByEin(
@@ -151,4 +156,26 @@ export async function searchOrganizations(
     .skip(skip)
     .sort({ name: 1 })
     .exec();
+}
+
+export async function getRecommendedOrganizations(
+  userId: string,
+): Promise<Partial<TaxExemptOrganization>[]> {
+  await connectToMongoDB();
+  const userPreferences = await getUserPreferences(userId);
+  console.log("userPreferences", userPreferences);
+  const result = (await TaxExemptOrganizationModel.find({})
+    .select("name ein")
+    .where({ resultsParsedAt: { $exists: true } })
+    .limit(1)
+    .lean()
+    .exec()) as unknown as ITaxExemptOrganization[];
+
+  const validatedOrganizations = TaxExemptOrganizationSchema.partial()
+    .array()
+    .parse(result);
+
+  console.log("validatedOrganizations", validatedOrganizations);
+
+  return validatedOrganizations;
 }
