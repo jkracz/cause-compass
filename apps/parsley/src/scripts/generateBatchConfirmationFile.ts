@@ -1,33 +1,11 @@
-import { z } from "zod";
 import { zodResponseFormat } from "openai/helpers/zod";
-import { TaxExemptOrganization } from "../types";
+import { TaxExemptOrganization, WebsiteConfirmation } from "../types";
 import { findTaxExemptOrgs } from "../db/mongo";
 import fs from "fs";
 import path from "path";
 
 const DEFAULT_BATCH_SIZE = process.env.BATCH_SIZE ? parseInt(process.env.BATCH_SIZE) : 20;
 const DEFAULT_BATCH_DIR = "data/batch";
-
-const Activity = z.object({
-    name: z.string(),
-    description: z.string(),
-});
-
-const GeographicFocus = z.enum(["Global", "Local", "National", "Regional"]);
-
-const WebsiteConfirmation = z.object({
-    hasCorrectWebsite: z.boolean(),
-    correctWebsiteUrl: z.string().nullish(),
-    reasoning: z.string(),
-    organizationOneSentenceSummary: z.string().nullish(),
-    whySupportOrganization: z.string().nullish(),
-    organizationMission: z.string().nullish(),
-    organizationTagline: z.string().nullish(),
-    organizationUniqueTrait: z.string().nullish(),
-    organizationTargetAudience: z.string().nullish(),
-    organizationGeographicFocus: GeographicFocus.nullish(),
-    organizationActivities: z.array(Activity).nullish(),
-});
 
 interface WriteConfirmationFileOptions {
     batchDir?: string;
@@ -81,7 +59,7 @@ export const writeConfirmationFile = async (options: WriteConfirmationFileOption
             method: "POST",
             url: "/v1/chat/completions",
             body: {
-                model: "gpt-4o-mini",
+                model: "gpt-5-nano",
                 messages: [
                     {
                         role: "system",

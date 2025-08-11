@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { z } from "zod";
 export interface TaxExemptOrganization {
     createdAt?: string;
     lastUpdated?: string;
@@ -161,3 +162,24 @@ export interface BatchJob {
     totalCount?: number;
     artifactId?: string; // GitHub artifact ID if stored
 }
+
+const Activity = z.object({
+    name: z.string(),
+    description: z.string(),
+});
+
+const GeographicFocus = z.enum(["Global", "Local", "National", "Regional"]);
+
+export const WebsiteConfirmation = z.object({
+    hasCorrectWebsite: z.boolean(),
+    correctWebsiteUrl: z.string().nullish(),
+    reasoning: z.string(),
+    organizationOneSentenceSummary: z.string().nullish(),
+    whySupportOrganization: z.string().nullish(),
+    organizationMission: z.string().nullish(),
+    organizationTagline: z.string().nullish(),
+    organizationUniqueTrait: z.string().nullish(),
+    organizationTargetAudience: z.string().nullish(),
+    organizationGeographicFocus: GeographicFocus.nullish(),
+    organizationActivities: z.array(Activity).nullish(),
+});

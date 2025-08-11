@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { BatchJob, TaxExemptOrganization } from "../types";
 import { findTaxExemptOrgs } from "../db/mongo";
-import { logger } from "./logger";
+import { logger } from "../utils/logger";
 import OpenAI from "openai";
 import { writeConfirmationFile } from "../scripts/generateBatchConfirmationFile";
 import { processBatchResponseFile } from "./batchResponseProcessor";

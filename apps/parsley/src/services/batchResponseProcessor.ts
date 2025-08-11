@@ -1,9 +1,9 @@
 import fs from "fs";
 import path from "path";
-import { logger } from "./logger";
+import { logger } from "../utils/logger";
 import { CrawlItem, TaxExemptOrganization } from "../types";
 import { findTaxExemptOrgs, bulkUpdateOrgs } from "../db/mongo";
-import { extractSocialMediaUrls, findBestDonationLink, findMainLogo } from "./parseUtils";
+import { extractSocialMediaUrls, findBestDonationLink, findMainLogo } from "../utils/parseUtils";
 
 const BATCH_SIZE = 100;
 

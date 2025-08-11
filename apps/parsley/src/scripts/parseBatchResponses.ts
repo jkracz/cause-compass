@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { connectToDatabase, disconnectFromDatabase } from "@/db/mongo";
 import { logger } from "@/utils/logger";
-import { processBatchResponseFile } from "@/utils/batchResponseProcessor";
+import { processBatchResponseFile } from "@/services/batchResponseProcessor";
 
 const DEFAULT_BATCH_DIR = "data/batch";
 

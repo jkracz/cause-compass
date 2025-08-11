@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import { parse } from "csv-parse";
 import { join } from "path";
-import { convertToTitleCase } from "./titleCase";
+import { convertToTitleCase } from "../utils/titleCase";
 import { logger } from "@/utils/logger";
 
 import {

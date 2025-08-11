@@ -1,5 +1,5 @@
 import { connectToDatabase, disconnectFromDatabase } from "../db/mongo";
-import { BatchManager } from "../utils/batchManager";
+import { BatchManager } from "../services/batchManager";
 import { logger } from "../utils/logger";
 import "dotenv/config";
 
