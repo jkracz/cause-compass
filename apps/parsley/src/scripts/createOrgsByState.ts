@@ -4,7 +4,7 @@ import { jsonFileWrite } from "../utils/fileWrite";
 import { TaxExemptOrganization } from "../types";
 import slugify from "slugify";
 import * as path from "path";
-import { insertManyTaxExemptOrgs } from "../db/mongo";
+import { insertManyTaxExemptOrgs } from "../services/mongo";
 import { logger } from "@/utils/logger";
 
 import yargs from "yargs";

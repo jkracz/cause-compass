@@ -1,8 +1,8 @@
 import fs from "fs";
 import path from "path";
 import { logger } from "../utils/logger";
-import { CrawlItem, TaxExemptOrganization } from "../types";
-import { findTaxExemptOrgs, bulkUpdateOrgs } from "../db/mongo";
+import { CrawlItem, TaxExemptOrganization, WebsiteConfirmationSchema } from "../types";
+import { findTaxExemptOrgs, bulkUpdateOrgs } from "./mongo";
 import { extractSocialMediaUrls, findBestDonationLink, findMainLogo } from "../utils/parseUtils";
 
 const BATCH_SIZE = 100;
@@ -78,12 +78,12 @@ export async function processBatchResponseFile(filePath: string, processedDir: s
         // Prepare updates
         for (const org of orgs) {
             const response = einToResponseMap.get(org.ein);
-            const parsedContent = JSON.parse(response.body.choices[0].message.content);
+            const parsedContent = WebsiteConfirmationSchema.parse(JSON.parse(response.body.choices[0].message.content));
             if (parsedContent.hasCorrectWebsite) {
                 const correctCrawlItems: CrawlItem[] | undefined = org.confirmationCrawlItems?.filter(
                     (ci: CrawlItem) => {
                         const url = ci.url.replace(/https?:\/\//, "").replace(/\/$/, "");
-                        const correctUrl = parsedContent.correctWebsiteUrl
+                        const correctUrl = (parsedContent.correctWebsiteUrl ?? "")
                             .replace(/https?:\/\//, "")
                             .replace(/\/$/, "");
                         return url.includes(correctUrl) || correctUrl.includes(url);
@@ -114,13 +114,13 @@ export async function processBatchResponseFile(filePath: string, processedDir: s
                     socialMediaUrls: socialMediaUrls,
                     logoUrl: logoUrl,
                     donationUrl: donationLink,
-                    aiConfirmationResponse: response,
+                    aiConfirmationResponse: parsedContent,
                     lastUpdated: new Date().toISOString(),
                 });
             } else if (response) {
                 orgUpdates.push({
                     ...org,
-                    aiConfirmationResponse: response,
+                    aiConfirmationResponse: parsedContent,
                     lastUpdated: new Date().toISOString(),
                 });
             }

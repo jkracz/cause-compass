@@ -1,6 +1,6 @@
 import { zodResponseFormat } from "openai/helpers/zod";
-import { TaxExemptOrganization, WebsiteConfirmation } from "../types";
-import { findTaxExemptOrgs } from "../db/mongo";
+import { TaxExemptOrganization, WebsiteConfirmationSchema } from "../types";
+import { findTaxExemptOrgs } from "../services/mongo";
 import fs from "fs";
 import path from "path";
 
@@ -111,7 +111,7 @@ export const writeConfirmationFile = async (options: WriteConfirmationFileOption
                     `,
                     },
                 ],
-                response_format: zodResponseFormat(WebsiteConfirmation, "website-confirmation"),
+                response_format: zodResponseFormat(WebsiteConfirmationSchema, "website-confirmation"),
             },
         };
         fs.appendFileSync(outputFile, JSON.stringify(line) + "\n");

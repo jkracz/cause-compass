@@ -170,7 +170,7 @@ const Activity = z.object({
 
 const GeographicFocus = z.enum(["Global", "Local", "National", "Regional"]);
 
-export const WebsiteConfirmation = z.object({
+export const WebsiteConfirmationSchema = z.object({
     hasCorrectWebsite: z.boolean(),
     correctWebsiteUrl: z.string().nullish(),
     reasoning: z.string(),

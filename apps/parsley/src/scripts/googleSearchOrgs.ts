@@ -1,7 +1,7 @@
 import { TaxExemptOrganization, GoogleSearchApiKeyType } from "../types";
 import { ObjectId } from "mongodb";
-import { bulkUpdateOrgs, findTaxExemptOrgs } from "../db/mongo";
-import { googleSearch } from "../utils/googleSearch";
+import { bulkUpdateOrgs, findTaxExemptOrgs } from "../services/mongo";
+import { googleSearch } from "../services/googleSearch";
 import "dotenv/config";
 
 // Define multiple keys

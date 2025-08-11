@@ -2,12 +2,12 @@ import { nanoid } from "nanoid";
 import fs from "fs";
 import path from "path";
 import { BatchJob, TaxExemptOrganization } from "../types";
-import { findTaxExemptOrgs } from "../db/mongo";
+import { findTaxExemptOrgs } from "./mongo";
 import { logger } from "../utils/logger";
 import OpenAI from "openai";
 import { writeConfirmationFile } from "../scripts/generateBatchConfirmationFile";
 import { processBatchResponseFile } from "./batchResponseProcessor";
-import { insertBatchJob, updateBatchJob, findActiveBatchJob, getBatchCollection } from "../db/mongo";
+import { insertBatchJob, updateBatchJob, findActiveBatchJob, getBatchCollection } from "./mongo";
 
 const DEFAULT_BATCH_SIZE = process.env.BATCH_SIZE ? parseInt(process.env.BATCH_SIZE) : 20;
 export class BatchManager {

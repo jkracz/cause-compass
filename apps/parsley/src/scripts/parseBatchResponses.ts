@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { connectToDatabase, disconnectFromDatabase } from "@/db/mongo";
+import { connectToDatabase, disconnectFromDatabase } from "@/services/mongo";
 import { logger } from "@/utils/logger";
 import { processBatchResponseFile } from "@/services/batchResponseProcessor";
 

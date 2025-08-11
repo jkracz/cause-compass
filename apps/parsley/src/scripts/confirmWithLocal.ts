@@ -1,7 +1,7 @@
 import { z } from "zod";
 import axios from "axios";
 import { TaxExemptOrganization } from "../types";
-import { connectToDatabase, disconnectFromDatabase, findTaxExemptOrgs } from "../db/mongo";
+import { connectToDatabase, disconnectFromDatabase, findTaxExemptOrgs } from "../services/mongo";
 import { logger } from "../utils/logger";
 
 // Configuration

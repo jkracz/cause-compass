@@ -1,5 +1,5 @@
 import { TaxExemptOrganization } from "@/types";
-import { findTaxExemptOrgs, bulkUpdateOrgs } from "@/db/mongo";
+import { findTaxExemptOrgs, bulkUpdateOrgs } from "@/services/mongo";
 import { fork, ChildProcess } from "child_process";
 import pLimit from "p-limit";
 import { logger } from "@/utils/logger";
