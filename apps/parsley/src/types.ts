@@ -7,6 +7,7 @@ export interface TaxExemptOrganization {
     _id?: ObjectId;
     dbId?: string;
     slug?: string;
+    batchJobId?: string; // Internal batch job ID used by our system
     ein: string; // Employer Identification Number
     name: string; // Primary Name of Organization
     ico?: string; // In Care of Name
@@ -37,14 +38,22 @@ export interface TaxExemptOrganization {
     sortName?: string; // Sort Name (Secondary Name Line)
     searchResults?: SearchResult[];
     searchKey?: GoogleSearchApiKeyType;
-    resultsParsedAt?: string;
+    resultsParsedAt?: string; // when the search results were parsed and the sites were crawled
     confirmationCrawlItems?: CrawlItem[];
-    aiConfirmationResponse?: any;
+    aiConfirmationResponse?: OpenAIResponse;
     socialMediaUrls?: SocialMediaUrls;
     donationUrl?: string;
     emailAddresses?: string[];
     logoUrl?: string;
     websiteUrl?: string;
+    oneSentenceSummary?: string;
+    whySupport?: string;
+    mission?: string;
+    tagline?: string;
+    uniqueTrait?: string;
+    targetAudience?: string;
+    geographicFocus?: string;
+    activities?: Activity[];
 }
 
 interface NteeMajorCode {
@@ -163,10 +172,22 @@ export interface BatchJob {
     artifactId?: string; // GitHub artifact ID if stored
 }
 
-const Activity = z.object({
+export interface OpenAIResponse {
+    body?: {
+        choices?: Array<{
+            message?: {
+                content?: string;
+            };
+        }>;
+    };
+}
+
+export const ActivitySchema = z.object({
     name: z.string(),
     description: z.string(),
 });
+
+export type Activity = z.infer<typeof ActivitySchema>;
 
 const GeographicFocus = z.enum(["Global", "Local", "National", "Regional"]);
 
@@ -181,5 +202,7 @@ export const WebsiteConfirmationSchema = z.object({
     organizationUniqueTrait: z.string().nullish(),
     organizationTargetAudience: z.string().nullish(),
     organizationGeographicFocus: GeographicFocus.nullish(),
-    organizationActivities: z.array(Activity).nullish(),
+    organizationActivities: z.array(ActivitySchema).nullish(),
 });
+
+export type WebsiteConfirmation = z.infer<typeof WebsiteConfirmationSchema>;

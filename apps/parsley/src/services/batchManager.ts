@@ -296,8 +296,10 @@ export class BatchManager {
             const outputText = await output.text();
             fs.writeFileSync(outputFilePath, outputText);
 
-            // Process the results
-            const { processedCount, errorCount } = await processBatchResponseFile(outputFilePath, processedDir);
+            // Process the results, tagging orgs with batch identifiers
+            const { processedCount, errorCount } = await processBatchResponseFile(outputFilePath, processedDir, {
+                batchJobId: job.id,
+            });
 
             // Update job status
             await this.updateBatchJob(job.id, {

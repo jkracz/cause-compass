@@ -13,6 +13,7 @@
         "parse-batch-responses": "tsx src/scripts/parseBatchResponses.ts",
         "confirm-with-local": "tsx src/scripts/confirmWithLocal.ts",
         "cleanup": "tsx src/scripts/cleanup.ts",
+        "backfill-website-fields": "tsx src/scripts/backfillWebsiteFields.ts",
         "start": "tsx src/index.ts"
     },
     "repository": {
@@ -52,7 +53,7 @@
         "eslint": "^9.33.0",
         "globals": "^16.3.0",
         "ts-node": "^10.9.2",
-        "tsx": "^4.20.3",
-        "typescript-eslint": "^8.39.0"
+        "tsx": "^4.20.4",
+        "typescript-eslint": "^8.39.1"
     }
 }

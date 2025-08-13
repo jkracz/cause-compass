@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { logger } from "../utils/logger";
-import { CrawlItem, TaxExemptOrganization, WebsiteConfirmationSchema } from "../types";
+import { CrawlItem, TaxExemptOrganization, WebsiteConfirmationSchema, OpenAIResponse } from "../types";
 import { findTaxExemptOrgs, bulkUpdateOrgs } from "./mongo";
 import { extractSocialMediaUrls, findBestDonationLink, findMainLogo } from "../utils/parseUtils";
 
@@ -13,7 +13,11 @@ export interface ProcessingResult {
     processedFile: string;
 }
 
-export async function processBatchResponseFile(filePath: string, processedDir: string): Promise<ProcessingResult> {
+export async function processBatchResponseFile(
+    filePath: string,
+    processedDir: string,
+    options?: { batchJobId?: string }
+): Promise<ProcessingResult> {
     let processedCount = 0;
     let errorCount = 0;
 
@@ -27,7 +31,7 @@ export async function processBatchResponseFile(filePath: string, processedDir: s
 
         // Prepare updates in batches
         const orgUpdates: TaxExemptOrganization[] = [];
-        const einToResponseMap = new Map<string, any>();
+        const einToResponseMap = new Map<string, OpenAIResponse>();
 
         // First gather all EINs and responses
         for (const line of lines) {
@@ -51,7 +55,7 @@ export async function processBatchResponseFile(filePath: string, processedDir: s
                 }
 
                 // Store EIN and response
-                einToResponseMap.set(ein, parsedLine.response);
+                einToResponseMap.set(ein, parsedLine.response as OpenAIResponse);
             } catch (lineError) {
                 errorCount++;
                 logger.error(`Error processing line in file ${fileName}: ${lineError}`);
@@ -78,7 +82,13 @@ export async function processBatchResponseFile(filePath: string, processedDir: s
         // Prepare updates
         for (const org of orgs) {
             const response = einToResponseMap.get(org.ein);
-            const parsedContent = WebsiteConfirmationSchema.parse(JSON.parse(response.body.choices[0].message.content));
+            const content = response?.body?.choices?.[0]?.message?.content;
+            if (!content) {
+                errorCount++;
+                logger.warn(`Missing content for EIN ${org.ein}`);
+                continue;
+            }
+            const parsedContent = WebsiteConfirmationSchema.parse(JSON.parse(content));
             if (parsedContent.hasCorrectWebsite) {
                 const correctCrawlItems: CrawlItem[] | undefined = org.confirmationCrawlItems?.filter(
                     (ci: CrawlItem) => {
@@ -110,17 +120,28 @@ export async function processBatchResponseFile(filePath: string, processedDir: s
 
                 orgUpdates.push({
                     ...org,
+                    batchJobId: options?.batchJobId ?? org.batchJobId,
                     confirmationCrawlItems: correctCrawlItems,
                     socialMediaUrls: socialMediaUrls,
                     logoUrl: logoUrl,
                     donationUrl: donationLink,
-                    aiConfirmationResponse: parsedContent,
+                    websiteUrl: parsedContent.correctWebsiteUrl ?? undefined,
+                    oneSentenceSummary: parsedContent.organizationOneSentenceSummary ?? undefined,
+                    whySupport: parsedContent.whySupportOrganization ?? undefined,
+                    mission: parsedContent.organizationMission ?? undefined,
+                    tagline: parsedContent.organizationTagline ?? undefined,
+                    uniqueTrait: parsedContent.organizationUniqueTrait ?? undefined,
+                    targetAudience: parsedContent.organizationTargetAudience ?? undefined,
+                    geographicFocus: parsedContent.organizationGeographicFocus ?? undefined,
+                    activities: parsedContent.organizationActivities ?? undefined,
+                    aiConfirmationResponse: response,
                     lastUpdated: new Date().toISOString(),
                 });
             } else if (response) {
                 orgUpdates.push({
                     ...org,
-                    aiConfirmationResponse: parsedContent,
+                    batchJobId: options?.batchJobId ?? org.batchJobId,
+                    aiConfirmationResponse: response,
                     lastUpdated: new Date().toISOString(),
                 });
             }

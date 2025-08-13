@@ -1,4 +1,4 @@
-import { createCrawler, getCrawlDataAsArray } from "./crawler";
+import { createCrawler, getCrawlDataAsArray } from "../services/crawler";
 import { createAcronym, findBestUrls } from "../utils/parseUtils";
 import { CrawlItem } from "../types";
 import { logger } from "@/utils/logger";
