@@ -5,6 +5,7 @@ import { MosaicBackground } from "@/components/mosaic-background";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Footer } from "@/components/footer";
 import { Toaster } from "@/components/ui/sonner";
+import { TopNav } from "@/components/top-nav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,6 +40,7 @@ export default function RootLayout({
         >
           <MosaicBackground />
           <div className="relative z-10 flex min-h-screen flex-col">
+            <TopNav />
             <div className="page-transition-wrapper flex-1">{children}</div>
             <Footer />
           </div>

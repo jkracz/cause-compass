@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
-import { ArrowRight, RotateCcw } from "lucide-react";
+import { redirect } from "next/navigation";
+import { ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
@@ -8,8 +9,12 @@ import { GlassmorphicCard } from "@/components/glassmorphic-card";
 export default async function Home() {
   const cookieStore = await cookies();
 
-  // Check if user has preferences saved (determines if they're a returning user)
   const hasPreferences = cookieStore.has("hasPreferences");
+  const userId = cookieStore.get("userId")?.value;
+
+  if (userId && hasPreferences) {
+    redirect("/my-orgs");
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -28,29 +33,12 @@ export default async function Home() {
               </div>
 
               <div className="space-y-4">
-                {hasPreferences ? (
-                  <>
-                    <Link href="/my-orgs" className="inline-block w-full">
-                      <Button size="lg" className="w-full">
-                        My Organizations
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                    <Link href="/onboarding" className="inline-block w-full">
-                      <Button size="lg" variant="outline" className="w-full">
-                        <RotateCcw className="mr-2 h-4 w-4" />
-                        Start New Journey
-                      </Button>
-                    </Link>
-                  </>
-                ) : (
-                  <Link href="/onboarding" className="inline-block w-full">
-                    <Button size="lg" className="w-full">
-                      Begin Your Journey
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                )}
+                <Link href="/onboarding" className="inline-block w-full">
+                  <Button size="lg" className="w-full">
+                    Begin Your Journey
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
             </div>
           </GlassmorphicCard>
