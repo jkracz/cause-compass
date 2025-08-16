@@ -133,6 +133,33 @@ pnpm run cleanup
 - **Google Search**: Organization discovery and validation
 - **AI Analysis**: OpenAI-powered content generation and validation
 
+## URL Discovery & Filtering
+
+The platform uses a sophisticated URL filtering and scoring system to identify the most relevant websites for each organization:
+
+### Smart Subdomain Handling
+- **Allows useful subdomains**: `donate.org.com`, `events.nonprofit.org`, `secure.charity.org`
+- **Filters unwanted subdomains**: `blog.*`, `shop.*`, `store.*`, `mail.*`, `staging.*`, `dev.*`, `test.*`
+- **Preserves standard subdomains**: `www.*` and root domains
+
+### URL Scoring Algorithm
+The system scores URLs based on relevance to the organization:
+
+1. **Exact org name match**: +100 points
+2. **Acronym match**: +50 points  
+3. **Individual keyword matches**: +20 points each
+4. **Keyword at domain start**: +10 points additional
+5. **`.org` domain**: +20 points
+
+### Filtering Process
+1. **Social Media Exclusion**: Removes LinkedIn, Facebook, Twitter, Instagram, YouTube, etc.
+2. **Subdomain Filtering**: Excludes unwanted subdomains while preserving useful ones
+3. **Deduplication**: Removes duplicate domains using normalized domain names
+4. **Scoring & Ranking**: Sorts by relevance score and returns top 20 URLs
+5. **Crawling Optimization**: Limits to most promising sites to reduce compute costs
+
+This approach ensures high-quality website discovery while minimizing crawling time and computational overhead.
+
 ## Architecture
 
 The platform follows a modular architecture with:

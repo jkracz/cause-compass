@@ -1,6 +1,12 @@
 import { TaxExemptOrganization, SocialMediaUrls } from "../types";
 import { parse } from "tldts";
 
+/**
+ * Creates an acronym from a string by taking the first letter of each word.
+ * @param str - The input string to create an acronym from
+ * @returns The acronym as a string of uppercase letters
+ * @example createAcronym("American Red Cross") => "ARC"
+ */
 export const createAcronym = (str: string) => {
     return str
         .split(/\s+/)
@@ -8,16 +14,60 @@ export const createAcronym = (str: string) => {
         .join("");
 };
 
+/**
+ * Normalizes a URL or string by extracting and cleaning the domain name.
+ * @param url - The URL or string to normalize
+ * @returns The normalized domain name in lowercase, or cleaned string if no domain found
+ * @example normalize("https://www.redcross.org/donate") => "redcross.org"
+ */
 export const normalize = (url: string): string => {
     const parsed = parse(url);
     return parsed.domain ? parsed.domain.toLowerCase() : url.toLowerCase().replace(/[^a-z0-9]/g, "");
 };
 
-const hasSubdomain = (url: string): boolean => {
+/**
+ * Checks if a URL contains an unwanted subdomain that should be filtered out.
+ * Allows useful subdomains like "donate" or "events" while filtering out 
+ * non-primary subdomains like "blog", "shop", "staging", etc.
+ * 
+ * @param url - The URL to check
+ * @returns True if the subdomain should be filtered out, false if it should be kept
+ * @example 
+ * hasUnwantedSubdomain("https://donate.redcross.org") => false (keep)
+ * hasUnwantedSubdomain("https://blog.redcross.org") => true (filter out)
+ */
+const hasUnwantedSubdomain = (url: string): boolean => {
     const parsed = parse(url);
-    return parsed.subdomain !== "www" && parsed.subdomain !== "";
+    const subdomain = parsed.subdomain;
+
+    // Allow www and no subdomain
+    if (subdomain === "www" || subdomain === "") {
+        return false;
+    }
+
+    // Filter out common unwanted subdomains
+    const unwantedSubdomains = ["blog", "shop", "store", "mail", "ftp", "staging", "dev", "test"];
+    return unwantedSubdomains.some((unwanted) => subdomain?.includes(unwanted));
 };
 
+/**
+ * Scores a URL based on how likely it is to be the official website for an organization.
+ * Uses organization name matching, keyword analysis, and domain patterns to calculate relevance.
+ * 
+ * @param url - The URL to score
+ * @param orgName - The organization's name
+ * @param acronym - The organization's acronym
+ * @returns A numeric score (higher = more likely to be the official site)
+ * 
+ * Scoring criteria:
+ * - Exact org name match: +100 points
+ * - Acronym match: +50 points  
+ * - Individual keyword matches: +20 points each
+ * - Keyword at start of domain: +10 points additional
+ * - .org domain: +20 points
+ * 
+ * @example scoreUrl("redcross.org", "American Red Cross", "ARC") => 140+ points
+ */
 const scoreUrl = (url: string, orgName: string, acronym: string): number => {
     const normalizedUrl = normalize(url);
     const normalizedOrgName = normalize(orgName);
@@ -42,6 +92,24 @@ const scoreUrl = (url: string, orgName: string, acronym: string): number => {
     return score;
 };
 
+/**
+ * Finds and ranks the best URLs for an organization from its search results.
+ * Filters out social media, unwanted subdomains, and duplicates, then scores and sorts
+ * by relevance to return the top 20 most promising URLs for web crawling.
+ * 
+ * @param org - The tax-exempt organization with search results
+ * @param acronym - The organization's acronym for scoring
+ * @returns Array of up to 20 best URLs, sorted by relevance score (highest first)
+ * 
+ * Process:
+ * 1. Filters out social media platforms (LinkedIn, Facebook, etc.)
+ * 2. Removes unwanted subdomains (blog, shop, staging, etc.) 
+ * 3. Deduplicates by normalized domain
+ * 4. Scores URLs based on organization name matching
+ * 5. Returns top 20 URLs sorted by score
+ * 
+ * @example findBestUrls(redCrossOrg, "ARC") => ["https://redcross.org", "https://redcross.org/donate", ...]
+ */
 export const findBestUrls = (org: TaxExemptOrganization, acronym: string): string[] => {
     const excludePatterns = [
         /(www\.)?linkedin\.com\/?/,
@@ -66,9 +134,9 @@ export const findBestUrls = (org: TaxExemptOrganization, acronym: string): strin
             const normalizedUrl = normalize(result.displayLink);
             const isSocialMedia = excludePatterns.some((pattern) => pattern.test(result.displayLink));
             const isDuplicate = seenUrls.has(normalizedUrl);
-            const containsSubdomain = hasSubdomain(result.displayLink);
+            const hasUnwanted = hasUnwantedSubdomain(result.displayLink);
 
-            if (!isSocialMedia && !isDuplicate && !containsSubdomain) {
+            if (!isSocialMedia && !isDuplicate && !hasUnwanted) {
                 seenUrls.add(normalizedUrl);
                 return true;
             }
@@ -84,7 +152,7 @@ export const findBestUrls = (org: TaxExemptOrganization, acronym: string): strin
         });
 
         scoredResults.sort((a, b) => b.score - a.score);
-        return scoredResults.map((result) => {
+        return scoredResults.slice(0, 20).map((result) => {
             return result.fullLink.startsWith("https://") || result.fullLink.startsWith("http://")
                 ? `https://${result.link}`
                 : `http://${result.link}`;
