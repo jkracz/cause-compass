@@ -51,7 +51,7 @@ export const parseSearchResults = async (maxOrgs: number = MAX_ORGS) => {
                     new Promise<void>((resolve, reject) => {
                         let workerFinished = false;
 
-                        const worker = fork("./src/crawlee/confirmationCrawlWorker.ts", [], {
+                        const worker = fork("./src/workers/confirmationCrawlWorker.ts", [], {
                             env: { ...process.env, ORG_DATA: JSON.stringify(org), WORKER_INDEX: `${org.name}` },
                         });
                         workers.push(worker);
