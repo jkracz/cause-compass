@@ -43,17 +43,18 @@ export const createCrawler = async (options?: CrawlOptions) => {
             {
                 requestQueue,
                 persistCookiesPerSession: true,
-                browserPoolOptions: {
-                    retireBrowserAfterPageCount: 50,
-                    closeInactiveBrowserAfterSecs: 30,
-                    operationTimeoutSecs: 10,
-                },
                 async requestHandler({ request, page, enqueueLinks, addRequests }) {
                     let pageOpen = true;
                     try {
                         if (!page || page.isClosed()) {
                             throw new Error("Page is not available");
                         }
+
+                        // Wait for page to load and be ready
+                        await page.waitForLoadState("domcontentloaded", { timeout: 30000 });
+                        
+                        // Give a bit more time for dynamic content
+                        await page.waitForTimeout(2000);
 
                         // Group page evaluations into Promise.all
                         const [
@@ -329,11 +330,45 @@ export const createCrawler = async (options?: CrawlOptions) => {
                         }
                     }
                 },
-                headless: options?.headless || true,
+                headless: options?.headless !== false,
+                browserPoolOptions: {
+                    retireBrowserAfterPageCount: 50,
+                    closeInactiveBrowserAfterSecs: 30,
+                    operationTimeoutSecs: 60, // Increased from 10s to 60s
+                    preLaunchHooks: [
+                        async (_pageId, launchContext) => {
+                            launchContext.launchOptions = {
+                                ...launchContext.launchOptions,
+                                args: [
+                                    ...(launchContext.launchOptions?.args || []),
+                                    "--no-sandbox",
+                                    "--disable-setuid-sandbox",
+                                    "--disable-dev-shm-usage",
+                                    "--disable-accelerated-2d-canvas",
+                                    "--no-first-run",
+                                    "--no-zygote",
+                                    "--disable-gpu",
+                                    "--disable-background-timer-throttling",
+                                    "--disable-backgrounding-occluded-windows",
+                                    "--disable-renderer-backgrounding",
+                                    "--disable-features=TranslateUI",
+                                    "--disable-ipc-flooding-protection",
+                                    "--use-mock-keychain", // This prevents the macOS keychain popup
+                                    "--disable-blink-features=AutomationControlled", // Hide automation
+                                    "--disable-web-security",
+                                    "--allow-running-insecure-content",
+                                    "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                                ],
+                            };
+                        },
+                    ],
+                },
                 maxRequestsPerCrawl: options?.maxRequestsPerCrawl || undefined,
                 minConcurrency: options?.minConcurrency || undefined,
                 maxConcurrency: options?.maxConcurrency || undefined,
                 maxRequestRetries: options?.maxRequestRetries || undefined,
+                navigationTimeoutSecs: 60,
+                requestHandlerTimeoutSecs: 180,
                 failedRequestHandler: async ({ request }, error) => {
                     logger.error(`Request ${request.url} failed:`, error);
                 },

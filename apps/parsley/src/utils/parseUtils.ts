@@ -27,12 +27,12 @@ export const normalize = (url: string): string => {
 
 /**
  * Checks if a URL contains an unwanted subdomain that should be filtered out.
- * Allows useful subdomains like "donate" or "events" while filtering out 
+ * Allows useful subdomains like "donate" or "events" while filtering out
  * non-primary subdomains like "blog", "shop", "staging", etc.
- * 
+ *
  * @param url - The URL to check
  * @returns True if the subdomain should be filtered out, false if it should be kept
- * @example 
+ * @example
  * hasUnwantedSubdomain("https://donate.redcross.org") => false (keep)
  * hasUnwantedSubdomain("https://blog.redcross.org") => true (filter out)
  */
@@ -53,19 +53,19 @@ const hasUnwantedSubdomain = (url: string): boolean => {
 /**
  * Scores a URL based on how likely it is to be the official website for an organization.
  * Uses organization name matching, keyword analysis, and domain patterns to calculate relevance.
- * 
+ *
  * @param url - The URL to score
  * @param orgName - The organization's name
  * @param acronym - The organization's acronym
  * @returns A numeric score (higher = more likely to be the official site)
- * 
+ *
  * Scoring criteria:
  * - Exact org name match: +100 points
- * - Acronym match: +50 points  
+ * - Acronym match: +50 points
  * - Individual keyword matches: +20 points each
  * - Keyword at start of domain: +10 points additional
  * - .org domain: +20 points
- * 
+ *
  * @example scoreUrl("redcross.org", "American Red Cross", "ARC") => 140+ points
  */
 const scoreUrl = (url: string, orgName: string, acronym: string): number => {
@@ -96,18 +96,18 @@ const scoreUrl = (url: string, orgName: string, acronym: string): number => {
  * Finds and ranks the best URLs for an organization from its search results.
  * Filters out social media, unwanted subdomains, and duplicates, then scores and sorts
  * by relevance to return the top 20 most promising URLs for web crawling.
- * 
+ *
  * @param org - The tax-exempt organization with search results
  * @param acronym - The organization's acronym for scoring
  * @returns Array of up to 20 best URLs, sorted by relevance score (highest first)
- * 
+ *
  * Process:
  * 1. Filters out social media platforms (LinkedIn, Facebook, etc.)
- * 2. Removes unwanted subdomains (blog, shop, staging, etc.) 
+ * 2. Removes unwanted subdomains (blog, shop, staging, etc.)
  * 3. Deduplicates by normalized domain
  * 4. Scores URLs based on organization name matching
  * 5. Returns top 20 URLs sorted by score
- * 
+ *
  * @example findBestUrls(redCrossOrg, "ARC") => ["https://redcross.org", "https://redcross.org/donate", ...]
  */
 export const findBestUrls = (org: TaxExemptOrganization, acronym: string): string[] => {
@@ -152,7 +152,7 @@ export const findBestUrls = (org: TaxExemptOrganization, acronym: string): strin
         });
 
         scoredResults.sort((a, b) => b.score - a.score);
-        return scoredResults.slice(0, 20).map((result) => {
+        return scoredResults.slice(0, 50).map((result) => {
             return result.fullLink.startsWith("https://") || result.fullLink.startsWith("http://")
                 ? `https://${result.link}`
                 : `http://${result.link}`;

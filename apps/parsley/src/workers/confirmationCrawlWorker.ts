@@ -40,7 +40,25 @@ const shutdown = async (reason: string) => {
     try {
         const org = JSON.parse(process.env.ORG_DATA!);
         const acronym = createAcronym(org.name);
+
+        // Debug logging
+        logger.info(`Processing org: ${org.name}`);
+
+        // Clean up any existing storage for this worker to prevent stale data
+        const fs = require("fs");
+        const path = require("path");
+        const storageDir = path.resolve(__dirname, `../../storage/worker-${org.name}`);
+        if (fs.existsSync(storageDir)) {
+            try {
+                fs.rmSync(storageDir, { recursive: true, force: true });
+                logger.info(`Cleaned up storage for ${org.name}`);
+            } catch (error) {
+                logger.warn(`Failed to clean storage for ${org.name}:`, error);
+            }
+        }
+
         const bestUrls = findBestUrls(org, acronym);
+        logger.info(`Best URLs found: ${bestUrls.length}`, bestUrls);
 
         confirmationCrawler = await createCrawler({
             addLinks: false,
@@ -50,7 +68,24 @@ const shutdown = async (reason: string) => {
             worker: true,
         });
 
-        await confirmationCrawler.run(bestUrls);
+        // Convert URLs to proper format for crawler
+        const requests = bestUrls.map((url) => ({ url }));
+        logger.info(`Adding ${requests.length} requests to crawler`);
+
+        if (requests.length > 0) {
+            // Add requests to the crawler's request queue
+            const requestQueue = confirmationCrawler.requestQueue;
+            if (requestQueue) {
+                await requestQueue.addRequests(requests);
+            } else {
+                logger.error("Request queue is not available");
+                return;
+            }
+
+            await confirmationCrawler.run();
+        } else {
+            logger.warn("No URLs to crawl");
+        }
 
         const crawlItems: CrawlItem[] = await getCrawlDataAsArray(org.name, true);
 
@@ -84,8 +119,16 @@ const shutdown = async (reason: string) => {
 // error is getting handled here
 process.on("uncaughtException", async (error) => {
     logger.error("Uncaught Exception:", error);
-    // Only shutdown on non-channel-closed errors
-    if (!error.message.includes("Channel closed")) {
+    // Only shutdown on critical errors, ignore browser connection issues
+    const ignorableErrors = [
+        "Channel closed",
+        "Connection closed",
+        "Target closed",
+        "browser has been closed",
+        "Protocol error",
+    ];
+
+    if (!ignorableErrors.some((msg) => error.message.includes(msg))) {
         await shutdown("Uncaught exception");
     }
 });

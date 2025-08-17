@@ -17,7 +17,13 @@ export const parseSearchResults = async (maxOrgs: number = MAX_ORGS) => {
             $and: [
                 { searchResults: { $exists: true } },
                 { searchResults: { $type: "array" } },
-                { resultsParsedAt: { $exists: false } },
+                {
+                    $or: [
+                        { resultsParsedAt: { $exists: false } },
+                        { confirmationCrawlItems: { $size: 0 } },
+                        { confirmationCrawlItems: { $exists: false } }
+                    ]
+                }
             ],
         });
         const threadLimit = pLimit(THREAD_LIMIT);
