@@ -56,6 +56,7 @@ async function run() {
                             uniqueTrait: parsedContent.organizationUniqueTrait ?? undefined,
                             targetAudience: parsedContent.organizationTargetAudience ?? undefined,
                             geographicFocus: parsedContent.organizationGeographicFocus ?? undefined,
+                            keywords: parsedContent.organizationKeywords ?? undefined,
                             activities: parsedContent.organizationActivities ?? undefined,
                             lastUpdated: new Date().toISOString(),
                         };

@@ -53,6 +53,7 @@ export interface TaxExemptOrganization {
     uniqueTrait?: string;
     targetAudience?: string;
     geographicFocus?: string;
+    keywords?: string[];
     activities?: Activity[];
 }
 
@@ -192,17 +193,24 @@ export type Activity = z.infer<typeof ActivitySchema>;
 const GeographicFocus = z.enum(["Global", "Local", "National", "Regional"]);
 
 export const WebsiteConfirmationSchema = z.object({
-    hasCorrectWebsite: z.boolean(),
-    correctWebsiteUrl: z.string().nullish(),
-    reasoning: z.string(),
-    organizationOneSentenceSummary: z.string().nullish(),
-    whySupportOrganization: z.string().nullish(),
-    organizationMission: z.string().nullish(),
-    organizationTagline: z.string().nullish(),
-    organizationUniqueTrait: z.string().nullish(),
-    organizationTargetAudience: z.string().nullish(),
-    organizationGeographicFocus: GeographicFocus.nullish(),
-    organizationActivities: z.array(ActivitySchema).nullish(),
+    hasCorrectWebsite: z.boolean().describe("Whether the model determined the provided URL is the correct website"),
+    correctWebsiteUrl: z.string().nullish().describe("The correct website URL if found, otherwise null"),
+    reasoning: z.string().describe("Explanation of how the correct website was identified or why none matched"),
+    organizationOneSentenceSummary: z.string().nullish().describe("A brief summary of the organization"),
+    whySupportOrganization: z.string().nullish().describe("Why one should consider supporting the organization"),
+    organizationMission: z.string().nullish().describe("The mission statement of the organization"),
+    organizationTagline: z.string().nullish().describe("A tagline or slogan of the organization"),
+    organizationUniqueTrait: z.string().nullish().describe("What makes the organization unique"),
+    organizationTargetAudience: z.string().nullish().describe("The primary audience the organization serves"),
+    organizationGeographicFocus: GeographicFocus.nullish().describe("Geographic focus: Global/Regional/National/Local"),
+    organizationActivities: z
+        .array(ActivitySchema)
+        .nullish()
+        .describe("Key organizational activities (name and description)"),
+    organizationKeywords: z
+        .array(z.string())
+        .nullish()
+        .describe("Key words or tags that give quick insight into the organization"),
 });
 
 export type WebsiteConfirmation = z.infer<typeof WebsiteConfirmationSchema>;

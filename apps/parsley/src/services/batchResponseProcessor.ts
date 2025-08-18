@@ -133,6 +133,7 @@ export async function processBatchResponseFile(
                     uniqueTrait: parsedContent.organizationUniqueTrait ?? undefined,
                     targetAudience: parsedContent.organizationTargetAudience ?? undefined,
                     geographicFocus: parsedContent.organizationGeographicFocus ?? undefined,
+                    keywords: parsedContent.organizationKeywords ?? undefined,
                     activities: parsedContent.organizationActivities ?? undefined,
                     aiConfirmationResponse: response,
                     lastUpdated: new Date().toISOString(),
