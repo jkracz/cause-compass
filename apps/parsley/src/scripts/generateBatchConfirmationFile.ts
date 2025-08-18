@@ -59,7 +59,7 @@ export const writeConfirmationFile = async (options: WriteConfirmationFileOption
             method: "POST",
             url: "/v1/chat/completions",
             body: {
-                model: "gpt-5-nano",
+                model: "gpt-4o-mini",
                 messages: [
                     {
                         role: "system",
