@@ -193,16 +193,16 @@ const GeographicFocus = z.enum(["Global", "Local", "National", "Regional"]);
 
 export const WebsiteConfirmationSchema = z.object({
     hasCorrectWebsite: z.boolean(),
-    correctWebsiteUrl: z.union([z.string(), z.null()]).optional(),
+    correctWebsiteUrl: z.string().nullish(),
     reasoning: z.string(),
-    organizationOneSentenceSummary: z.union([z.string(), z.null()]).optional(),
-    whySupportOrganization: z.union([z.string(), z.null()]).optional(),
-    organizationMission: z.union([z.string(), z.null()]).optional(),
-    organizationTagline: z.union([z.string(), z.null()]).optional(),
-    organizationUniqueTrait: z.union([z.string(), z.null()]).optional(),
-    organizationTargetAudience: z.union([z.string(), z.null()]).optional(),
-    organizationGeographicFocus: z.union([GeographicFocus, z.null()]).optional(),
-    organizationActivities: z.union([z.array(ActivitySchema), z.null()]).optional(),
+    organizationOneSentenceSummary: z.string().nullish(),
+    whySupportOrganization: z.string().nullish(),
+    organizationMission: z.string().nullish(),
+    organizationTagline: z.string().nullish(),
+    organizationUniqueTrait: z.string().nullish(),
+    organizationTargetAudience: z.string().nullish(),
+    organizationGeographicFocus: GeographicFocus.nullish(),
+    organizationActivities: z.array(ActivitySchema).nullish(),
 });
 
 export type WebsiteConfirmation = z.infer<typeof WebsiteConfirmationSchema>;
