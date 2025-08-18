@@ -24,7 +24,7 @@ export const writeConfirmationFile = async (options: WriteConfirmationFileOption
     const orgs: TaxExemptOrganization[] =
         organizations ||
         (await findTaxExemptOrgs(batchSize, {
-            searchResults: { $exists: true },
+            searchResults: { $exists: true, $not: { $size: 0 } },
             resultsParsedAt: { $exists: true },
             aiConfirmationResponse: { $exists: false },
         }));
