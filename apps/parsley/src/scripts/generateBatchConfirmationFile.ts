@@ -1,5 +1,5 @@
-import { zodResponseFormat } from "openai/helpers/zod";
 import { TaxExemptOrganization, WebsiteConfirmationSchema } from "../types";
+import { zodResponseFormat } from "../utils/openAiUtils";
 import { findTaxExemptOrgs } from "../services/mongo";
 import fs from "fs";
 import path from "path";
@@ -59,7 +59,7 @@ export const writeConfirmationFile = async (options: WriteConfirmationFileOption
             method: "POST",
             url: "/v1/chat/completions",
             body: {
-                model: "gpt-4o-mini",
+                model: "gpt-5-nano",
                 messages: [
                     {
                         role: "system",
