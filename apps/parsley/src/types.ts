@@ -194,22 +194,22 @@ const GeographicFocus = z.enum(["Global", "Local", "National", "Regional"]);
 
 export const WebsiteConfirmationSchema = z.object({
     hasCorrectWebsite: z.boolean().describe("Whether the model determined the provided URL is the correct website"),
-    correctWebsiteUrl: z.string().nullish().describe("The correct website URL if found, otherwise null"),
+    correctWebsiteUrl: z.string().nullable().describe("The correct website URL if found, otherwise null"),
     reasoning: z.string().describe("Explanation of how the correct website was identified or why none matched"),
-    organizationOneSentenceSummary: z.string().nullish().describe("A brief summary of the organization"),
-    whySupportOrganization: z.string().nullish().describe("Why one should consider supporting the organization"),
-    organizationMission: z.string().nullish().describe("The mission statement of the organization"),
-    organizationTagline: z.string().nullish().describe("A tagline or slogan of the organization"),
-    organizationUniqueTrait: z.string().nullish().describe("What makes the organization unique"),
-    organizationTargetAudience: z.string().nullish().describe("The primary audience the organization serves"),
-    organizationGeographicFocus: GeographicFocus.nullish().describe("Geographic focus: Global/Regional/National/Local"),
+    organizationOneSentenceSummary: z.string().nullable().describe("A brief summary of the organization"),
+    whySupportOrganization: z.string().nullable().describe("Why one should consider supporting the organization"),
+    organizationMission: z.string().nullable().describe("The mission statement of the organization"),
+    organizationTagline: z.string().nullable().describe("A tagline or slogan of the organization"),
+    organizationUniqueTrait: z.string().nullable().describe("What makes the organization unique"),
+    organizationTargetAudience: z.string().nullable().describe("The primary audience the organization serves"),
+    organizationGeographicFocus: GeographicFocus.nullable().describe("Geographic focus: Global/Regional/National/Local"),
     organizationActivities: z
         .array(ActivitySchema)
-        .nullish()
+        .nullable()
         .describe("Key organizational activities (name and description)"),
     organizationKeywords: z
         .array(z.string())
-        .nullish()
+        .nullable()
         .describe("Key words or tags that give quick insight into the organization"),
 });
 
