@@ -43,5 +43,5 @@ export async function removeOrganization(orgId: string) {
   // TODO: Remove from MongoDB - user's liked organizations
   console.log("User", userId, "removed organization", orgId);
 
-  revalidatePath("/my-orgs");
+  revalidatePath("/my-causes");
 }

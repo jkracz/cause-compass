@@ -9,11 +9,10 @@ import { GlassmorphicCard } from "@/components/glassmorphic-card";
 export default async function Home() {
   const cookieStore = await cookies();
 
-  const hasPreferences = cookieStore.has("hasPreferences");
   const userId = cookieStore.get("userId")?.value;
 
-  if (userId && hasPreferences) {
-    redirect("/my-orgs");
+  if (userId) {
+    redirect("/my-causes");
   }
 
   return (

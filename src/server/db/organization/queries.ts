@@ -175,7 +175,5 @@ export async function getRecommendedOrganizations(
     .array()
     .parse(result);
 
-  console.log("validatedOrganizations", validatedOrganizations);
-
   return validatedOrganizations;
 }

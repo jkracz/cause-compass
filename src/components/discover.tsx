@@ -45,8 +45,8 @@ export default function Discover() {
     }
   };
 
-  const handleViewMyOrgs = () => {
-    router.push("/my-orgs");
+  const handleViewMyCauses = () => {
+    router.push("/my-causes");
   };
 
   const currentOrg = organizations[currentIndex];
@@ -63,8 +63,8 @@ export default function Discover() {
             <p className="mb-8 text-lg">
               You liked {likedOrgs.length} organizations.
             </p>
-            <Button size="lg" onClick={handleViewMyOrgs}>
-              View My Organizations
+            <Button size="lg" onClick={handleViewMyCauses}>
+              View My Causes
             </Button>
           </div>
         ) : (
@@ -108,8 +108,8 @@ export default function Discover() {
             {/* Reserved space for the "View My Organizations" button to prevent layout shift */}
             <div className="flex h-10 items-center justify-center">
               {likedOrgs.length > 0 && (
-                <Button variant="outline" onClick={handleViewMyOrgs}>
-                  View My Organizations ({likedOrgs.length})
+                <Button variant="outline" onClick={handleViewMyCauses}>
+                  View My Causes ({likedOrgs.length})
                 </Button>
               )}
             </div>

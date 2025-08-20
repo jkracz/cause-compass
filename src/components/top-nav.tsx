@@ -52,11 +52,11 @@ export function TopNav({ className }: { className?: string }) {
                   className={cn(
                     navigationMenuTriggerStyle(),
                     "text-muted-foreground hover:bg-accent hover:text-accent-foreground bg-transparent",
-                    pathname === "/my-orgs" &&
+                    pathname === "/my-causes" &&
                       "bg-accent text-accent-foreground",
                   )}
                 >
-                  <Link href="/my-orgs">My Causes</Link>
+                  <Link href="/my-causes">My Causes</Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
