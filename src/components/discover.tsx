@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Heart, X } from "lucide-react";
+import { motion } from "motion/react";
 
 import { SwipeableCard } from "@/components/swipeable-card";
 import { Button } from "@/components/ui/button";
@@ -49,7 +50,6 @@ export default function Discover() {
     router.push("/my-causes");
   };
 
-  const currentOrg = organizations[currentIndex];
   const isFinished = currentIndex >= organizations.length;
 
   return (
@@ -77,11 +77,39 @@ export default function Discover() {
             </div>
 
             <div className="relative mb-8 h-[500px] w-full">
-              <SwipeableCard
-                organization={currentOrg}
-                onSwipeLeft={handleSkip}
-                onSwipeRight={handleLike}
-              />
+              {organizations
+                .slice(currentIndex, currentIndex + 2)
+                .map((org, stackIndex) => {
+                  return (
+                    <motion.div
+                      key={org.id}
+                      className="absolute inset-0"
+                      initial={{
+                        scale: 1 - stackIndex * 0.02,
+                        y: stackIndex * 4,
+                        opacity: stackIndex === 0 ? 1 : 0,
+                      }}
+                      animate={{
+                        scale: 1 - stackIndex * 0.02,
+                        y: stackIndex * 4,
+                        opacity: stackIndex === 0 ? 1 : 0,
+                      }}
+                      transition={{
+                        duration: 0.3,
+                        ease: "easeOut",
+                      }}
+                      style={{
+                        zIndex: 3 - stackIndex,
+                      }}
+                    >
+                      <SwipeableCard
+                        organization={org}
+                        onSwipeLeft={stackIndex === 0 ? handleSkip : () => {}}
+                        onSwipeRight={stackIndex === 0 ? handleLike : () => {}}
+                      />
+                    </motion.div>
+                  );
+                })}
             </div>
 
             <div className="mb-8 flex gap-4">

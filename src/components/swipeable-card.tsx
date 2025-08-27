@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion, useMotionValue, useTransform } from "motion/react";
+import { motion, useMotionValue, useTransform, PanInfo } from "motion/react";
 import { Heart, X } from "lucide-react";
 
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
@@ -27,13 +27,16 @@ export function SwipeableCard({
   const likeOpacity = useTransform(x, [0, 100], [0, 1]);
   const nopeOpacity = useTransform(x, [-100, 0], [1, 0]);
 
-  const handleDragEnd = (event: any, info: any) => {
+  const handleDragEnd = (
+    _event: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo,
+  ) => {
     if (info.offset.x > 100) {
       setExitX(200);
-      onSwipeRight();
+      setTimeout(() => onSwipeRight(), 200);
     } else if (info.offset.x < -100) {
       setExitX(-200);
-      onSwipeLeft();
+      setTimeout(() => onSwipeLeft(), 200);
     }
   };
 
@@ -43,14 +46,13 @@ export function SwipeableCard({
         x,
         rotate,
         opacity,
-        position: "absolute",
         width: "100%",
         height: "100%",
       }}
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
       onDragEnd={handleDragEnd}
-      animate={exitX !== null ? { x: exitX } : undefined}
+      animate={exitX !== null ? { x: exitX, opacity: 0 } : undefined}
       transition={{ duration: 0.2 }}
     >
       <GlassmorphicCard

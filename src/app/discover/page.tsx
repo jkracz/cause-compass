@@ -11,8 +11,8 @@ export default async function DiscoverPage() {
     redirect("/onboarding");
   }
 
-  const organizations = await getRecommendedOrganizations(userId);
-  console.log("organization 1", JSON.stringify(organizations[0], null, 2));
+  const organizations = userId ? await getRecommendedOrganizations(userId) : [];
+  // console.log("organization 1", JSON.stringify(organizations[0], null, 2));
 
   return (
     <main className="relative min-h-screen w-full">
