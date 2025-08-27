@@ -24,6 +24,11 @@ export const ObjectIdSchema = z.union([
   z.object({}).passthrough(), // Allow ObjectId object to pass through
 ]);
 
+export const ActivitySchema = z.object({
+  name: z.string(),
+  description: z.string(),
+});
+
 // Tax Exempt Organization Schema
 export const TaxExemptOrganizationSchema = z.object({
   // MongoDB/Database fields
@@ -37,38 +42,38 @@ export const TaxExemptOrganizationSchema = z.object({
   // Core Organization Info
   ein: z.string(), // Employer Identification Number
   name: z.string(), // Primary Name of Organization
-  ico: z.string().optional(), // In Care of Name
+  ico: z.string().nullish(), // In Care of Name
   street: z.string(), // Street Address
   city: z.string(), // City
   state: z.string(), // State
   zip: z.string(), // Zip Code
-  group: z.string().optional(), // Group Exemption Number
+  group: z.string().nullish(), // Group Exemption Number
 
   // Tax/Legal Classification
   subsection: z.string(), // Subsection Code
   affiliation: AffiliationCodeSchema, // Affiliation Code
   classification: z.string(), // Classification Code(s)
   ruling: z.string(), // Ruling Date
-  deductibility: DeductibilityCodeSchema, // Deductibility Code
-  foundation: FoundationCodeSchema, // Foundation Code
-  activityCodes: z.array(ActivityCodeSchema).optional(), // Activity Codes
-  organization: OrgCodeSchema, // Organization Code
+  deductibility: DeductibilityCodeSchema.nullish(), // Deductibility Code
+  foundation: FoundationCodeSchema.nullish(), // Foundation Code
+  activityCodes: z.array(ActivityCodeSchema).nullish(), // Activity Codes
+  organization: OrgCodeSchema.nullish(), // Organization Code
   status: EOStatusCodeSchema, // Exempt Organization Status Code
 
   // Financial Info
-  taxPeriod: z.string().optional(), // Tax Period
+  taxPeriod: z.string().nullish(), // Tax Period
   assetCode: AssetCodeSchema, // Asset Code
   incomeCode: z.string(), // Income Code
   filingReqCode: FilingRequirementCodeSchema, // Filing Requirement Code
-  pfFilingReqCode: FilingRequirementCodeSchema.optional(), // PF Filing Requirement Code
+  pfFilingReqCode: FilingRequirementCodeSchema.nullish(), // PF Filing Requirement Code
   acctPeriod: z.string(), // Accounting Period
-  assetAmt: z.number().optional(), // Asset Amount
-  incomeAmt: z.number().optional(), // Income Amount
-  revenueAmt: z.number().optional(), // Revenue Amount
+  assetAmt: z.number().nullish(), // Asset Amount
+  incomeAmt: z.number().nullish(), // Income Amount
+  revenueAmt: z.number().nullish(), // Revenue Amount
 
   // NTEE Classification
-  nteeCode: NteeCodeSchema.optional(), // NTEE Code
-  sortName: z.string().optional(), // Sort Name (Secondary Name Line)
+  nteeCode: NteeCodeSchema.nullish(), // NTEE Code
+  sortName: z.string().nullish(), // Sort Name (Secondary Name Line)
 
   // Search/Crawl Data
   searchResults: z.array(SearchResultSchema).optional(),
@@ -78,11 +83,20 @@ export const TaxExemptOrganizationSchema = z.object({
   aiConfirmationResponse: z.any().optional(),
 
   // Organization Details
-  socialMediaUrls: SocialMediaUrlsSchema.optional(),
-  donationUrl: z.string().optional(),
-  emailAddresses: z.array(z.string()).optional(),
-  logoUrl: z.string().optional(),
-  websiteUrl: z.string().optional(),
+  socialMediaUrls: SocialMediaUrlsSchema.nullish(),
+  donationUrl: z.string().nullish(),
+  emailAddresses: z.array(z.string()).nullish(),
+  logoUrl: z.string().nullish(),
+  websiteUrl: z.string().nullish(),
+  oneSentenceSummary: z.string().nullish(),
+  whySupport: z.string().nullish(),
+  mission: z.string().nullish(),
+  tagline: z.string().nullish(),
+  uniqueTrait: z.string().nullish(),
+  targetAudience: z.string().nullish(),
+  geographicFocus: z.string().nullish(),
+  keywords: z.array(z.string()).nullish(),
+  activities: z.array(ActivitySchema).nullish(),
 });
 
 // Filters used for advanced org search
@@ -103,3 +117,4 @@ export type TaxExemptOrganization = z.infer<typeof TaxExemptOrganizationSchema>;
 export type OrganizationSearchFilters = z.infer<
   typeof OrganizationSearchFiltersSchema
 >;
+export type Activity = z.infer<typeof ActivitySchema>;

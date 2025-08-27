@@ -7,6 +7,15 @@ if (!MONGODB_URI) {
   throw new Error("Please define the MONGODB_URI environment variable");
 }
 
+const connectionOptions = {
+  maxPoolSize: 10,
+  serverSelectionTimeoutMS: 10000,
+  socketTimeoutMS: 45000,
+  connectTimeoutMS: 10000,
+  bufferCommands: false,
+  heartbeatFrequencyMS: 10000,
+};
+
 // Mongoose connection with global caching for Next.js dev mode to avoid multiple connections on hot reload
 declare global {
   // eslint-disable-next-line no-var
@@ -16,16 +25,28 @@ declare global {
 let cached = global._mongooseConnection;
 
 if (!cached) {
-  try {
-    cached = global._mongooseConnection = mongoose.connect(MONGODB_URI);
-  } catch (error) {
-    console.error("Error connecting to MongoDB", error);
-    throw error;
-  }
+  cached = global._mongooseConnection = mongoose.connect(
+    MONGODB_URI,
+    connectionOptions,
+  );
 }
 
 export async function connectToMongoDB(): Promise<typeof mongoose> {
-  return cached!;
+  try {
+    const connection = await cached!;
+    // Check if connection is still alive
+    if (connection.connection.readyState !== 1) {
+      console.warn("MongoDB connection lost, reconnecting...");
+      global._mongooseConnection = undefined;
+      return connectToMongoDB();
+    }
+    return connection;
+  } catch (error) {
+    console.error("MongoDB connection failed:", error);
+    // Reset cache on failure to allow retry
+    global._mongooseConnection = undefined;
+    throw error;
+  }
 }
 
 // Helper to disconnect (useful for testing)

@@ -12,7 +12,7 @@ export default async function DiscoverPage() {
   }
 
   const organizations = await getRecommendedOrganizations(userId);
-  console.log("organizations", organizations);
+  console.log("organization 1", JSON.stringify(organizations[0], null, 2));
 
   return (
     <main className="relative min-h-screen w-full">

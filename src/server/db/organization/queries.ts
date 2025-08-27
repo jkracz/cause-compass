@@ -144,10 +144,10 @@ export async function searchOrganizations(
   if (filters.assetAmtMin !== undefined || filters.assetAmtMax !== undefined) {
     query.assetAmt = {};
     if (filters.assetAmtMin !== undefined) {
-      query.assetAmt.$gte = filters.assetAmtMin;
+      query.assetAmt = { $gte: filters.assetAmtMin };
     }
     if (filters.assetAmtMax !== undefined) {
-      query.assetAmt.$lte = filters.assetAmtMax;
+      query.assetAmt = { $lte: filters.assetAmtMax };
     }
   }
 
@@ -160,14 +160,46 @@ export async function searchOrganizations(
 
 export async function getRecommendedOrganizations(
   userId: string,
+  limit: number = 10,
 ): Promise<Partial<TaxExemptOrganization>[]> {
   await connectToMongoDB();
   const userPreferences = await getUserPreferences(userId);
   console.log("userPreferences", userPreferences);
   const result = (await TaxExemptOrganizationModel.find({})
-    .select("name ein")
-    .where({ resultsParsedAt: { $exists: true } })
-    .limit(1)
+    .select([
+      "slug",
+      "name",
+      "ein",
+      "city",
+      "state",
+      "affiliation",
+      "classification",
+      "deductibility",
+      "foundation",
+      "activityCodes",
+      "nteeCode",
+      "organization",
+      "status",
+      "assetAmt",
+      "socialMediaUrls",
+      "donationUrl",
+      "logoUrl",
+      "websiteUrl",
+      "whySupport",
+      "mission",
+      "tagline",
+      "uniqueTrait",
+      "targetAudience",
+      "geographicFocus",
+      "keywords",
+      "activities",
+    ])
+    .where({
+      websiteUrl: { $exists: true, $ne: null },
+      aiConfirmationResponse: { $exists: true },
+      keywords: { $exists: true, $ne: null },
+    })
+    .limit(limit)
     .lean()
     .exec()) as unknown as ITaxExemptOrganization[];
 
