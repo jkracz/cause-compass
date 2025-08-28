@@ -1,5 +1,5 @@
 import Discover from "@/components/discover";
-import { getRecommendedOrganizations } from "@/server/db/organization/queries";
+import { getRecommendedCauses } from "@/server/db/organization/queries";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -11,12 +11,11 @@ export default async function DiscoverPage() {
     redirect("/onboarding");
   }
 
-  const organizations = userId ? await getRecommendedOrganizations(userId) : [];
-  // console.log("organization 1", JSON.stringify(organizations[0], null, 2));
+  const causes = userId ? await getRecommendedCauses(userId) : [];
 
   return (
     <main className="relative min-h-screen w-full">
-      <Discover />
+      <Discover causes={causes} />
     </main>
   );
 }

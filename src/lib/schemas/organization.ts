@@ -29,7 +29,7 @@ export const ActivitySchema = z.object({
   description: z.string(),
 });
 
-// Tax Exempt Organization Schema
+// Tax Exempt Organization Schema for all data we have on the nonprofit
 export const TaxExemptOrganizationSchema = z.object({
   // MongoDB/Database fields
   createdAt: z.string().optional(),
@@ -99,6 +99,36 @@ export const TaxExemptOrganizationSchema = z.object({
   activities: z.array(ActivitySchema).nullish(),
 });
 
+// Schema used for the actual profile of the nonprofit
+export const CauseSchema = TaxExemptOrganizationSchema.pick({
+  slug: true,
+  name: true,
+  ein: true,
+  city: true,
+  state: true,
+  affiliation: true,
+  classification: true,
+  deductibility: true,
+  foundation: true,
+  activityCodes: true,
+  nteeCode: true,
+  organization: true,
+  status: true,
+  assetAmt: true,
+  socialMediaUrls: true,
+  donationUrl: true,
+  logoUrl: true,
+  websiteUrl: true,
+  whySupport: true,
+  mission: true,
+  tagline: true,
+  uniqueTrait: true,
+  targetAudience: true,
+  geographicFocus: true,
+  keywords: true,
+  activities: true,
+});
+
 // Filters used for advanced org search
 export const OrganizationSearchFiltersSchema = z.object({
   name: z.string().optional(),
@@ -114,6 +144,7 @@ export const OrganizationSearchFiltersSchema = z.object({
 
 // Export types
 export type TaxExemptOrganization = z.infer<typeof TaxExemptOrganizationSchema>;
+export type Cause = z.infer<typeof CauseSchema>;
 export type OrganizationSearchFilters = z.infer<
   typeof OrganizationSearchFiltersSchema
 >;

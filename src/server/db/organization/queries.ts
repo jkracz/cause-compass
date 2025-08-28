@@ -3,11 +3,7 @@
 import { connectToMongoDB } from "../connection";
 import { getUserPreferences } from "../user/queries";
 import TaxExemptOrganizationModel, { ITaxExemptOrganization } from "./model";
-import {
-  OrganizationSearchFilters,
-  TaxExemptOrganization,
-  TaxExemptOrganizationSchema,
-} from "@/lib/schemas";
+import { OrganizationSearchFilters, Cause, CauseSchema } from "@/lib/schemas";
 
 // Get organization by EIN
 export async function getOrganizationByEin(
@@ -158,10 +154,10 @@ export async function searchOrganizations(
     .exec();
 }
 
-export async function getRecommendedOrganizations(
+export async function getRecommendedCauses(
   userId: string,
   limit: number = 10,
-): Promise<Partial<TaxExemptOrganization>[]> {
+): Promise<Cause[]> {
   await connectToMongoDB();
   const userPreferences = await getUserPreferences(userId);
   console.log("userPreferences", userPreferences);
@@ -203,9 +199,7 @@ export async function getRecommendedOrganizations(
     .lean()
     .exec()) as unknown as ITaxExemptOrganization[];
 
-  const validatedOrganizations = TaxExemptOrganizationSchema.partial()
-    .array()
-    .parse(result);
+  const validatedOrganizations = CauseSchema.array().parse(result);
 
   return validatedOrganizations;
 }

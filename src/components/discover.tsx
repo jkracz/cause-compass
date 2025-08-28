@@ -9,12 +9,15 @@ import { SwipeableCard } from "@/components/swipeable-card";
 import { Button } from "@/components/ui/button";
 import { mockOrganizations } from "@/lib/mock-data";
 import type { MockOrganization } from "@/lib/types";
+import { Cause } from "@/lib/schemas";
 
-export default function Discover() {
+export default function Discover({ causes }: { causes: Cause[] }) {
   const router = useRouter();
   const [organizations, setOrganizations] = useState<MockOrganization[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likedOrgs, setLikedOrgs] = useState<MockOrganization[]>([]);
+  const [likedCauses, setLikedCauses] = useState<Cause[]>([]);
+  console.log("causes", causes);
 
   useEffect(() => {
     // TODO: Load organizations from DB
@@ -77,12 +80,12 @@ export default function Discover() {
             </div>
 
             <div className="relative mb-8 h-[500px] w-full">
-              {organizations
+              {causes
                 .slice(currentIndex, currentIndex + 2)
-                .map((org, stackIndex) => {
+                .map((cause, stackIndex) => {
                   return (
                     <motion.div
-                      key={org.id}
+                      key={cause.ein}
                       className="absolute inset-0"
                       initial={{
                         scale: 1 - stackIndex * 0.02,
@@ -103,7 +106,7 @@ export default function Discover() {
                       }}
                     >
                       <SwipeableCard
-                        organization={org}
+                        organization={cause}
                         onSwipeLeft={stackIndex === 0 ? handleSkip : () => {}}
                         onSwipeRight={stackIndex === 0 ? handleLike : () => {}}
                       />
