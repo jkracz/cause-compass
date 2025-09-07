@@ -1,50 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Heart, X } from "lucide-react";
 import { motion } from "motion/react";
 
 import { SwipeableCard } from "@/components/swipeable-card";
 import { Button } from "@/components/ui/button";
-import { mockOrganizations } from "@/lib/mock-data";
-import type { MockOrganization } from "@/lib/types";
 import { Cause } from "@/lib/schemas";
+import { addLikedOrganization } from "@/lib/actions";
 
 export default function Discover({ causes }: { causes: Cause[] }) {
   const router = useRouter();
-  const [organizations, setOrganizations] = useState<MockOrganization[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [likedOrgs, setLikedOrgs] = useState<MockOrganization[]>([]);
   const [likedCauses, setLikedCauses] = useState<Cause[]>([]);
   console.log("causes", causes);
 
-  useEffect(() => {
-    // TODO: Load organizations from DB
-    setOrganizations(mockOrganizations);
-
-    // Load any previously liked organizations
-    const savedLikedOrgs = localStorage.getItem("likedOrganizations");
-    if (savedLikedOrgs) {
-      setLikedOrgs(JSON.parse(savedLikedOrgs));
-    }
-  }, []);
-
-  const handleLike = () => {
-    if (currentIndex < organizations.length) {
-      const org = organizations[currentIndex];
-      const updatedLikedOrgs = [...likedOrgs, org];
-      setLikedOrgs(updatedLikedOrgs);
-      localStorage.setItem(
-        "likedOrganizations",
-        JSON.stringify(updatedLikedOrgs),
-      );
+  const handleLike = async () => {
+    if (currentIndex < causes.length) {
+      const org = causes[currentIndex];
+      await addLikedOrganization(org.dbId);
+      const updatedLikedCauses = [...likedCauses, org];
+      setLikedCauses(updatedLikedCauses);
       setCurrentIndex(currentIndex + 1);
     }
   };
 
   const handleSkip = () => {
-    if (currentIndex < organizations.length) {
+    if (currentIndex < causes.length) {
       setCurrentIndex(currentIndex + 1);
     }
   };
@@ -53,7 +36,7 @@ export default function Discover({ causes }: { causes: Cause[] }) {
     router.push("/my-causes");
   };
 
-  const isFinished = currentIndex >= organizations.length;
+  const isFinished = currentIndex >= causes.length;
 
   return (
     <>
@@ -61,10 +44,10 @@ export default function Discover({ causes }: { causes: Cause[] }) {
         {isFinished ? (
           <div className="text-center">
             <h2 className="mb-4 text-2xl font-bold">
-              You&apos;ve seen all organizations!
+              You&apos;ve seen all organizations for this session!
             </h2>
             <p className="mb-8 text-lg">
-              You liked {likedOrgs.length} organizations.
+              You liked {likedCauses.length} organizations.
             </p>
             <Button size="lg" onClick={handleViewMyCauses}>
               View My Causes
@@ -138,9 +121,9 @@ export default function Discover({ causes }: { causes: Cause[] }) {
 
             {/* Reserved space for the "View My Organizations" button to prevent layout shift */}
             <div className="flex h-10 items-center justify-center">
-              {likedOrgs.length > 0 && (
+              {likedCauses.length > 0 && (
                 <Button variant="outline" onClick={handleViewMyCauses}>
-                  View My Causes ({likedOrgs.length})
+                  View My Causes
                 </Button>
               )}
             </div>

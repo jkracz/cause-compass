@@ -19,6 +19,7 @@ const TaxExemptOrganizationSchema = new Schema<ITaxExemptOrganization>(
     zip: { type: String, required: true },
     group: { type: String },
     slug: { type: String, unique: true, sparse: true },
+    dbId: { type: String, required: true, unique: true, index: true },
 
     // Tax/Legal Classification
     subsection: { type: String, required: true },
@@ -149,11 +150,9 @@ const TaxExemptOrganizationSchema = new Schema<ITaxExemptOrganization>(
   },
 );
 
-// Create indexes for better query performance
 TaxExemptOrganizationSchema.index({ name: "text", ein: 1 });
 TaxExemptOrganizationSchema.index({ state: 1, city: 1 });
-TaxExemptOrganizationSchema.index({ "nteeCode.majorCode.code": 1 });
-TaxExemptOrganizationSchema.index({ "organization.type": 1 });
+TaxExemptOrganizationSchema.index({ dbId: 1 });
 
 // Create and export the model
 const TaxExemptOrganizationModel =

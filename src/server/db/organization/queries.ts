@@ -163,6 +163,7 @@ export async function getRecommendedCauses(
   console.log("userPreferences", userPreferences);
   const result = (await TaxExemptOrganizationModel.find({})
     .select([
+      "dbId",
       "slug",
       "name",
       "ein",

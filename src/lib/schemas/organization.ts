@@ -36,7 +36,7 @@ export const TaxExemptOrganizationSchema = z.object({
   lastUpdated: z.string().optional(),
   searchedAt: z.string().optional(),
   _id: ObjectIdSchema.optional(),
-  dbId: z.string().optional(),
+  dbId: z.string(),
   slug: z.string().optional(),
 
   // Core Organization Info
@@ -102,6 +102,7 @@ export const TaxExemptOrganizationSchema = z.object({
 // Schema used for the actual profile of the nonprofit
 export const CauseSchema = TaxExemptOrganizationSchema.pick({
   slug: true,
+  dbId: true,
   name: true,
   ein: true,
   city: true,

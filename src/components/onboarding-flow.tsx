@@ -9,7 +9,7 @@ import { GlassmorphicCard } from "@/components/glassmorphic-card";
 import { MirrorQuestion } from "@/components/mirror-question";
 import { MosaicPiece } from "@/components/mosaic-piece";
 import type { Question } from "@/lib/questions";
-
+import { saveUserPreferences } from "@/lib/actions";
 interface OnboardingFlowProps {
   questions: Question[];
 }
@@ -91,8 +91,6 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
       });
 
       try {
-        // Import and call the server action
-        const { saveUserPreferences } = await import("@/lib/actions/user");
         await saveUserPreferences(formData);
         // Navigation will be handled by the server action
       } catch (error) {

@@ -38,13 +38,6 @@ export function SwipeableCard({
     organization.mission ||
     organization.whySupport ||
     organization.uniqueTrait;
-  const displayKeywords =
-    organization.keywords?.slice(0, 2) ||
-    organization.keywords?.slice(0, 2) ||
-    [];
-  const majorCategory =
-    organization.nteeCode?.majorCode?.title ||
-    organization.nteeCode?.majorCode?.title;
 
   const handleDragEnd = (
     _event: MouseEvent | TouchEvent | PointerEvent,
