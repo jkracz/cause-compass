@@ -5,22 +5,6 @@ import { getUserPreferences } from "../user/queries";
 import TaxExemptOrganizationModel, { ITaxExemptOrganization } from "./model";
 import { OrganizationSearchFilters, Cause, CauseSchema } from "@/lib/schemas";
 
-// Get organization by EIN
-export async function getOrganizationByEin(
-  ein: string,
-): Promise<ITaxExemptOrganization | null> {
-  await connectToMongoDB();
-  return await TaxExemptOrganizationModel.findOne({ ein }).exec();
-}
-
-// Get organization by ID
-export async function getOrganizationById(
-  id: string,
-): Promise<ITaxExemptOrganization | null> {
-  await connectToMongoDB();
-  return await TaxExemptOrganizationModel.findById(id).exec();
-}
-
 // Search organizations by name
 export async function searchOrganizationsByName(
   searchTerm: string,
@@ -50,38 +34,6 @@ export async function getOrganizationsByState(
     .exec();
 }
 
-// Get organizations by NTEE code
-export async function getOrganizationsByNteeCode(
-  nteeCode: string,
-  limit: number = 10,
-  skip: number = 0,
-): Promise<ITaxExemptOrganization[]> {
-  await connectToMongoDB();
-  return await TaxExemptOrganizationModel.find({
-    "nteeCode.code": nteeCode,
-  })
-    .limit(limit)
-    .skip(skip)
-    .sort({ name: 1 })
-    .exec();
-}
-
-// Get organizations by NTEE major code
-export async function getOrganizationsByNteeMajorCode(
-  majorCode: string,
-  limit: number = 10,
-  skip: number = 0,
-): Promise<ITaxExemptOrganization[]> {
-  await connectToMongoDB();
-  return await TaxExemptOrganizationModel.find({
-    "nteeCode.majorCode.code": majorCode,
-  })
-    .limit(limit)
-    .skip(skip)
-    .sort({ name: 1 })
-    .exec();
-}
-
 // Get organizations by city and state
 export async function getOrganizationsByLocation(
   city: string,
@@ -95,12 +47,6 @@ export async function getOrganizationsByLocation(
     .skip(skip)
     .sort({ name: 1 })
     .exec();
-}
-
-// Get total count of organizations
-export async function getOrganizationCount(): Promise<number> {
-  await connectToMongoDB();
-  return await TaxExemptOrganizationModel.countDocuments().exec();
 }
 
 // Advanced search with multiple filters
@@ -202,5 +148,52 @@ export async function getRecommendedCauses(
 
   const validatedOrganizations = CauseSchema.array().parse(result);
 
+  return validatedOrganizations;
+}
+
+// Get causes by their dbIds
+export async function getCausesByDbIds(dbIds: string[]): Promise<Cause[]> {
+  await connectToMongoDB();
+
+  if (dbIds.length === 0) {
+    return [];
+  }
+
+  const result = (await TaxExemptOrganizationModel.find({
+    dbId: { $in: dbIds },
+  })
+    .select([
+      "dbId",
+      "slug",
+      "name",
+      "ein",
+      "city",
+      "state",
+      "affiliation",
+      "classification",
+      "deductibility",
+      "foundation",
+      "activityCodes",
+      "nteeCode",
+      "organization",
+      "status",
+      "assetAmt",
+      "socialMediaUrls",
+      "donationUrl",
+      "logoUrl",
+      "websiteUrl",
+      "whySupport",
+      "mission",
+      "tagline",
+      "uniqueTrait",
+      "targetAudience",
+      "geographicFocus",
+      "keywords",
+      "activities",
+    ])
+    .lean()
+    .exec()) as unknown as ITaxExemptOrganization[];
+
+  const validatedOrganizations = CauseSchema.array().parse(result);
   return validatedOrganizations;
 }

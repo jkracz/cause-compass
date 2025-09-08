@@ -3,7 +3,8 @@
 import { z } from "zod";
 import { connectToMongoDB } from "../connection";
 import UserModel, { IUser } from "./model";
-import { UserPreferencesSchema, UserPreferences } from "@/lib/schemas";
+import { UserPreferencesSchema, UserPreferences, Cause } from "@/lib/schemas";
+import { getCausesByDbIds } from "../organization/queries";
 
 // Get user preferences
 export async function getUserPreferences(
@@ -26,7 +27,7 @@ export async function getUserPreferences(
 }
 
 // Get liked organizations for a user
-export async function getLikedOrganizations(userId: string): Promise<string[]> {
+export async function getLikedCauses(userId: string): Promise<Cause[]> {
   await connectToMongoDB();
 
   const result = (await UserModel.findOne({ userId })
@@ -34,9 +35,9 @@ export async function getLikedOrganizations(userId: string): Promise<string[]> {
     .lean()
     .exec()) as { likedOrganizations: IUser["likedOrganizations"] } | null;
 
-  const validatedLikedOrganizations = z
+  const likedCauses = z
     .array(z.string())
     .parse(result?.likedOrganizations || []);
 
-  return validatedLikedOrganizations;
+  return await getCausesByDbIds(likedCauses);
 }
