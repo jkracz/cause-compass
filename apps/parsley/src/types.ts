@@ -202,7 +202,9 @@ export const WebsiteConfirmationSchema = z.object({
     organizationTagline: z.string().nullable().describe("A tagline or slogan of the organization"),
     organizationUniqueTrait: z.string().nullable().describe("What makes the organization unique"),
     organizationTargetAudience: z.string().nullable().describe("The primary audience the organization serves"),
-    organizationGeographicFocus: GeographicFocus.nullable().describe("Geographic focus: Global/Regional/National/Local"),
+    organizationGeographicFocus: GeographicFocus.nullable().describe(
+        "Geographic focus: Global/Regional/National/Local"
+    ),
     organizationActivities: z
         .array(ActivitySchema)
         .nullable()
@@ -210,7 +212,9 @@ export const WebsiteConfirmationSchema = z.object({
     organizationKeywords: z
         .array(z.string())
         .nullable()
-        .describe("Key words or tags that give quick insight into the organization"),
+        .describe(
+            "Key words or labels that give quick insight into what the organization does, who they help, and how they help"
+        ),
 });
 
 export type WebsiteConfirmation = z.infer<typeof WebsiteConfirmationSchema>;
