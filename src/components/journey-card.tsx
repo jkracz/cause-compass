@@ -1,9 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
-import type { MockOrganization } from "@/lib/types";
+import { Cause } from "@/lib/schemas";
 
 interface JourneyCardProps {
-  likedOrgs: MockOrganization[];
+  likedOrgs: Cause[];
 }
 
 export function JourneyCard({ likedOrgs }: JourneyCardProps) {
@@ -11,7 +11,7 @@ export function JourneyCard({ likedOrgs }: JourneyCardProps) {
   const getUniqueCategoriesFromLikedOrgs = () => {
     const categories = new Set<string>();
     likedOrgs.forEach((org) => {
-      org.tags.forEach((tag) => categories.add(tag));
+      org.keywords?.forEach((keyword) => categories.add(keyword));
     });
     return Array.from(categories);
   };

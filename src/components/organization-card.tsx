@@ -4,10 +4,10 @@ import type React from "react";
 
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-import type { MockOrganization } from "@/lib/types";
+import type { Cause } from "@/lib/schemas";
 
 interface OrganizationCardProps {
-  organization: MockOrganization;
+  organization: Cause;
   onClick: () => void;
 }
 
@@ -51,31 +51,46 @@ export function OrganizationCard({
         }
       }}
     >
-      <div className="relative h-32 w-full">
-        <Image
-          src={organization.imageUrl || "/placeholder.svg"}
-          alt={organization.name}
-          fill
-          className="object-cover"
-        />
+      <div className="relative h-32 w-full bg-gray-100">
+        {organization.logoUrl ? (
+          <Image
+            src={organization.logoUrl}
+            alt={organization.name}
+            fill
+            className="object-contain"
+            unoptimized
+          />
+        ) : (
+          // Fallback visual with organization initials
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-pink-500 to-purple-600 shadow-2xl">
+            <span className="text-3xl font-bold">
+              {organization.name
+                .split(" ")
+                .map((word: string) => word[0])
+                .join("")
+                .toUpperCase()}
+            </span>
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60" />
       </div>
 
       <div className="p-3">
         <h3 className="line-clamp-1 font-semibold">{organization.name}</h3>
         <p className="text-muted-foreground line-clamp-1 text-xs">
-          {organization.location}
+          {organization.city}, {organization.state}
         </p>
 
         <div className="mt-2 flex flex-wrap gap-1">
-          {organization.tags.slice(0, 2).map((tag: string) => (
-            <Badge key={tag} variant="outline" className="text-xs">
-              {tag}
-            </Badge>
-          ))}
-          {organization.tags.length > 2 && (
+          {organization.keywords &&
+            organization.keywords.slice(0, 2).map((tag: string) => (
+              <Badge key={tag} variant="outline" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
+          {organization.keywords && organization.keywords.length > 2 && (
             <Badge variant="outline" className="text-xs">
-              +{organization.tags.length - 2}
+              +{organization.keywords.length - 2}
             </Badge>
           )}
         </div>

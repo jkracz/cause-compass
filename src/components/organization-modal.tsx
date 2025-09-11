@@ -25,11 +25,11 @@ import {
 } from "@/components/ui/drawer";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import type { MockOrganization } from "@/lib/types";
 import { useMobile } from "@/hooks/use-mobile";
+import { Cause } from "@/lib/schemas";
 
 interface OrganizationModalProps {
-  organization: MockOrganization;
+  organization: Cause;
   isOpen: boolean;
   onClose: () => void;
   onRemove?: () => void;
@@ -57,10 +57,10 @@ export function OrganizationModal({
   };
 
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/org/${organization.id}`;
+    const shareUrl = `${window.location.origin}/org/${organization.slug}`;
     const shareData = {
       title: organization.name,
-      text: `Check out ${organization.name} - ${organization.description.slice(0, 100)}...`,
+      text: `Check out ${organization.name} - ${organization.whySupport?.slice(0, 100)}...`,
       url: shareUrl,
     };
 
@@ -80,7 +80,7 @@ export function OrganizationModal({
         toast.success("Link copied!", {
           description: "Organization link has been copied to your clipboard.",
         });
-      } catch (clipboardError) {
+      } catch (_error) {
         toast.error("Share failed", {
           description: "Unable to share or copy link. Please try again.",
         });
@@ -90,13 +90,27 @@ export function OrganizationModal({
 
   const content = (
     <>
-      <div className="relative h-48 w-full sm:h-64">
-        <Image
-          src={organization.imageUrl || "/placeholder.svg"}
-          alt={organization.name}
-          fill
-          className="object-cover"
-        />
+      <div className="relative h-48 w-full bg-gray-100 sm:h-64">
+        {organization.logoUrl ? (
+          <Image
+            src={organization.logoUrl || "/placeholder.svg"}
+            alt={organization.name}
+            fill
+            className="object-contain"
+            unoptimized
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-pink-500 to-purple-600 shadow-2xl">
+            <span className="text-3xl font-bold">
+              {organization.name
+                .split(" ")
+                .map((word: string) => word[0])
+                .join("")
+                .toUpperCase()}
+            </span>
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60" />
       </div>
 
       <div className="p-4 sm:p-6">
@@ -104,11 +118,13 @@ export function OrganizationModal({
           <DialogTitle className="text-2xl font-bold">
             {organization.name}
           </DialogTitle>
-          <p className="text-muted-foreground">{organization.location}</p>
+          <p className="text-muted-foreground">
+            {organization.city}, {organization.state}
+          </p>
         </div>
 
         <div className="mb-4 flex flex-wrap gap-2">
-          {organization.tags.map((tag: string) => (
+          {organization.keywords?.map((tag: string) => (
             <Badge key={tag} variant="secondary">
               {tag}
             </Badge>
@@ -116,23 +132,23 @@ export function OrganizationModal({
         </div>
 
         <div className="mb-6 space-y-4">
-          <p>{organization.description}</p>
+          <p>{organization.whySupport}</p>
 
           <div className="bg-muted grid grid-cols-2 gap-4 rounded-lg p-4">
             <div>
               <h3 className="text-sm font-medium">Founded</h3>
-              <p>{organization.founded}</p>
+              <p>{organization.ein}</p>
             </div>
             <div>
               <h3 className="text-sm font-medium">Impact</h3>
-              <p>{organization.impact}</p>
+              <p>{organization.mission}</p>
             </div>
           </div>
         </div>
 
         <div className="flex flex-col gap-2 space-y-3">
           <a
-            href={organization.website}
+            href={organization.websiteUrl || ""}
             target="_blank"
             rel="noopener noreferrer"
           >

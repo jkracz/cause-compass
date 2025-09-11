@@ -2,10 +2,11 @@ import { JourneyCard } from "@/components/journey-card";
 import { MyCauses } from "@/components/my-causes";
 import { StartOverButton } from "@/components/start-over-button";
 import { ReflectionCard } from "@/components/reflection-card";
-import { MockOrganization } from "@/lib/types";
 import { getUserPreferences } from "@/server/db/user/queries";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getLikedCauses } from "@/server/db/user/queries";
+import { Cause } from "@/lib/schemas";
 
 export default async function MyOrgsPage() {
   const cookieStore = await cookies();
@@ -16,7 +17,7 @@ export default async function MyOrgsPage() {
   }
 
   const userPreferences = await getUserPreferences(userId);
-  const likedOrgs: MockOrganization[] = [];
+  const likedCauses: Cause[] = await getLikedCauses(userId);
 
   return (
     <main className="relative min-h-screen w-full">
@@ -30,11 +31,11 @@ export default async function MyOrgsPage() {
         <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
           <ReflectionCard
             userPreferences={userPreferences}
-            likedOrgs={likedOrgs}
+            likedOrgs={likedCauses}
           />
-          <JourneyCard likedOrgs={likedOrgs} />
+          <JourneyCard likedOrgs={likedCauses} />
         </div>
-        <MyCauses />
+        <MyCauses likedCauses={likedCauses} />
       </div>
     </main>
   );

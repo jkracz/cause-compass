@@ -97,7 +97,6 @@ export function SwipeableCard({
                   .split(" ")
                   .map((word: string) => word[0])
                   .join("")
-                  .slice(0, 2)
                   .toUpperCase()}
               </span>
             </div>

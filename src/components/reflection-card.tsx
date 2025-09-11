@@ -3,13 +3,12 @@
 import { Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
-import type { MockOrganization } from "@/lib/types";
-import { UserPreferences } from "@/lib/schemas";
+import { Cause, UserPreferences } from "@/lib/schemas";
 import { useRouter } from "next/navigation";
 
 interface ReflectionCardProps {
   userPreferences: UserPreferences;
-  likedOrgs: MockOrganization[];
+  likedOrgs: Cause[];
 }
 
 export function ReflectionCard({
@@ -101,7 +100,7 @@ export function ReflectionCard({
   const getUniqueCategoriesFromLikedOrgs = () => {
     const categories = new Set<string>();
     likedOrgs.forEach((org) => {
-      org.tags.forEach((tag) => categories.add(tag));
+      org.keywords?.forEach((keyword) => categories.add(keyword));
     });
     return Array.from(categories);
   };

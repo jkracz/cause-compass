@@ -1,29 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
 import { OrganizationCard } from "@/components/organization-card";
-import type { MockOrganization } from "@/lib/types";
 import { OrganizationModal } from "@/components/organization-modal";
+import { Cause } from "@/lib/schemas";
+import { removeLikedOrganization } from "@/lib/actions";
 
-export function MyCauses() {
+export function MyCauses({ likedCauses }: { likedCauses: Cause[] }) {
   const router = useRouter();
-  const [likedOrgs, setLikedOrgs] = useState<MockOrganization[]>([]);
-  const [selectedOrg, setSelectedOrg] = useState<MockOrganization | null>(null);
+  const [likedOrgs, setLikedOrgs] = useState<Cause[]>(likedCauses);
+  const [selectedOrg, setSelectedOrg] = useState<Cause | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    // Load liked organizations from localStorage
-    const savedLikedOrgs = localStorage.getItem("likedOrganizations");
-    if (savedLikedOrgs) {
-      setLikedOrgs(JSON.parse(savedLikedOrgs));
-    }
-  }, []);
-
-  const handleOpenModal = (org: MockOrganization) => {
+  const handleOpenModal = (org: Cause) => {
     setSelectedOrg(org);
     setIsModalOpen(true);
   };
@@ -32,10 +25,12 @@ export function MyCauses() {
     setIsModalOpen(false);
   };
 
-  const handleRemoveOrganization = (orgId: string) => {
-    const updatedOrgs = likedOrgs.filter((org) => org.id !== orgId);
+  const handleRemoveOrganization = async (orgId: string) => {
+    const updatedUser = await removeLikedOrganization(orgId);
+    const updatedOrgs = likedOrgs.filter((org) =>
+      updatedUser.likedOrganizations.includes(org.dbId),
+    );
     setLikedOrgs(updatedOrgs);
-    localStorage.setItem("likedOrganizations", JSON.stringify(updatedOrgs));
   };
 
   return (
@@ -60,7 +55,7 @@ export function MyCauses() {
           <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {likedOrgs.map((org) => (
               <OrganizationCard
-                key={org.id}
+                key={org.dbId}
                 organization={org}
                 onClick={() => handleOpenModal(org)}
               />
@@ -74,7 +69,7 @@ export function MyCauses() {
           organization={selectedOrg}
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          onRemove={() => handleRemoveOrganization(selectedOrg.id)}
+          onRemove={() => handleRemoveOrganization(selectedOrg.dbId)}
           showRemoveButton={true}
         />
       )}

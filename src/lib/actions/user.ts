@@ -9,7 +9,7 @@ import {
   clearUserData,
   updateUserPreferences as updateUserPreferencesDB,
 } from "@/server/db/user/mutations";
-import { UserPreferences } from "@/lib/schemas";
+import { UserPreferences, UserSchema, User } from "@/lib/schemas";
 
 export async function saveUserPreferences(formData: FormData) {
   const cookieStore = await cookies();
@@ -68,7 +68,9 @@ export async function addLikedOrganization(organizationId: string) {
   }
 }
 
-export async function removeLikedOrganization(organizationId: string) {
+export async function removeLikedOrganization(
+  organizationId: string,
+): Promise<User> {
   const cookieStore = await cookies();
   const userId = cookieStore.get("userId")?.value;
 
@@ -77,9 +79,13 @@ export async function removeLikedOrganization(organizationId: string) {
   }
 
   try {
-    await removeLikedOrganizationDB(userId, organizationId);
-    console.log("Successfully removed liked organization:", organizationId);
-    return { success: true };
+    const result = await removeLikedOrganizationDB(userId, organizationId);
+    const safeParsedResult = UserSchema.safeParse(result);
+    if (!safeParsedResult.success) {
+      console.error("Failed to parse user preferences", safeParsedResult.error);
+      throw new Error("Failed to parse user preferences");
+    }
+    return safeParsedResult.data;
   } catch (error) {
     console.error("Error removing liked organization:", error);
     throw new Error("Failed to remove liked organization");
