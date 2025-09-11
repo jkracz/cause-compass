@@ -126,7 +126,6 @@ export async function processBatchResponseFile(
                     logoUrl: logoUrl,
                     donationUrl: donationLink,
                     websiteUrl: parsedContent.correctWebsiteUrl ?? undefined,
-                    oneSentenceSummary: parsedContent.organizationOneSentenceSummary ?? undefined,
                     whySupport: parsedContent.whySupportOrganization ?? undefined,
                     mission: parsedContent.organizationMission ?? undefined,
                     tagline: parsedContent.organizationTagline ?? undefined,

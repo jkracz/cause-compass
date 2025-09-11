@@ -1,6 +1,8 @@
 import { TaxExemptOrganization, SocialMediaUrls } from "../types";
 import { parse } from "tldts";
 
+const MAX_URLS_TO_CRAWL = 5;
+
 /**
  * Creates an acronym from a string by taking the first letter of each word.
  * @param str - The input string to create an acronym from
@@ -152,7 +154,7 @@ export const findBestUrls = (org: TaxExemptOrganization, acronym: string): strin
         });
 
         scoredResults.sort((a, b) => b.score - a.score);
-        return scoredResults.slice(0, 50).map((result) => {
+        return scoredResults.slice(0, MAX_URLS_TO_CRAWL).map((result) => {
             return result.fullLink.startsWith("https://") || result.fullLink.startsWith("http://")
                 ? `https://${result.link}`
                 : `http://${result.link}`;

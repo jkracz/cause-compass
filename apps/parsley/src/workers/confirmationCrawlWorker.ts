@@ -6,6 +6,7 @@ import { PlaywrightCrawler } from "crawlee";
 
 let confirmationCrawler: PlaywrightCrawler | undefined;
 const TIMEOUT = 5 * 60 * 1000;
+const MAX_REQUESTS_PER_CALL = 25;
 let isShuttingDown = false;
 
 const shutdown = async (reason: string) => {
@@ -65,6 +66,7 @@ const shutdown = async (reason: string) => {
             datasetName: org.name,
             requestQueueName: org.name,
             maxRequestRetries: 2,
+            maxRequestsPerCrawl: MAX_REQUESTS_PER_CALL,
             worker: true,
         });
 

@@ -49,7 +49,6 @@ async function run() {
                         updated = {
                             ...org,
                             websiteUrl: parsedContent.correctWebsiteUrl ?? undefined,
-                            oneSentenceSummary: parsedContent.organizationOneSentenceSummary ?? undefined,
                             whySupport: parsedContent.whySupportOrganization ?? undefined,
                             mission: parsedContent.organizationMission ?? undefined,
                             tagline: parsedContent.organizationTagline ?? undefined,

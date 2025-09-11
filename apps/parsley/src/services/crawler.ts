@@ -52,7 +52,7 @@ export const createCrawler = async (options?: CrawlOptions) => {
 
                         // Wait for page to load and be ready
                         await page.waitForLoadState("domcontentloaded", { timeout: 30000 });
-                        
+
                         // Give a bit more time for dynamic content
                         await page.waitForTimeout(2000);
 
@@ -334,7 +334,7 @@ export const createCrawler = async (options?: CrawlOptions) => {
                 browserPoolOptions: {
                     retireBrowserAfterPageCount: 50,
                     closeInactiveBrowserAfterSecs: 30,
-                    operationTimeoutSecs: 60, // Increased from 10s to 60s
+                    operationTimeoutSecs: 20,
                     preLaunchHooks: [
                         async (_pageId, launchContext) => {
                             launchContext.launchOptions = {
@@ -354,6 +354,13 @@ export const createCrawler = async (options?: CrawlOptions) => {
                                     "--disable-features=TranslateUI",
                                     "--disable-ipc-flooding-protection",
                                     "--use-mock-keychain", // This prevents the macOS keychain popup
+                                    "--password-store=basic", // Use basic password store instead of keychain
+                                    "--disable-password-generation", // Disable password generation
+                                    "--disable-features=PasswordManager", // Disable password manager
+                                    "--disable-features=VizDisplayCompositor",
+                                    "--disable-password-manager-reauthentication",
+                                    "--disable-sync",
+                                    "--disable-component-update",
                                     "--disable-blink-features=AutomationControlled", // Hide automation
                                     "--disable-web-security",
                                     "--allow-running-insecure-content",
@@ -367,8 +374,8 @@ export const createCrawler = async (options?: CrawlOptions) => {
                 minConcurrency: options?.minConcurrency || undefined,
                 maxConcurrency: options?.maxConcurrency || undefined,
                 maxRequestRetries: options?.maxRequestRetries || undefined,
-                navigationTimeoutSecs: 60,
-                requestHandlerTimeoutSecs: 180,
+                navigationTimeoutSecs: 45,
+                requestHandlerTimeoutSecs: 120,
                 failedRequestHandler: async ({ request }, error) => {
                     logger.error(`Request ${request.url} failed:`, error);
                 },
