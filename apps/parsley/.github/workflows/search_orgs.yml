@@ -1,0 +1,42 @@
+name: Search Orgs
+
+on:
+    schedule:
+        - cron: "0 0 * * *" # This cron expression schedules the job to run every day at midnight UTC
+    workflow_dispatch: # This allows you to manually trigger the workflow if needed
+
+jobs:
+    run-script:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 9
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20.14.0"
+                  cache: "pnpm"
+
+            - name: Install dependencies
+              run: pnpm install
+
+            - name: Run script
+              env:
+                  GOOGLE_SEARCH_API_KEY_PERSONAL: ${{ secrets.GOOGLE_SEARCH_API_KEY_PERSONAL }}
+                  SEARCH_ENGINE_ID_PERSONAL: ${{ secrets.SEARCH_ENGINE_ID_PERSONAL }}
+                  GOOGLE_SEARCH_API_KEY_JKRACZ: ${{ secrets.GOOGLE_SEARCH_API_KEY_JKRACZ }}
+                  SEARCH_ENGINE_ID_JKRACZ: ${{ secrets.SEARCH_ENGINE_ID_JKRACZ }}
+                  GOOGLE_SEARCH_API_KEY_SF: ${{ secrets.GOOGLE_SEARCH_API_KEY_SF }}
+                  SEARCH_ENGINE_ID_SF: ${{ secrets.SEARCH_ENGINE_ID_SF }}
+                  GOOGLE_SEARCH_API_KEY_JK: ${{ secrets.GOOGLE_SEARCH_API_KEY_JK }}
+                  SEARCH_ENGINE_ID_JK: ${{ secrets.SEARCH_ENGINE_ID_JK }}
+                  MONGO_USER: ${{secrets.MONGO_USER}}
+                  MONGO_PASSWORD: ${{secrets.MONGO_PASSWORD}}
+              run: pnpm run search-orgs

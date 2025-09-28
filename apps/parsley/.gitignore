@@ -1,0 +1,8 @@
+.env
+/node_modules
+*.DS_Store
+/src/data/nonprofitProfiles/*
+storage
+.env.local
+data/*
+logs/*
