@@ -1,53 +1,53 @@
 name: Batch Processing
 
 on:
-    schedule:
-        - cron: "0 * * * *" # Run every hour
-    workflow_dispatch: # Allow manual triggering
+  schedule:
+    - cron: "0 * * * *" # Run every hour
+  workflow_dispatch: # Allow manual triggering
 
 env:
-    MONGO_USER: ${{ secrets.MONGO_USER }}
-    MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
-    OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-    BATCH_SIZE: ${{ secrets.BATCH_SIZE }}
+  MONGO_USER: ${{ secrets.MONGO_USER }}
+  MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  BATCH_SIZE: ${{ secrets.BATCH_SIZE }}
 
 jobs:
-    process-batch:
-        runs-on: ubuntu-latest
+  process-batch:
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-            - name: Install pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: 9
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
 
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: "20"
-                  cache: "pnpm"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
 
-            - name: Install dependencies
-              run: pnpm install
+      - name: Install dependencies
+        run: pnpm install
 
-            - name: Create temp directory
-              run: mkdir -p temp
+      - name: Create temp directory
+        run: mkdir -p temp
 
-            - name: Process batch
-              run: pnpm tsx src/scripts/processBatch.ts
-              env:
-                  MONGO_USER: ${{ secrets.MONGO_USER }}
-                  MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
-                  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-                  BATCH_DIR: ${{ github.workspace }}/temp
-                  BATCH_SIZE: ${{ secrets.BATCH_SIZE }}
-            - name: Upload batch artifacts
-              if: always()
-              uses: actions/upload-artifact@v4
-              with:
-                  name: batch-files-${{ github.run_id }}
-                  path: temp/
-                  retention-days: 7 # Keep files for 7 days
+      - name: Process batch
+        run: pnpm --filter parsley tsx src/scripts/processBatch.ts
+        env:
+          MONGO_USER: ${{ secrets.MONGO_USER }}
+          MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          BATCH_DIR: ${{ github.workspace }}/temp
+          BATCH_SIZE: ${{ secrets.BATCH_SIZE }}
+      - name: Upload batch artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: batch-files-${{ github.run_id }}
+          path: temp/
+          retention-days: 7 # Keep files for 7 days
