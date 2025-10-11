@@ -2,7 +2,7 @@
 
 import { connectToMongoDB } from "../connection";
 import UserModel, { IUser } from "./model";
-import { UserPreferences } from "@/lib/schemas";
+import { UserPreferences } from "@cause/types";
 
 // Add a liked organization
 export async function addLikedOrganization(

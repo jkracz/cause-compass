@@ -69,23 +69,26 @@ export type User = z.infer<typeof UserSchema>;
 
 ```typescript
 // src/server/db/user/model.ts
-const UserSchema = new Schema<IUser>({
-  userId: { type: String, required: true, unique: true, index: true },
-  preferences: {
-    openEnded: {
-      question: { type: String, required: true },
-      answer: { type: String, required: false },
+const UserSchema = new Schema<IUser>(
+  {
+    userId: { type: String, required: true, unique: true, index: true },
+    preferences: {
+      openEnded: {
+        question: { type: String, required: true },
+        answer: { type: String, required: false },
+      },
+      causes: [{ type: String }],
+      helpMethod: [{ type: String }],
+      changeScope: { type: String },
+      location: { type: String },
     },
-    causes: [{ type: String }],
-    helpMethod: [{ type: String }],
-    changeScope: { type: String },
-    location: { type: String },
+    likedOrganizations: [{ type: String }],
   },
-  likedOrganizations: [{ type: String }],
-}, {
-  timestamps: true,
-  collection: "users",
-});
+  {
+    timestamps: true,
+    collection: "users",
+  },
+);
 ```
 
 3. **Type-Safe Database Operations**:
@@ -100,7 +103,7 @@ export async function saveUserPreferences(
   return await UserModel.findOneAndUpdate(
     { userId },
     { userId, preferences },
-    { new: true, upsert: true, runValidators: true }
+    { new: true, upsert: true, runValidators: true },
   ).exec();
 }
 ```

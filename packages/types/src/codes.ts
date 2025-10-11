@@ -69,13 +69,15 @@ export const NteeCodeSchema = z.object({
 });
 
 // Google Search API Key Type Enum
-export const GoogleSearchApiKeyTypeSchema = z.enum([
+export const GoogleSearchApiKeySchema = z.enum([
   "CC",
   "PERSONAL",
   "JKRACZ",
   "SF",
   "JK",
 ]);
+export const GoogleSearchApiKey = GoogleSearchApiKeySchema.enum;
+export type GoogleSearchApiKeyType = z.infer<typeof GoogleSearchApiKeySchema>;
 // Export types
 export type ActivityCode = z.infer<typeof ActivityCodeSchema>;
 export type AssetCode = z.infer<typeof AssetCodeSchema>;
@@ -87,6 +89,3 @@ export type FoundationCode = z.infer<typeof FoundationCodeSchema>;
 export type FilingRequirementCode = z.infer<typeof FilingRequirementCodeSchema>;
 export type NteeMajorCode = z.infer<typeof NteeMajorCodeSchema>;
 export type NteeCode = z.infer<typeof NteeCodeSchema>;
-export type GoogleSearchApiKeyType = z.infer<
-  typeof GoogleSearchApiKeyTypeSchema
->;

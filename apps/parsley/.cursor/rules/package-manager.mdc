@@ -1,6 +1,0 @@
----
-description: 
-globs: 
-alwaysApply: true
----
-For script execution and package installs, use pnpm

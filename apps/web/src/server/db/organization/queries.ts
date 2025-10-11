@@ -3,7 +3,8 @@
 import { connectToMongoDB } from "../connection";
 import { getUserPreferences } from "../user/queries";
 import TaxExemptOrganizationModel, { ITaxExemptOrganization } from "./model";
-import { OrganizationSearchFilters, Cause, CauseSchema } from "@/lib/schemas";
+import type { FilterQuery } from "mongoose";
+import { OrganizationSearchFilters, Cause, CauseSchema } from "@cause/types";
 
 // Search organizations by name
 export async function searchOrganizationsByName(
@@ -57,7 +58,7 @@ export async function searchOrganizations(
 ): Promise<ITaxExemptOrganization[]> {
   await connectToMongoDB();
 
-  const query: Record<string, unknown> = {};
+  const query: FilterQuery<ITaxExemptOrganization> = {};
 
   if (filters.name) {
     query.$text = { $search: filters.name };
@@ -84,13 +85,15 @@ export async function searchOrganizations(
   }
 
   if (filters.assetAmtMin !== undefined || filters.assetAmtMax !== undefined) {
-    query.assetAmt = {};
+    const assetConditions: Record<string, number> = {};
     if (filters.assetAmtMin !== undefined) {
-      query.assetAmt = { $gte: filters.assetAmtMin };
+      assetConditions.$gte = filters.assetAmtMin;
     }
     if (filters.assetAmtMax !== undefined) {
-      query.assetAmt = { $lte: filters.assetAmtMax };
+      assetConditions.$lte = filters.assetAmtMax;
     }
+    query.assetAmt =
+      assetConditions as FilterQuery<ITaxExemptOrganization>["assetAmt"];
   }
 
   return await TaxExemptOrganizationModel.find(query)
@@ -196,4 +199,13 @@ export async function getCausesByDbIds(dbIds: string[]): Promise<Cause[]> {
 
   const validatedOrganizations = CauseSchema.array().parse(result);
   return validatedOrganizations;
+}
+
+export async function getCauseById(dbId: string): Promise<Cause> {
+  await connectToMongoDB();
+  const result = await TaxExemptOrganizationModel.findOne({ dbId })
+    .lean()
+    .exec();
+  const validatedOrganization = CauseSchema.parse(result);
+  return validatedOrganization;
 }

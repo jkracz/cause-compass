@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
-import { Cause } from "@/lib/schemas";
+import { Cause } from "@cause/types";
 
 interface JourneyCardProps {
   likedOrgs: Cause[];

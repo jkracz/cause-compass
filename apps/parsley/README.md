@@ -61,12 +61,14 @@ Parsley is a sophisticated data pipeline that transforms raw IRS EO (Exempt Orga
 ## Scripts
 
 ### Data Import
+
 ```bash
 # Process IRS data for a specific state
 pnpm run create-profiles --state=ca
 ```
 
 ### Web Discovery
+
 ```bash
 # Search for organizations using Google APIs
 pnpm run search-orgs
@@ -76,6 +78,7 @@ pnpm run crawl-sites
 ```
 
 ### AI Analysis
+
 ```bash
 # Generate batch confirmation files for AI processing
 pnpm run generate-batch-confirmation-file
@@ -88,6 +91,7 @@ pnpm run confirm-with-local
 ```
 
 ### System Management
+
 ```bash
 # Start the main processing loop
 pnpm run start
@@ -138,20 +142,23 @@ pnpm run cleanup
 The platform uses a sophisticated URL filtering and scoring system to identify the most relevant websites for each organization:
 
 ### Smart Subdomain Handling
+
 - **Allows useful subdomains**: `donate.org.com`, `events.nonprofit.org`, `secure.charity.org`
 - **Filters unwanted subdomains**: `blog.*`, `shop.*`, `store.*`, `mail.*`, `staging.*`, `dev.*`, `test.*`
 - **Preserves standard subdomains**: `www.*` and root domains
 
 ### URL Scoring Algorithm
+
 The system scores URLs based on relevance to the organization:
 
 1. **Exact org name match**: +100 points
-2. **Acronym match**: +50 points  
+2. **Acronym match**: +50 points
 3. **Individual keyword matches**: +20 points each
 4. **Keyword at domain start**: +10 points additional
 5. **`.org` domain**: +20 points
 
 ### Filtering Process
+
 1. **Social Media Exclusion**: Removes LinkedIn, Facebook, Twitter, Instagram, YouTube, etc.
 2. **Subdomain Filtering**: Excludes unwanted subdomains while preserving useful ones
 3. **Deduplication**: Removes duplicate domains using normalized domain names
@@ -163,6 +170,7 @@ This approach ensures high-quality website discovery while minimizing crawling t
 ## Architecture
 
 The platform follows a modular architecture with:
+
 - **Scripts**: Standalone processing modules
 - **Utils**: Shared utilities and helpers
 - **Crawlee**: Web crawling infrastructure

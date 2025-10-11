@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
 import { OrganizationCard } from "@/components/organization-card";
 import { OrganizationModal } from "@/components/organization-modal";
-import { Cause } from "@/lib/schemas";
+import { Cause } from "@cause/types";
 import { removeLikedOrganization } from "@/lib/actions";
 
 export function MyCauses({ likedCauses }: { likedCauses: Cause[] }) {
@@ -35,7 +35,7 @@ export function MyCauses({ likedCauses }: { likedCauses: Cause[] }) {
 
   return (
     <div>
-      <div className="relative z-10 container mx-auto px-16 py-12 pr-16 md:pr-4">
+      <div className="container relative z-10 mx-auto px-16 py-12 pr-16 md:pr-4">
         <div className="mb-8 flex items-center justify-center">
           <h2 className="text-2xl font-bold">Liked Causes</h2>
         </div>

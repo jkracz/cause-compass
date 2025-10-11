@@ -1,23 +1,23 @@
 import {
-    MongoClient,
-    ServerApiVersion,
-    AnyBulkWriteOperation,
-    BulkWriteResult,
-    Filter,
-    Db,
-    ObjectId,
-    Collection,
+  MongoClient,
+  ServerApiVersion,
+  AnyBulkWriteOperation,
+  BulkWriteResult,
+  Filter,
+  Db,
+  ObjectId,
+  Collection,
 } from "mongodb";
-import { BatchJob, TaxExemptOrganization } from "@/types";
+import { BatchJob, TaxExemptOrganization } from "@cause/types";
 import "dotenv/config";
 import { logger } from "@/utils/logger";
 
 const mongoUser: string | undefined = process.env.MONGO_USER;
 const mongoPassword: string | undefined = process.env.MONGO_PASSWORD;
 if (!mongoUser) {
-    throw new Error("Missing MONGO_USER environment variable");
+  throw new Error("Missing MONGO_USER environment variable");
 } else if (!mongoPassword) {
-    throw new Error("Missing MONGO_PASSWORD environment variable");
+  throw new Error("Missing MONGO_PASSWORD environment variable");
 }
 const uri: string = `mongodb+srv://${mongoUser}:${mongoPassword}@causecompass-1.xgfmikf.mongodb.net/?retryWrites=true&w=majority&appName=CauseCompass-1`;
 
@@ -26,150 +26,213 @@ let db: Db;
 let tax_exempt_organizations: Collection<TaxExemptOrganization>;
 let isConnecting: Promise<void> | null = null;
 
-export const connectToDatabase = async () => {
-    if (client) return;
+const coerceObjectId = (
+  id: TaxExemptOrganization["_id"],
+): ObjectId | undefined => {
+  if (!id) return undefined;
+  if (typeof id === "string") {
+    if (!ObjectId.isValid(id)) return undefined;
+    return new ObjectId(id);
+  }
 
-    if (isConnecting) {
-        await isConnecting;
-        return;
+  if (id instanceof ObjectId) {
+    return id;
+  }
+
+  if (typeof id === "object" && "toString" in id) {
+    const stringified = (id as { toString: () => string }).toString();
+    if (ObjectId.isValid(stringified)) {
+      return new ObjectId(stringified);
     }
+  }
 
-    isConnecting = (async () => {
-        try {
-            client = new MongoClient(uri, {
-                serverApi: {
-                    version: ServerApiVersion.v1,
-                    strict: true,
-                    deprecationErrors: true,
-                },
-            });
-            await client.connect();
-            db = client.db("CauseCompass-1");
-            tax_exempt_organizations = db.collection<TaxExemptOrganization>("tax_exempt_organizations");
-        } catch (error) {
-            logger.error("Failed to connect to database:", error);
-            throw error;
-        } finally {
-            isConnecting = null;
-        }
-    })();
+  return undefined;
+};
 
+export const connectToDatabase = async () => {
+  if (client) return;
+
+  if (isConnecting) {
     await isConnecting;
+    return;
+  }
+
+  isConnecting = (async () => {
+    try {
+      client = new MongoClient(uri, {
+        serverApi: {
+          version: ServerApiVersion.v1,
+          strict: true,
+          deprecationErrors: true,
+        },
+      });
+      await client.connect();
+      db = client.db("CauseCompass-1");
+      tax_exempt_organizations = db.collection<TaxExemptOrganization>(
+        "tax_exempt_organizations",
+      );
+    } catch (error) {
+      logger.error("Failed to connect to database:", error);
+      throw error;
+    } finally {
+      isConnecting = null;
+    }
+  })();
+
+  await isConnecting;
 };
 
 export const disconnectFromDatabase = async () => {
-    if (client) {
-        await client.close();
-    }
+  if (client) {
+    await client.close();
+  }
 };
 
 // Update other functions to use connectToDatabase
-export const insertManyTaxExemptOrgs = async (documents: TaxExemptOrganization[]): Promise<void> => {
-    try {
-        await connectToDatabase();
-        const result = await tax_exempt_organizations.insertMany(documents);
-        logger.info(`${result.insertedCount} documents were inserted`);
-    } catch (error) {
-        logger.error("Failed to insert documents:", error);
-    }
+export const insertManyTaxExemptOrgs = async (
+  documents: TaxExemptOrganization[],
+): Promise<void> => {
+  try {
+    await connectToDatabase();
+    const result = await tax_exempt_organizations.insertMany(documents);
+    logger.info(`${result.insertedCount} documents were inserted`);
+  } catch (error) {
+    logger.error("Failed to insert documents:", error);
+  }
 };
 
 export const findTaxExemptOrgs = async (
-    limit: number,
-    filter: Filter<TaxExemptOrganization>
+  limit: number,
+  filter: Filter<TaxExemptOrganization>,
 ): Promise<TaxExemptOrganization[]> => {
-    try {
-        await connectToDatabase();
-        const profiles = await tax_exempt_organizations.find(filter).limit(limit).toArray();
-        return profiles;
-    } catch (error) {
-        logger.error("Failed to retrieve orgs from DB:", error);
-        throw new Error("Failed to retrieve orgs from DB");
-    }
+  try {
+    await connectToDatabase();
+    const profiles = await tax_exempt_organizations
+      .find(filter)
+      .limit(limit)
+      .toArray();
+    return profiles;
+  } catch (error) {
+    logger.error("Failed to retrieve orgs from DB:", error);
+    throw new Error("Failed to retrieve orgs from DB");
+  }
 };
 
-export const bulkUpdateOrgs = async (orgs: TaxExemptOrganization[]): Promise<void> => {
-    if (orgs.length === 0) return;
-    logger.info(`Updating ${orgs.length} organizations`);
+export const bulkUpdateOrgs = async (
+  orgs: TaxExemptOrganization[],
+): Promise<void> => {
+  if (orgs.length === 0) return;
+  logger.info(`Updating ${orgs.length} organizations`);
 
-    try {
-        await connectToDatabase();
+  try {
+    await connectToDatabase();
 
-        const bulkOps: AnyBulkWriteOperation<TaxExemptOrganization>[] = orgs.map((org) => {
-            const { _id, ...updateData } = org;
-            return {
-                updateOne: {
-                    filter: { _id: new ObjectId(_id) },
-                    update: { $set: updateData },
-                },
-            };
-        });
+    const bulkOps = orgs
+      .map((org) => {
+        const { _id, ...updateData } = org;
+        const objectId = coerceObjectId(_id);
+        if (!objectId) {
+          logger.warn(
+            `Skipping bulk update for org with missing _id. dbId=${org.dbId ?? "unknown"}`,
+          );
+          return null;
+        }
 
-        const result: BulkWriteResult = await tax_exempt_organizations.bulkWrite(bulkOps);
-        logger.info(`${result.modifiedCount} documents were modified, ${result.upsertedCount} were upserted`);
-    } catch (error) {
-        logger.error("Failed to bulk update orgs:", error);
-        throw error;
+        return {
+          updateOne: {
+            filter: {
+              _id: objectId,
+            } as unknown as Filter<TaxExemptOrganization>,
+            update: { $set: updateData },
+          },
+        } satisfies AnyBulkWriteOperation<TaxExemptOrganization>;
+      })
+      .filter(Boolean) as AnyBulkWriteOperation<TaxExemptOrganization>[];
+
+    if (bulkOps.length === 0) {
+      logger.warn("No valid operations to execute in bulk update.");
+      return;
     }
+
+    const result: BulkWriteResult =
+      await tax_exempt_organizations.bulkWrite(bulkOps);
+    logger.info(
+      `${result.modifiedCount} documents were modified, ${result.upsertedCount} were upserted`,
+    );
+  } catch (error) {
+    logger.error("Failed to bulk update orgs:", error);
+    throw error;
+  }
 };
 
 export const updateOrg = async (org: TaxExemptOrganization): Promise<void> => {
-    try {
-        await connectToDatabase();
-        const result = await tax_exempt_organizations.updateOne({ _id: org._id }, { $set: org });
-        if (result.modifiedCount === 0) {
-            logger.warn(`No documents were modified for org with id: ${org._id}`);
-        } else {
-            logger.info(`Successfully updated org with id: ${org._id}`);
-        }
-    } catch (error) {
-        logger.error(error);
-        throw new Error("Failed to update org in DB");
+  try {
+    await connectToDatabase();
+    const result = await tax_exempt_organizations.updateOne(
+      { _id: org._id },
+      { $set: org },
+    );
+    if (result.modifiedCount === 0) {
+      logger.warn(`No documents were modified for org with id: ${org._id}`);
+    } else {
+      logger.info(`Successfully updated org with id: ${org._id}`);
     }
+  } catch (error) {
+    logger.error(error);
+    throw new Error("Failed to update org in DB");
+  }
 };
 
-export const getBatchCollection = async (): Promise<import("mongodb").Collection<BatchJob>> => {
-    await connectToDatabase();
-    return db.collection<BatchJob>("batches");
+export const getBatchCollection = async (): Promise<
+  import("mongodb").Collection<BatchJob>
+> => {
+  await connectToDatabase();
+  return db.collection<BatchJob>("batches");
 };
 
 export const insertBatchJob = async (job: BatchJob): Promise<void> => {
-    const batches = await getBatchCollection();
-    await batches.insertOne(job);
+  const batches = await getBatchCollection();
+  await batches.insertOne(job);
 };
 
-export const updateBatchJob = async (jobId: string, updates: Partial<BatchJob>): Promise<void> => {
-    const batches = await getBatchCollection();
-    await batches.updateOne({ id: jobId }, { $set: { ...updates, updatedAt: new Date().toISOString() } });
+export const updateBatchJob = async (
+  jobId: string,
+  updates: Partial<BatchJob>,
+): Promise<void> => {
+  const batches = await getBatchCollection();
+  await batches.updateOne(
+    { id: jobId },
+    { $set: { ...updates, updatedAt: new Date().toISOString() } },
+  );
 };
 
 export const findActiveBatchJob = async (): Promise<BatchJob | null> => {
-    const batches = await getBatchCollection();
-    return batches.findOne({
-        status: { $in: ["generating", "uploading", "processing", "downloading"] },
-    });
+  const batches = await getBatchCollection();
+  return batches.findOne({
+    status: { $in: ["generating", "uploading", "processing", "downloading"] },
+  });
 };
 
 process.on("SIGINT", async () => {
-    await disconnectFromDatabase();
-    process.exit(0);
+  await disconnectFromDatabase();
+  process.exit(0);
 });
 
 process.on("SIGTERM", async () => {
-    await disconnectFromDatabase();
-    process.exit(0);
+  await disconnectFromDatabase();
+  process.exit(0);
 });
 
 // Handle cleanup on normal exit
 process.on("exit", () => {
-    if (client) {
-        client.close(true); // Force close
-    }
+  if (client) {
+    client.close(true); // Force close
+  }
 });
 
 // Handle cleanup on unhandled rejections
 process.on("unhandledRejection", async (reason) => {
-    logger.error("Unhandled Rejection at:", reason);
-    await disconnectFromDatabase();
-    process.exit(1);
+  logger.error("Unhandled Rejection at:", reason);
+  await disconnectFromDatabase();
+  process.exit(1);
 });

@@ -9,7 +9,7 @@ import {
   clearUserData,
   updateUserPreferences as updateUserPreferencesDB,
 } from "@/server/db/user/mutations";
-import { UserPreferences, UserSchema, User } from "@/lib/schemas";
+import { UserPreferences, UserSchema, User } from "@cause/types";
 
 export async function saveUserPreferences(formData: FormData) {
   const cookieStore = await cookies();

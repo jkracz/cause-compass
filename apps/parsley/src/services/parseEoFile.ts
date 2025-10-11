@@ -5,17 +5,17 @@ import { convertToTitleCase } from "../utils/titleCase";
 import { logger } from "@/utils/logger";
 
 import {
-    TaxExemptOrganization,
-    NteeCode,
-    ActivityCode,
-    AssetCode,
-    AffiliationCode,
-    DeductibilityCode,
-    OrgCode,
-    FoundationCode,
-    FilingRequirementCode,
-    EOStatusCode,
-} from "../types";
+  type ActivityCode,
+  type AffiliationCode,
+  type AssetCode,
+  type DeductibilityCode,
+  type EOStatusCode,
+  type FilingRequirementCode,
+  type FoundationCode,
+  type NteeCode,
+  type OrgCode,
+  type TaxExemptOrganization,
+} from "@cause/types";
 
 // importing the data dictionaries
 import * as activityCodes from "../data/dataDictionaries/ActivityCodes.json";
@@ -31,14 +31,26 @@ import * as eoStatusCodes from "../data/dataDictionaries/EOStatusCodes.json";
 
 // Cast imported JSON objects to their respective types
 const activityCodesDict = activityCodes as Record<string, ActivityCode>;
-const affiliationCodesDict = affiliationCodes as Record<string, AffiliationCode>;
+const affiliationCodesDict = affiliationCodes as Record<
+  string,
+  AffiliationCode
+>;
 const assetCodesDict = assetCodes as Record<string, AssetCode>;
-const deductibilityCodesDict = deductibilityCodes as Record<string, DeductibilityCode>;
-const filingReqCodesDict = filingReqCodes as Record<string, FilingRequirementCode>;
+const deductibilityCodesDict = deductibilityCodes as Record<
+  string,
+  DeductibilityCode
+>;
+const filingReqCodesDict = filingReqCodes as Record<
+  string,
+  FilingRequirementCode
+>;
 const foundationCodesDict = foundationCodes as Record<string, FoundationCode>;
 const nteeCodesDict = nteeCodes as Record<string, NteeCode>;
 const orgTypesDict = orgTypes as Record<string, OrgCode>;
-const pfFilingReqCodesDict = pfFilingReqCodes as Record<string, FilingRequirementCode>;
+const pfFilingReqCodesDict = pfFilingReqCodes as Record<
+  string,
+  FilingRequirementCode
+>;
 const eoStatusCodesDict = eoStatusCodes as Record<string, EOStatusCode>;
 
 /**
@@ -57,82 +69,86 @@ const eoStatusCodesDict = eoStatusCodes as Record<string, EOStatusCode>;
  */
 
 const DATA_DIR = "data";
-export const parseEoFile = async (fileName: string): Promise<Record<string, TaxExemptOrganization>> => {
-    const currentPath = join(process.cwd(), `${DATA_DIR}/raw`, fileName);
+export const parseEoFile = async (
+  fileName: string,
+): Promise<Record<string, TaxExemptOrganization>> => {
+  const currentPath = join(process.cwd(), `${DATA_DIR}/raw`, fileName);
 
-    return new Promise((resolve, reject) => {
-        const profiles: Record<string, TaxExemptOrganization> = {};
-        const parser = parse({ columns: true, delimiter: "," });
-        const readableStream = fs.createReadStream(currentPath);
+  return new Promise((resolve, reject) => {
+    const profiles: Record<string, TaxExemptOrganization> = {};
+    const parser = parse({ columns: true, delimiter: "," });
+    const readableStream = fs.createReadStream(currentPath);
 
-        // Pipe the readable stream to the parser
-        readableStream
-            .pipe(parser)
-            .on("data", (row) => {
-                const npProfile = transformCsvRowToNonprofitProfile(row);
-                profiles[npProfile.ein] = npProfile;
-            })
-            .on("error", (err) => {
-                logger.error(err);
-                reject(err);
-            })
-            .on("end", () => {
-                logger.info("Finished parsing the CSV file.");
-                resolve(profiles);
-            });
-    });
+    // Pipe the readable stream to the parser
+    readableStream
+      .pipe(parser)
+      .on("data", (row) => {
+        const npProfile = transformCsvRowToNonprofitProfile(row);
+        profiles[npProfile.ein] = npProfile;
+      })
+      .on("error", (err) => {
+        logger.error(err);
+        reject(err);
+      })
+      .on("end", () => {
+        logger.info("Finished parsing the CSV file.");
+        resolve(profiles);
+      });
+  });
 };
 
 const transformCsvRowToNonprofitProfile = (row: any): TaxExemptOrganization => {
-    return {
-        ein: row.EIN,
-        name: convertToTitleCase(row.NAME),
-        ico: row.ICO.split("% ")[1] ? convertToTitleCase(row.ICO.split("% ")[1]) : undefined,
-        street: convertToTitleCase(row.STREET),
-        city: convertToTitleCase(row.CITY),
-        state: row.STATE,
-        zip: row.ZIP,
-        group: row.GROUP,
-        subsection: row.SUBSECTION,
-        affiliation: affiliationCodesDict[row.AFFILIATION],
-        classification: row.CLASSIFICATION,
-        ruling: row.RULING,
-        deductibility: deductibilityCodesDict[row.DEDUCTIBILITY],
-        foundation: foundationCodesDict[row.FOUNDATION],
-        activityCodes: parseActivityCodes(row.ACTIVITY),
-        organization: orgTypesDict[row.ORGANIZATION],
-        status: eoStatusCodesDict[row.STATUS],
-        taxPeriod: row.TAX_PERIOD,
-        assetCode: assetCodesDict[row.ASSET_CD],
-        incomeCode: row.INCOME_CD,
-        filingReqCode: filingReqCodesDict[row.FILING_REQ_CD],
-        pfFilingReqCode: pfFilingReqCodesDict[row.PF_FILING_REQ_CD],
-        acctPeriod: row.ACCT_PD,
-        assetAmt: row.ASSET_AMT ? parseFloat(row.ASSET_AMT) : undefined,
-        incomeAmt: row.INCOME_AMT ? parseFloat(row.INCOME_AMT) : undefined,
-        revenueAmt: row.REVENUE_AMT ? parseFloat(row.REVENUE_AMT) : undefined,
-        nteeCode: nteeCodesDict[row.NTEE_CD],
-        sortName: row.SORT_NAME,
-        createdAt: new Date().toISOString(), // Current timestamp
-        lastUpdated: new Date().toISOString(),
-    };
+  return {
+    ein: row.EIN,
+    name: convertToTitleCase(row.NAME),
+    ico: row.ICO.split("% ")[1]
+      ? convertToTitleCase(row.ICO.split("% ")[1])
+      : undefined,
+    street: convertToTitleCase(row.STREET),
+    city: convertToTitleCase(row.CITY),
+    state: row.STATE,
+    zip: row.ZIP,
+    group: row.GROUP,
+    subsection: row.SUBSECTION,
+    affiliation: affiliationCodesDict[row.AFFILIATION],
+    classification: row.CLASSIFICATION,
+    ruling: row.RULING,
+    deductibility: deductibilityCodesDict[row.DEDUCTIBILITY],
+    foundation: foundationCodesDict[row.FOUNDATION],
+    activityCodes: parseActivityCodes(row.ACTIVITY),
+    organization: orgTypesDict[row.ORGANIZATION],
+    status: eoStatusCodesDict[row.STATUS],
+    taxPeriod: row.TAX_PERIOD,
+    assetCode: assetCodesDict[row.ASSET_CD],
+    incomeCode: row.INCOME_CD,
+    filingReqCode: filingReqCodesDict[row.FILING_REQ_CD],
+    pfFilingReqCode: pfFilingReqCodesDict[row.PF_FILING_REQ_CD],
+    acctPeriod: row.ACCT_PD,
+    assetAmt: row.ASSET_AMT ? parseFloat(row.ASSET_AMT) : undefined,
+    incomeAmt: row.INCOME_AMT ? parseFloat(row.INCOME_AMT) : undefined,
+    revenueAmt: row.REVENUE_AMT ? parseFloat(row.REVENUE_AMT) : undefined,
+    nteeCode: nteeCodesDict[row.NTEE_CD],
+    sortName: row.SORT_NAME,
+    createdAt: new Date().toISOString(), // Current timestamp
+    lastUpdated: new Date().toISOString(),
+  };
 };
 
 const parseActivityCodes = (code: string): ActivityCode[] => {
-    if (code === "000000000") return [];
+  if (code === "000000000") return [];
 
-    const codes: ActivityCode[] = [];
-    const ac1: string = code.slice(0, 3);
-    const ac2: string = code.slice(3, 6);
-    const ac3: string = code.slice(6);
-    if (ac1 !== "000" && activityCodesDict[ac1] !== undefined) {
-        codes.push(activityCodesDict[ac1]);
-    }
-    if (ac2 !== "000" && activityCodesDict[ac2] !== undefined) {
-        codes.push(activityCodesDict[ac2]);
-    }
-    if (ac3 !== "000" && activityCodesDict[ac3] !== undefined) {
-        codes.push(activityCodesDict[ac3]);
-    }
-    return codes;
+  const codes: ActivityCode[] = [];
+  const ac1: string = code.slice(0, 3);
+  const ac2: string = code.slice(3, 6);
+  const ac3: string = code.slice(6);
+  if (ac1 !== "000" && activityCodesDict[ac1] !== undefined) {
+    codes.push(activityCodesDict[ac1]);
+  }
+  if (ac2 !== "000" && activityCodesDict[ac2] !== undefined) {
+    codes.push(activityCodesDict[ac2]);
+  }
+  if (ac3 !== "000" && activityCodesDict[ac3] !== undefined) {
+    codes.push(activityCodesDict[ac3]);
+  }
+  return codes;
 };

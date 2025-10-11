@@ -4,7 +4,7 @@ import type React from "react";
 
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-import type { Cause } from "@/lib/schemas";
+import type { Cause } from "@cause/types";
 
 interface OrganizationCardProps {
   organization: Cause;

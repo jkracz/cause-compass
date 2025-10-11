@@ -10,7 +10,7 @@ import {
   FoundationCodeSchema,
   FilingRequirementCodeSchema,
   NteeCodeSchema,
-  GoogleSearchApiKeyTypeSchema,
+  GoogleSearchApiKeySchema,
 } from "./codes";
 import {
   SearchResultSchema,
@@ -38,6 +38,7 @@ export const TaxExemptOrganizationSchema = z.object({
   _id: ObjectIdSchema.optional(),
   dbId: z.string(),
   slug: z.string().optional(),
+  batchJobId: z.string().optional(),
 
   // Core Organization Info
   ein: z.string(), // Employer Identification Number
@@ -77,7 +78,7 @@ export const TaxExemptOrganizationSchema = z.object({
 
   // Search/Crawl Data
   searchResults: z.array(SearchResultSchema).optional(),
-  searchKey: GoogleSearchApiKeyTypeSchema.optional(),
+  searchKey: GoogleSearchApiKeySchema.optional(),
   resultsParsedAt: z.string().optional(),
   confirmationCrawlItems: z.array(CrawlItemSchema).optional(),
   aiConfirmationResponse: z.any().optional(),

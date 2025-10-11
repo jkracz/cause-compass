@@ -26,7 +26,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useMobile } from "@/hooks/use-mobile";
-import { Cause } from "@/lib/schemas";
+import { Cause } from "@cause/types";
 
 interface OrganizationModalProps {
   organization: Cause;

@@ -1,0 +1,26 @@
+{
+    "name": "@cause/types",
+    "version": "0.0.0",
+    "private": true,
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch",
+        "clean": "rm -rf dist"
+    },
+    "dependencies": {
+        "zod": "^4.1.12"
+    },
+    "devDependencies": {
+        "@cause/typescript-config": "workspace:*",
+        "typescript": "latest"
+    }
+}

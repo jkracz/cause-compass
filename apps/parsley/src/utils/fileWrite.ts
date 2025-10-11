@@ -14,21 +14,25 @@ import * as path from "path";
  * @returns {Promise<string>} A promise that resolves to the path of the written file, or an empty string if an error occurs.
  */
 
-export const jsonFileWrite = async (directoryPath: string, content: object, fileName: string) => {
-    try {
-        await fs.access(directoryPath);
-    } catch {
-        // If the directory does not exist, create it
-        await fs.mkdir(directoryPath, { recursive: true });
-    }
-    const outputFilePath = path.join(directoryPath, `${fileName}.json`);
-    const data = JSON.stringify(content);
+export const jsonFileWrite = async (
+  directoryPath: string,
+  content: object,
+  fileName: string,
+) => {
+  try {
+    await fs.access(directoryPath);
+  } catch {
+    // If the directory does not exist, create it
+    await fs.mkdir(directoryPath, { recursive: true });
+  }
+  const outputFilePath = path.join(directoryPath, `${fileName}.json`);
+  const data = JSON.stringify(content);
 
-    try {
-        await fs.writeFile(outputFilePath, data);
-        return outputFilePath;
-    } catch (err) {
-        console.error("error writing file", err);
-        return "";
-    }
+  try {
+    await fs.writeFile(outputFilePath, data);
+    return outputFilePath;
+  } catch (err) {
+    console.error("error writing file", err);
+    return "";
+  }
 };

@@ -6,7 +6,7 @@ import { getUserPreferences } from "@/server/db/user/queries";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getLikedCauses } from "@/server/db/user/queries";
-import { Cause } from "@/lib/schemas";
+import { Cause } from "@cause/types";
 
 export default async function MyOrgsPage() {
   const cookieStore = await cookies();
@@ -21,7 +21,7 @@ export default async function MyOrgsPage() {
 
   return (
     <main className="relative min-h-screen w-full">
-      <div className="relative z-10 container mx-auto px-4 py-8">
+      <div className="container relative z-10 mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-white">Navigator</h1>

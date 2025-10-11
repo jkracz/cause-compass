@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { connectToMongoDB } from "../connection";
 import UserModel, { IUser } from "./model";
-import { UserPreferencesSchema, UserPreferences, Cause } from "@/lib/schemas";
+import { UserPreferencesSchema, UserPreferences, Cause } from "@cause/types";
 import { getCausesByDbIds } from "../organization/queries";
 
 // Get user preferences

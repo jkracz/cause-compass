@@ -64,7 +64,7 @@ export default function FAQPage() {
 
   return (
     <main className="relative min-h-screen w-full">
-      <div className="relative z-10 container mx-auto px-4 py-12">
+      <div className="container relative z-10 mx-auto px-4 py-12">
         <BackButton fallbackHref="/" />
 
         <div className="mx-auto max-w-4xl">

@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { TaxExemptOrganization } from "@/lib/schemas";
+import { TaxExemptOrganization } from "@cause/types";
 
 // Extend the TaxExemptOrganization type with Mongoose Document (omit _id to avoid conflicts)
 export interface ITaxExemptOrganization
@@ -155,11 +155,12 @@ TaxExemptOrganizationSchema.index({ state: 1, city: 1 });
 TaxExemptOrganizationSchema.index({ dbId: 1 });
 
 // Create and export the model
-const TaxExemptOrganizationModel =
-  mongoose.models.TaxExemptOrganization ||
-  mongoose.model<ITaxExemptOrganization>(
-    "TaxExemptOrganization",
-    TaxExemptOrganizationSchema,
-  );
+const TaxExemptOrganizationModel: mongoose.Model<ITaxExemptOrganization> =
+  mongoose.models.TaxExemptOrganization
+    ? mongoose.model<ITaxExemptOrganization>("TaxExemptOrganization")
+    : mongoose.model<ITaxExemptOrganization>(
+        "TaxExemptOrganization",
+        TaxExemptOrganizationSchema,
+      );
 
 export default TaxExemptOrganizationModel;

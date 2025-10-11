@@ -7,7 +7,7 @@ import { motion } from "motion/react";
 
 import { SwipeableCard } from "@/components/swipeable-card";
 import { Button } from "@/components/ui/button";
-import { Cause } from "@/lib/schemas";
+import { Cause } from "@cause/types";
 import { addLikedOrganization } from "@/lib/actions";
 
 export default function Discover({ causes }: { causes: Cause[] }) {
@@ -19,6 +19,9 @@ export default function Discover({ causes }: { causes: Cause[] }) {
   const handleLike = async () => {
     if (currentIndex < causes.length) {
       const org = causes[currentIndex];
+      if (!org) {
+        return;
+      }
       await addLikedOrganization(org.dbId);
       const updatedLikedCauses = [...likedCauses, org];
       setLikedCauses(updatedLikedCauses);

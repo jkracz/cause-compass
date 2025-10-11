@@ -6,7 +6,7 @@ import { Heart, X } from "lucide-react";
 import Image from "next/image";
 
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
-import { Cause } from "@/lib/schemas";
+import { Cause } from "@cause/types";
 
 interface SwipeableCardProps {
   organization: Cause;
@@ -72,7 +72,7 @@ export function SwipeableCard({
         className="flex h-full flex-col justify-center overflow-hidden p-8"
       >
         {/* Floating Logo */}
-        <div className="absolute top-8 left-1/2 z-10 -translate-x-1/2 transform">
+        <div className="absolute left-1/2 top-8 z-10 -translate-x-1/2 transform">
           {organization.logoUrl ? (
             <div className="relative h-32 w-32 overflow-hidden rounded-full bg-white shadow-2xl ring-4 ring-white/30 backdrop-blur-sm">
               <Image
@@ -116,14 +116,14 @@ export function SwipeableCard({
         </div>
 
         <motion.div
-          className="absolute top-4 left-4 rounded-full bg-white p-2"
+          className="absolute left-4 top-4 rounded-full bg-white p-2"
           style={{ opacity: nopeOpacity }}
         >
           <X className="h-8 w-8 text-red-500" />
         </motion.div>
 
         <motion.div
-          className="absolute top-4 right-4 rounded-full bg-white p-2"
+          className="absolute right-4 top-4 rounded-full bg-white p-2"
           style={{ opacity: likeOpacity }}
         >
           <Heart className="h-8 w-8 text-pink-500" />

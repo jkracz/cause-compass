@@ -3,7 +3,7 @@
 import { Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
-import { Cause, UserPreferences } from "@/lib/schemas";
+import { Cause, UserPreferences } from "@cause/types";
 import { useRouter } from "next/navigation";
 
 interface ReflectionCardProps {

@@ -1,24 +1,31 @@
 import { google } from "googleapis";
-import { GoogleSearchApiKeyType } from "../types";
+import { GoogleSearchApiKey, type GoogleSearchApiKeyType } from "@cause/types";
 import "dotenv/config";
 
-const keySets = {
-    [GoogleSearchApiKeyType.PERSONAL]: {
-        searchEngineId: process.env.SEARCH_ENGINE_ID_PERSONAL,
-        searchApiKey: process.env.GOOGLE_SEARCH_API_KEY_PERSONAL,
-    },
-    [GoogleSearchApiKeyType.JKRACZ]: {
-        searchEngineId: process.env.SEARCH_ENGINE_ID_JKRACZ,
-        searchApiKey: process.env.GOOGLE_SEARCH_API_KEY_JKRACZ,
-    },
-    [GoogleSearchApiKeyType.SF]: {
-        searchEngineId: process.env.SEARCH_ENGINE_ID_SF,
-        searchApiKey: process.env.GOOGLE_SEARCH_API_KEY_SF,
-    },
-    [GoogleSearchApiKeyType.JK]: {
-        searchEngineId: process.env.SEARCH_ENGINE_ID_JK,
-        searchApiKey: process.env.GOOGLE_SEARCH_API_KEY_JK,
-    },
+const keySets: Record<
+  GoogleSearchApiKeyType,
+  { searchEngineId?: string; searchApiKey?: string }
+> = {
+  [GoogleSearchApiKey.CC]: {
+    searchEngineId: process.env.SEARCH_ENGINE_ID_CC,
+    searchApiKey: process.env.GOOGLE_SEARCH_API_KEY_CC,
+  },
+  [GoogleSearchApiKey.PERSONAL]: {
+    searchEngineId: process.env.SEARCH_ENGINE_ID_PERSONAL,
+    searchApiKey: process.env.GOOGLE_SEARCH_API_KEY_PERSONAL,
+  },
+  [GoogleSearchApiKey.JKRACZ]: {
+    searchEngineId: process.env.SEARCH_ENGINE_ID_JKRACZ,
+    searchApiKey: process.env.GOOGLE_SEARCH_API_KEY_JKRACZ,
+  },
+  [GoogleSearchApiKey.SF]: {
+    searchEngineId: process.env.SEARCH_ENGINE_ID_SF,
+    searchApiKey: process.env.GOOGLE_SEARCH_API_KEY_SF,
+  },
+  [GoogleSearchApiKey.JK]: {
+    searchEngineId: process.env.SEARCH_ENGINE_ID_JK,
+    searchApiKey: process.env.GOOGLE_SEARCH_API_KEY_JK,
+  },
 } as const;
 
 /**
@@ -33,24 +40,27 @@ const keySets = {
  * @returns {Promise<any>} A promise that resolves to the search results returned by the API.
  * @throws {Error} Throws an error if the API request fails.
  */
-export const googleSearch = async (query: string, keyFrom: GoogleSearchApiKeyType): Promise<any> => {
-    const { searchEngineId, searchApiKey } = keySets[keyFrom];
-    if (!searchEngineId) {
-        throw new Error("Missing SEARCH_ENGINE_ID environment variable");
-    } else if (!searchApiKey) {
-        throw new Error("Missing GOOGLE_SEARCH_API_KEY environment variable");
-    }
+export const googleSearch = async (
+  query: string,
+  keyFrom: GoogleSearchApiKeyType,
+): Promise<any> => {
+  const { searchEngineId, searchApiKey } = keySets[keyFrom];
+  if (!searchEngineId) {
+    throw new Error("Missing SEARCH_ENGINE_ID environment variable");
+  } else if (!searchApiKey) {
+    throw new Error("Missing GOOGLE_SEARCH_API_KEY environment variable");
+  }
 
-    const customsearch = google.customsearch("v1");
-    try {
-        const res = await customsearch.cse.list({
-            cx: searchEngineId,
-            q: query,
-            auth: searchApiKey,
-        });
-        return res.data;
-    } catch (error) {
-        console.error("Error during Google Search API request:", error);
-        throw error;
-    }
+  const customsearch = google.customsearch("v1");
+  try {
+    const res = await customsearch.cse.list({
+      cx: searchEngineId,
+      q: query,
+      auth: searchApiKey,
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Error during Google Search API request:", error);
+    throw error;
+  }
 };
