@@ -17,17 +17,13 @@ import {
   SocialMediaUrlsSchema,
   CrawlItemSchema,
 } from "./search";
+import { ActivitySchema } from "./activity";
 
 // MongoDB ObjectId Schema (for compatibility)
 export const ObjectIdSchema = z.union([
   z.string(), // MongoDB ObjectId as string
   z.object({}).passthrough(), // Allow ObjectId object to pass through
 ]);
-
-export const ActivitySchema = z.object({
-  name: z.string(),
-  description: z.string(),
-});
 
 // Tax Exempt Organization Schema for all data we have on the nonprofit
 export const TaxExemptOrganizationSchema = z.object({
@@ -150,4 +146,3 @@ export type Cause = z.infer<typeof CauseSchema>;
 export type OrganizationSearchFilters = z.infer<
   typeof OrganizationSearchFiltersSchema
 >;
-export type Activity = z.infer<typeof ActivitySchema>;

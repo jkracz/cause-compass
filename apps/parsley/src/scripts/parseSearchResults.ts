@@ -6,7 +6,7 @@ import { logger } from "@/utils/logger";
 import fs from "fs";
 import path from "path";
 
-const THREAD_LIMIT = 35;
+const THREAD_LIMIT = 10;
 const MAX_ORGS = 5000;
 const BATCH_SIZE = 50;
 const WORKER_TIMEOUT = 6 * 60 * 1000;

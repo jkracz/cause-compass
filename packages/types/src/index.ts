@@ -3,3 +3,4 @@ export * from "./codes";
 export * from "./search";
 export * from "./organization";
 export * from "./user";
+export * from "./activity";

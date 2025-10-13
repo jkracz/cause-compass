@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-import { ActivitySchema } from "./organization";
+import { ActivitySchema } from "./activity";
 
 // Search Result Schema
 export const SearchResultSchema = z.object({

@@ -369,6 +369,7 @@ export const createCrawler = async (options?: CrawlOptions) => {
             async (_pageId, launchContext) => {
               launchContext.launchOptions = {
                 ...launchContext.launchOptions,
+                // Use a temporary profile to prevent keychain access
                 args: [
                   ...(launchContext.launchOptions?.args || []),
                   "--no-sandbox",
@@ -383,15 +384,15 @@ export const createCrawler = async (options?: CrawlOptions) => {
                   "--disable-renderer-backgrounding",
                   "--disable-features=TranslateUI",
                   "--disable-ipc-flooding-protection",
-                  "--use-mock-keychain", // This prevents the macOS keychain popup
-                  "--password-store=basic", // Use basic password store instead of keychain
-                  "--disable-password-generation", // Disable password generation
-                  "--disable-features=PasswordManager", // Disable password manager
+                  "--incognito", // Use incognito mode - prevents accessing saved credentials
+                  "--disable-save-password-bubble", // Prevents password save prompts
+                  "--disable-password-generation",
+                  "--disable-features=PasswordManager",
                   "--disable-features=VizDisplayCompositor",
                   "--disable-password-manager-reauthentication",
                   "--disable-sync",
                   "--disable-component-update",
-                  "--disable-blink-features=AutomationControlled", // Hide automation
+                  "--disable-blink-features=AutomationControlled",
                   "--disable-web-security",
                   "--allow-running-insecure-content",
                   "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
