@@ -15,7 +15,10 @@ async function main() {
     await connectToDatabase();
     logger.info("Connected to MongoDB");
 
-    const batchManager = new BatchManager(OPENAI_API_KEY as string);
+    const batchManager = new BatchManager(
+      OPENAI_API_KEY as string,
+      process.env.BATCH_DIR
+    );
     logger.info("BatchManager initialized");
 
     // Process batches
