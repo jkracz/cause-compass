@@ -62,7 +62,7 @@ export const writeConfirmationFile = async (
     if (nteeCode) {
       codeDescription = nteeCode.description;
     } else if (activityCodes && activityCodes.length > 0) {
-      codeDescription = activityCodes[0].description;
+      codeDescription = activityCodes[0]?.description ?? "";
     }
 
     const websiteData =

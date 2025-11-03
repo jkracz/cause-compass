@@ -1,8 +1,4 @@
 import "dotenv/config";
-import { writeConfirmationFile } from "./scripts/generateBatchConfirmationFile";
-import { parseSearchResults } from "./scripts/parseSearchResults";
-import { logger } from "@/utils/logger";
-import path from "path";
 import { listBatchJobs } from "./services/openAi";
 
 const main = async () => {

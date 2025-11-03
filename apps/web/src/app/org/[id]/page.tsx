@@ -24,7 +24,7 @@ export default async function OrgPage({ params }: OrgPageProps) {
   return (
     <div className="flex min-h-screen flex-col">
       <main className="relative w-full flex-1">
-        <div className="container relative z-10 mx-auto max-w-4xl px-4 py-12">
+        <div className="relative z-10 container mx-auto max-w-4xl px-4 py-12">
           <BackButton fallbackHref="/discover" />
 
           <div className="space-y-6">

@@ -18,7 +18,7 @@ export default async function Home() {
   return (
     <div className="flex min-h-screen flex-col">
       <main className="relative w-full flex-1">
-        <div className="container relative z-10 flex min-h-[calc(100vh-200px)] flex-col items-center justify-center px-4 py-12">
+        <div className="relative z-10 container flex min-h-[calc(100vh-200px)] flex-col items-center justify-center px-4 py-12">
           <GlassmorphicCard className="max-w-md">
             <div className="space-y-6 text-center">
               <div className="space-y-2">

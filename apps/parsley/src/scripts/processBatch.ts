@@ -17,7 +17,7 @@ async function main() {
 
     const batchManager = new BatchManager(
       OPENAI_API_KEY as string,
-      process.env.BATCH_DIR
+      process.env.BATCH_DIR,
     );
     logger.info("BatchManager initialized");
 
