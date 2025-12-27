@@ -67,7 +67,7 @@ export function MosaicBackground() {
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
         const palette =
-          colorPalettes[Math.floor(Math.random() * colorPalettes.length)];
+          colorPalettes[Math.floor(Math.random() * colorPalettes.length)]!;
 
         // Create clustered triangular compositions
         drawTriangularCluster(ctx, x, y, palette);
@@ -81,8 +81,8 @@ export function MosaicBackground() {
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
         const palette =
-          colorPalettes[Math.floor(Math.random() * colorPalettes.length)];
-        const color = palette[Math.floor(Math.random() * palette.length)];
+          colorPalettes[Math.floor(Math.random() * colorPalettes.length)]!;
+        const color = palette[Math.floor(Math.random() * palette.length)]!;
 
         drawSingleTriangle(ctx, x, y, color);
       }
@@ -103,7 +103,7 @@ export function MosaicBackground() {
         const x = centerX + Math.cos(angle) * distance;
         const y = centerY + Math.sin(angle) * distance;
 
-        const color = palette[Math.floor(Math.random() * palette.length)];
+        const color = palette[Math.floor(Math.random() * palette.length)]!;
         const size = Math.random() * 80 + 30;
         const rotation = Math.random() * Math.PI * 2;
 
@@ -215,11 +215,11 @@ export function MosaicBackground() {
             "rgba(30, 144, 255, 0.12)",
             "rgba(65, 105, 225, 0.08)",
           ],
-        ][Math.floor(Math.random() * 2)];
+        ][Math.floor(Math.random() * 2)]!;
 
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
-        const color = palette[Math.floor(Math.random() * palette.length)];
+        const color = palette[Math.floor(Math.random() * palette.length)]!;
 
         drawSingleTriangle(ctx, x, y, color);
       }

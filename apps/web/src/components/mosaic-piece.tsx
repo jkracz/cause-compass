@@ -33,8 +33,8 @@ export function MosaicPiece({ index, total, isCompleted }: MosaicPieceProps) {
     ["#FF69B4", "#FF1493", "#C71585"], // Hot pink spectrum
   ];
 
-  const palette = colorPalettes[index % colorPalettes.length];
-  const color = palette[Math.floor(Math.random() * palette.length)];
+  const palette = colorPalettes[index % colorPalettes.length]!;
+  const color = palette[Math.floor(Math.random() * palette.length)]!;
 
   return (
     <motion.div
@@ -86,7 +86,7 @@ export function MosaicPiece({ index, total, isCompleted }: MosaicPieceProps) {
               <stop
                 offset="100%"
                 stopColor={
-                  isCompleted ? palette[1] : "rgba(255, 255, 255, 0.05)"
+                  isCompleted ? palette[1]! : "rgba(255, 255, 255, 0.05)"
                 }
                 stopOpacity="0.4"
               />
@@ -115,7 +115,7 @@ export function MosaicPiece({ index, total, isCompleted }: MosaicPieceProps) {
             <polygon
               points="24,12 36,30 12,30"
               fill="none"
-              stroke={palette[2]}
+              stroke={palette[2]!}
               strokeWidth="0.5"
               opacity="0.6"
             />

@@ -3,7 +3,7 @@
 import { connectToMongoDB } from "../connection";
 import { getUserPreferences } from "../user/queries";
 import TaxExemptOrganizationModel, { ITaxExemptOrganization } from "./model";
-import type { FilterQuery } from "mongoose";
+import { QueryFilter } from "mongoose";
 import { OrganizationSearchFilters, Cause, CauseSchema } from "@cause/types";
 
 // Search organizations by name
@@ -58,7 +58,7 @@ export async function searchOrganizations(
 ): Promise<ITaxExemptOrganization[]> {
   await connectToMongoDB();
 
-  const query: FilterQuery<ITaxExemptOrganization> = {};
+  const query: QueryFilter<ITaxExemptOrganization> = {};
 
   if (filters.name) {
     query.$text = { $search: filters.name };
@@ -93,7 +93,7 @@ export async function searchOrganizations(
       assetConditions.$lte = filters.assetAmtMax;
     }
     query.assetAmt =
-      assetConditions as FilterQuery<ITaxExemptOrganization>["assetAmt"];
+      assetConditions as QueryFilter<ITaxExemptOrganization>["assetAmt"];
   }
 
   return await TaxExemptOrganizationModel.find(query)
