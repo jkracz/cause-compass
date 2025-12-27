@@ -1,0 +1,8 @@
+{
+  "setup-worktree": [
+    "pnpm install",
+    "pnpm build --filter=@workspace/types",
+    "cp $ROOT_WORKTREE_PATH/apps/parsley/.env apps/parsley/.env",
+    "cp $ROOT_WORKTREE_PATH/apps/web/.env apps/web/.env"
+  ]
+}

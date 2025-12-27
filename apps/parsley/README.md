@@ -132,10 +132,14 @@ pnpm run cleanup
 
 ## Data Sources
 
-- **IRS EO Files**: Named as `eo_{state}.csv` (e.g., `eo_ca.csv`)
-- **Web Crawling**: Organization websites and social media
-- **Google Search**: Organization discovery and validation
-- **AI Analysis**: OpenAI-powered content generation and validation
+- [IRS Nonprofit Search](https://apps.irs.gov/app/eos/#main-content): GUI nonprofit search tool
+- [NTEE Code Repository](https://github.com/dhenderson/ntee): An old repo of JSON files for NTEE codes
+- [IRS Activity Codes](https://nccs.urban.org/publication/irs-activity-codes)
+- [NTEE Codes](https://nccs.urban.org/project/national-taxonomy-exempt-entities-ntee-codes)
+- [IRS EO File Documentation](https://www.irs.gov/pub/irs-tege/p4838.pdf)
+- [IRS EO File Downloads](https://www.irs.gov/charities-non-profits/exempt-organizations-business-master-file-extract-eo-bmf#regions)
+- [IRS EO Bulk Data Downloads](https://www.irs.gov/charities-non-profits/tax-exempt-organization-search-bulk-data-downloads)
+- [IRS EO Financial Data](https://www.irs.gov/statistics/soi-tax-stats-annual-extract-of-tax-exempt-organization-financial-data)
 
 ## URL Discovery & Filtering
 
