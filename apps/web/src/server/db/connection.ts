@@ -51,7 +51,7 @@ export async function connectToMongoDB(): Promise<typeof mongoose> {
 
 // Helper to disconnect (useful for testing)
 export async function disconnectFromMongoDB(): Promise<void> {
-  if (mongoose.connections[0].readyState !== 0) {
+  if (mongoose.connections[0]?.readyState !== 0) {
     await mongoose.disconnect();
     console.log("Disconnected from MongoDB");
   }

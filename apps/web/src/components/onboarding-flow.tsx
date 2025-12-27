@@ -55,7 +55,8 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
 
         setLocationPermission("granted");
         handleAnswer("location", JSON.stringify(location));
-      } catch (_error) {
+      } catch (error) {
+        console.error("Error getting location:", error);
         setLocationPermission("denied");
         handleAnswer("location", "denied");
       }
@@ -112,7 +113,7 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
   const isAnswered =
     currentQuestion?.type === "location"
       ? locationPermission !== null
-      : !!answers[currentQuestion?.id];
+      : !!answers[currentQuestion?.id ?? ""];
 
   return (
     <>
@@ -192,18 +193,22 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
             <div className="space-y-4">
               <div className="text-center">
                 <h2 className="mb-2 text-xl font-semibold">
-                  {currentQuestion.question}
+                  {currentQuestion?.question}
                 </h2>
-                {currentQuestion.description && (
+                {currentQuestion?.description && (
                   <p className="text-muted-foreground">
-                    {currentQuestion.description}
+                    {currentQuestion?.description}
                   </p>
                 )}
               </div>
               <MirrorQuestion
-                question={currentQuestion}
-                onAnswer={(answer) => handleAnswer(currentQuestion.id, answer)}
-                value={answers[currentQuestion?.id]}
+                question={
+                  currentQuestion ?? { id: "", question: "", type: "text" }
+                }
+                onAnswer={(answer) =>
+                  handleAnswer(currentQuestion?.id ?? "", answer)
+                }
+                value={answers[currentQuestion?.id ?? ""]}
                 isFirstQuestion={isFirstQuestion}
               />
             </div>

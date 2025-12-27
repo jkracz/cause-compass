@@ -20,7 +20,7 @@ function getRandomOpenEndedQuestion(): Question {
   const randomIndex = Math.floor(Math.random() * openEndedQuestions.length);
   return {
     id: "openEnded",
-    question: openEndedQuestions[randomIndex],
+    question: openEndedQuestions[randomIndex] ?? "",
     description: "Share what's on your heart",
     type: "text",
   };

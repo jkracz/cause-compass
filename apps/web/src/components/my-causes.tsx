@@ -34,35 +34,46 @@ export function MyCauses({ likedCauses }: { likedCauses: Cause[] }) {
   };
 
   return (
-    <div>
-      <div className="relative z-10 container mx-auto px-16 py-12 pr-16 md:pr-4">
-        <div className="mb-8 flex items-center justify-center">
-          <h2 className="text-2xl font-bold">Liked Causes</h2>
-        </div>
-
-        {likedOrgs.length === 0 ? (
-          <GlassmorphicCard className="mx-auto max-w-md text-center">
-            <h2 className="mb-4 text-xl font-semibold">No organizations yet</h2>
-            <p className="text-muted-foreground mb-6">
-              You haven't liked any organizations yet. Go to the discover page
-              to find organizations that match your interests.
-            </p>
-            <Button onClick={() => router.push("/discover")}>
-              Discover Organizations
-            </Button>
-          </GlassmorphicCard>
-        ) : (
-          <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {likedOrgs.map((org) => (
-              <OrganizationCard
-                key={org.dbId}
-                organization={org}
-                onClick={() => handleOpenModal(org)}
-              />
-            ))}
-          </div>
-        )}
+    <div className="w-full">
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-white">Liked Causes</h2>
+        <p className="mt-2 text-sm text-white/70">
+          Your curated collection of organizations making a difference
+        </p>
       </div>
+
+      {likedOrgs.length === 0 ? (
+        <GlassmorphicCard className="mx-auto max-w-md text-center">
+          <div className="mb-4 flex justify-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-pink-400 to-purple-600">
+              <span className="text-3xl">💝</span>
+            </div>
+          </div>
+          <h2 className="mb-4 text-xl font-semibold text-white">
+            No organizations yet
+          </h2>
+          <p className="text-muted-foreground mb-6 text-white/70">
+            You haven't liked any organizations yet. Go to the discover page to
+            find organizations that match your interests.
+          </p>
+          <Button
+            onClick={() => router.push("/discover")}
+            className="bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700"
+          >
+            Discover Organizations
+          </Button>
+        </GlassmorphicCard>
+      ) : (
+        <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {likedOrgs.map((org) => (
+            <OrganizationCard
+              key={org.dbId}
+              organization={org}
+              onClick={() => handleOpenModal(org)}
+            />
+          ))}
+        </div>
+      )}
 
       {selectedOrg && (
         <OrganizationModal
