@@ -17,7 +17,7 @@
         "clean": "rm -rf dist"
     },
     "dependencies": {
-        "zod": "^4.1.12"
+        "zod": "^4.2.1"
     },
     "devDependencies": {
         "@cause/typescript-config": "workspace:*",

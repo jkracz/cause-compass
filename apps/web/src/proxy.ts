@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { nanoid } from "nanoid";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Check if user already has a userId cookie
   const userId = request.cookies.get("userId")?.value;
 
@@ -29,7 +29,7 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Configure which routes the middleware should run on
+// Configure which routes the proxy should run on
 export const config = {
   // Run on all routes except:
   // - API routes (/api/*)
@@ -38,3 +38,4 @@ export const config = {
   // - Favicon
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
+
