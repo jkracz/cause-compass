@@ -1,0 +1,21 @@
+{
+  "name": "@cause/backend",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "convex dev",
+    "typecheck": "tsc --noEmit -p convex",
+    "lint": "eslint ."
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "convex": "^1.29.3"
+  },
+  "devDependencies": {
+    "@cause/eslint-config": "workspace:*",
+    "@cause/typescript-config": "workspace:*",
+    "typescript": "latest"
+  }
+}
