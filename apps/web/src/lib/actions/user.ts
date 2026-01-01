@@ -2,14 +2,9 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import {
-  saveUserPreferences as saveUserPreferencesDB,
-  addLikedOrganization as addLikedOrganizationDB,
-  removeLikedOrganization as removeLikedOrganizationDB,
-  clearUserData,
-  updateUserPreferences as updateUserPreferencesDB,
-} from "@/server/db/user/mutations";
-import { UserPreferences, UserSchema, User } from "@cause/types";
+import { fetchMutation, fetchQuery } from "convex/nextjs";
+import { api } from "@cause/backend/convex/_generated/api";
+import { UserPreferences } from "@cause/types";
 import { getPostHogClient, flushPostHog } from "@/lib/posthog-server";
 
 export async function saveUserPreferences(formData: FormData) {
@@ -33,8 +28,8 @@ export async function saveUserPreferences(formData: FormData) {
   };
 
   try {
-    // Save to MongoDB
-    await saveUserPreferencesDB(userId, preferences);
+    // Save to Convex
+    await fetchMutation(api.users.create, { userId, preferences });
 
     // Set a cookie to indicate preferences are saved
     cookieStore.set("hasPreferences", "true", {
@@ -93,7 +88,10 @@ export async function addLikedOrganization(organizationId: string) {
   }
 
   try {
-    await addLikedOrganizationDB(userId, organizationId);
+    await fetchMutation(api.users.addLikedOrganization, {
+      userId,
+      organizationId,
+    });
     console.log("Successfully added liked organization:", organizationId);
     return { success: true };
   } catch (error) {
@@ -102,9 +100,7 @@ export async function addLikedOrganization(organizationId: string) {
   }
 }
 
-export async function removeLikedOrganization(
-  organizationId: string,
-): Promise<User> {
+export async function removeLikedOrganization(organizationId: string) {
   const cookieStore = await cookies();
   const userId = cookieStore.get("userId")?.value;
 
@@ -113,42 +109,15 @@ export async function removeLikedOrganization(
   }
 
   try {
-    const result = await removeLikedOrganizationDB(userId, organizationId);
-    const safeParsedResult = UserSchema.safeParse(result);
-    if (!safeParsedResult.success) {
-      console.error("Failed to parse user preferences", safeParsedResult.error);
-      throw new Error("Failed to parse user preferences");
-    }
-    return safeParsedResult.data;
+    const result = await fetchMutation(api.users.removeLikedOrganization, {
+      userId,
+      organizationId,
+    });
+    // Convex already validates return types, so we can trust the result
+    return result;
   } catch (error) {
     console.error("Error removing liked organization:", error);
     throw new Error("Failed to remove liked organization");
-  }
-}
-
-export async function updateUserPreferences(
-  preferences: Partial<{
-    openEnded?: { question: string; answer?: string };
-    causes?: string[];
-    helpMethod?: string[];
-    changeScope?: string;
-    location?: string;
-  }>,
-) {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("userId")?.value;
-
-  if (!userId) {
-    throw new Error("No user session found");
-  }
-
-  try {
-    await updateUserPreferencesDB(userId, preferences);
-    console.log("Successfully updated preferences for user:", userId);
-    return { success: true };
-  } catch (error) {
-    console.error("Error updating user preferences:", error);
-    throw new Error("Failed to update user preferences");
   }
 }
 
@@ -158,8 +127,8 @@ export async function clearUserSession() {
 
   if (userId) {
     try {
-      // Clear user data from database
-      await clearUserData(userId);
+      // Clear user data from Convex
+      await fetchMutation(api.users.clearUserData, { userId });
       console.log("Successfully cleared user data for:", userId);
     } catch (error) {
       console.error("Error clearing user data:", error);
