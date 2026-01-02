@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { fetchMutation, fetchQuery } from "convex/nextjs";
+import { fetchMutation } from "convex/nextjs";
 import { api } from "@cause/backend/convex/_generated/api";
 import { UserPreferences } from "@cause/types";
 import { getPostHogClient, flushPostHog } from "@/lib/posthog-server";
@@ -137,7 +137,6 @@ export async function clearUserSession() {
   }
 
   cookieStore.delete("userId");
-  cookieStore.delete("hasPreferences");
 
   redirect("/");
 }

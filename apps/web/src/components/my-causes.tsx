@@ -41,7 +41,7 @@ export function MyCauses({ likedCauses }: { likedCauses: Cause[] }) {
     const orgToRemove = likedOrgs.find((org) => org.dbId === orgId);
     const updatedUser = await removeLikedOrganization(orgId);
     const updatedOrgs = likedOrgs.filter((org) =>
-      updatedUser.likedOrganizations.includes(org.dbId),
+      updatedUser?.likedOrganizations.includes(org.dbId),
     );
     setLikedOrgs(updatedOrgs);
 
