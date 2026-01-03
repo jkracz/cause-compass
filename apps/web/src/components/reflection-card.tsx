@@ -1,6 +1,6 @@
 "use client";
 
-import { Edit3 } from "lucide-react";
+import { Edit3, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
 import { Cause, UserPreferences } from "@cause/types";
@@ -110,8 +110,8 @@ export function ReflectionCard({
   return (
     <GlassmorphicCard>
       <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-pink-400 to-purple-600">
-          <span className="text-xl">🪞</span>
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-pink-500/20 to-purple-600/20 ring-1 ring-white/20">
+          <Sparkles className="h-5 w-5 text-pink-300" />
         </div>
         <h2 className="text-xl font-semibold text-white">Your Reflection</h2>
       </div>

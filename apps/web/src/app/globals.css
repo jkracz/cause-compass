@@ -102,7 +102,7 @@
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
+  --muted-foreground: oklch(0.87 0 0);
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
@@ -128,9 +128,17 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    overscroll-behavior: none;
+    background: var(--background-gradient);
+    background-attachment: fixed;
+  }
   body {
     @apply text-foreground;
     background: var(--background-gradient);
+    background-attachment: fixed;
+    overscroll-behavior: none;
+    overflow-x: hidden;
   }
 }
 

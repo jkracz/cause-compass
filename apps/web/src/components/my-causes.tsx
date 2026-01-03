@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Heart } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
@@ -45,20 +46,20 @@ export function MyCauses({ likedCauses }: { likedCauses: Cause[] }) {
       {likedOrgs.length === 0 ? (
         <GlassmorphicCard className="mx-auto max-w-md text-center">
           <div className="mb-4 flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-pink-400 to-purple-600">
-              <span className="text-3xl">💝</span>
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500/20 to-purple-600/20 ring-1 ring-white/20">
+              <Heart className="h-8 w-8 fill-pink-400/20 text-pink-400" />
             </div>
           </div>
           <h2 className="mb-4 text-xl font-semibold text-white">
             No organizations yet
           </h2>
-          <p className="text-muted-foreground mb-6 text-white/70">
-            You haven't liked any organizations yet. Go to the discover page to
-            find organizations that match your interests.
+          <p className="mb-6 text-white/70">
+            You haven&apos;t liked any organizations yet. Go to the discover
+            page to find organizations that match your interests.
           </p>
           <Button
             onClick={() => router.push("/discover")}
-            className="bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700"
+            className="w-full sm:w-auto"
           >
             Discover Organizations
           </Button>

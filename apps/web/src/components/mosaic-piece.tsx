@@ -52,8 +52,8 @@ export function MosaicPiece({ index, total, isCompleted }: MosaicPieceProps) {
       animate={{
         x,
         y,
-        opacity: isCompleted ? 1 : 0.3,
-        scale: isCompleted ? 1 : 0.8,
+        opacity: isCompleted ? 1 : 0.6,
+        scale: isCompleted ? 1 : 0.85,
         rotate: isCompleted ? index * 45 : 0,
       }}
       transition={{
@@ -80,13 +80,13 @@ export function MosaicPiece({ index, total, isCompleted }: MosaicPieceProps) {
             >
               <stop
                 offset="0%"
-                stopColor={isCompleted ? color : "rgba(255, 255, 255, 0.1)"}
+                stopColor={isCompleted ? color : "rgba(255, 255, 255, 0.25)"}
                 stopOpacity="0.8"
               />
               <stop
                 offset="100%"
                 stopColor={
-                  isCompleted ? palette[1]! : "rgba(255, 255, 255, 0.05)"
+                  isCompleted ? palette[1]! : "rgba(255, 255, 255, 0.15)"
                 }
                 stopOpacity="0.4"
               />
@@ -104,7 +104,7 @@ export function MosaicPiece({ index, total, isCompleted }: MosaicPieceProps) {
           <polygon
             points="24,6 42,36 6,36"
             fill={`url(#gradient-${index})`}
-            stroke={isCompleted ? color : "rgba(255, 255, 255, 0.2)"}
+            stroke={isCompleted ? color : "rgba(255, 255, 255, 0.4)"}
             strokeWidth="1"
             filter={isCompleted ? `url(#glow-${index})` : "none"}
             className="transition-all duration-300"

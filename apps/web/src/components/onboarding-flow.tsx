@@ -18,7 +18,6 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
   const router = useRouter();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
-  const [completedPieces, setCompletedPieces] = useState<number[]>([]);
   const [locationPermission, setLocationPermission] = useState<string | null>(
     null,
   );
@@ -29,11 +28,6 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
 
   const handleAnswer = (questionId: string, answer: string | string[]) => {
     setAnswers((prev) => ({ ...prev, [questionId]: answer }));
-
-    // Add this question index to completed pieces
-    if (!completedPieces.includes(currentQuestionIndex)) {
-      setCompletedPieces((prev) => [...prev, currentQuestionIndex]);
-    }
   };
 
   const handleLocationRequest = async () => {
@@ -124,7 +118,7 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
               key={index}
               index={index}
               total={questions.length}
-              isCompleted={completedPieces.includes(index)}
+              isCompleted={index <= currentQuestionIndex}
             />
           ))}
         </div>
