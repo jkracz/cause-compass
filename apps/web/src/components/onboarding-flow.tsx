@@ -118,7 +118,7 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
               key={index}
               index={index}
               total={questions.length}
-              isCompleted={index <= currentQuestionIndex}
+              isActive={index <= currentQuestionIndex}
             />
           ))}
         </div>

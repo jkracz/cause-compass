@@ -6,10 +6,10 @@ import { motion } from "motion/react";
 interface MosaicPieceProps {
   index: number;
   total: number;
-  isCompleted: boolean;
+  isActive: boolean;
 }
 
-export function MosaicPiece({ index, total, isCompleted }: MosaicPieceProps) {
+export function MosaicPiece({ index, total, isActive }: MosaicPieceProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -52,9 +52,9 @@ export function MosaicPiece({ index, total, isCompleted }: MosaicPieceProps) {
       animate={{
         x,
         y,
-        opacity: isCompleted ? 1 : 0.6,
-        scale: isCompleted ? 1 : 0.85,
-        rotate: isCompleted ? index * 45 : 0,
+        opacity: isActive ? 1 : 0.6,
+        scale: isActive ? 1 : 0.85,
+        rotate: isActive ? index * 45 : 0,
       }}
       transition={{
         duration: 0.8,
@@ -80,14 +80,12 @@ export function MosaicPiece({ index, total, isCompleted }: MosaicPieceProps) {
             >
               <stop
                 offset="0%"
-                stopColor={isCompleted ? color : "rgba(255, 255, 255, 0.25)"}
+                stopColor={isActive ? color : "rgba(255, 255, 255, 0.25)"}
                 stopOpacity="0.8"
               />
               <stop
                 offset="100%"
-                stopColor={
-                  isCompleted ? palette[1]! : "rgba(255, 255, 255, 0.15)"
-                }
+                stopColor={isActive ? palette[1]! : "rgba(255, 255, 255, 0.15)"}
                 stopOpacity="0.4"
               />
             </linearGradient>
@@ -104,14 +102,14 @@ export function MosaicPiece({ index, total, isCompleted }: MosaicPieceProps) {
           <polygon
             points="24,6 42,36 6,36"
             fill={`url(#gradient-${index})`}
-            stroke={isCompleted ? color : "rgba(255, 255, 255, 0.4)"}
+            stroke={isActive ? color : "rgba(255, 255, 255, 0.4)"}
             strokeWidth="1"
-            filter={isCompleted ? `url(#glow-${index})` : "none"}
+            filter={isActive ? `url(#glow-${index})` : "none"}
             className="transition-all duration-300"
           />
 
           {/* Inner accent triangle */}
-          {isCompleted && (
+          {isActive && (
             <polygon
               points="24,12 36,30 12,30"
               fill="none"
