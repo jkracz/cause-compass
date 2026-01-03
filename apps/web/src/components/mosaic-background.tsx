@@ -89,9 +89,6 @@ export function MosaicBackground() {
         lastWidth > 0 &&
         lastHeight > 0
       ) {
-        // Just update canvas size without redrawing
-        canvas.width = newWidth;
-        canvas.height = newHeight;
         return;
       }
 
