@@ -127,7 +127,7 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
       <div className="w-full max-w-md">
         <GlassmorphicCard>
           {currentQuestion?.type === "location" ? (
-            <div className="space-y-4">
+            <div className="min-h-[200px] space-y-4">
               <h2 className="text-center text-xl font-semibold">
                 {currentQuestion.question}
               </h2>
@@ -184,7 +184,7 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
               )}
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="min-h-[200px] space-y-4">
               <div className="text-center">
                 <h2 className="mb-2 text-xl font-semibold">
                   {currentQuestion?.question}
