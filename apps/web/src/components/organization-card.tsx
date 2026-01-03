@@ -59,6 +59,7 @@ export function OrganizationCard({
             fill
             className="object-contain"
             unoptimized
+            loading="eager"
           />
         ) : (
           // Fallback visual with organization initials
