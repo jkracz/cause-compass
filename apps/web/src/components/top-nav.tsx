@@ -38,7 +38,13 @@ export function TopNav({ className }: { className?: string }) {
                 priority
               />
             </div>
-            <span className="text-xl font-bold tracking-tight text-white">
+            <span
+              className="font-heading text-xl font-bold tracking-tight text-white"
+              style={{
+                textShadow:
+                  "0 0 20px rgba(168, 85, 247, 0.4), 0 0 10px rgba(236, 72, 153, 0.3)",
+              }}
+            >
               Cause Compass
             </span>
           </Link>
@@ -53,7 +59,7 @@ export function TopNav({ className }: { className?: string }) {
                     navigationMenuTriggerStyle(),
                     "bg-transparent text-white/70 hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white",
                     pathname === "/my-causes" &&
-                      "bg-white/10 text-white font-semibold shadow-sm backdrop-blur-sm",
+                      "bg-white/10 font-semibold text-white shadow-sm backdrop-blur-sm",
                   )}
                 >
                   <Link href="/my-causes">My Causes</Link>
@@ -66,7 +72,7 @@ export function TopNav({ className }: { className?: string }) {
                     navigationMenuTriggerStyle(),
                     "bg-transparent text-white/70 hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white",
                     pathname === "/discover" &&
-                      "bg-white/10 text-white font-semibold shadow-sm backdrop-blur-sm",
+                      "bg-white/10 font-semibold text-white shadow-sm backdrop-blur-sm",
                   )}
                 >
                   <Link href="/discover">Discover</Link>
