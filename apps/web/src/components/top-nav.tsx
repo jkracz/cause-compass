@@ -29,7 +29,7 @@ export function TopNav({ className }: { className?: string }) {
             href="/"
             className="text-foreground hover:text-foreground/80 flex items-center gap-2 transition-colors"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-purple-600">
+            <div className="flex h-8 w-8 items-center justify-center">
               <Image
                 src="/logo.png"
                 alt="Cause Compass Logo"
@@ -38,7 +38,13 @@ export function TopNav({ className }: { className?: string }) {
                 priority
               />
             </div>
-            <span className="text-xl font-bold tracking-tight">
+            <span
+              className="font-heading text-xl font-bold tracking-tight text-white"
+              style={{
+                textShadow:
+                  "0 0 20px rgba(168, 85, 247, 0.4), 0 0 10px rgba(236, 72, 153, 0.3)",
+              }}
+            >
               Cause Compass
             </span>
           </Link>
@@ -51,9 +57,9 @@ export function TopNav({ className }: { className?: string }) {
                   asChild
                   className={cn(
                     navigationMenuTriggerStyle(),
-                    "text-muted-foreground hover:bg-accent hover:text-accent-foreground bg-transparent",
+                    "bg-transparent text-white/70 hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white",
                     pathname === "/my-causes" &&
-                      "bg-accent text-accent-foreground",
+                      "bg-white/10 font-semibold text-white shadow-sm backdrop-blur-sm",
                   )}
                 >
                   <Link href="/my-causes">My Causes</Link>
@@ -64,9 +70,9 @@ export function TopNav({ className }: { className?: string }) {
                   asChild
                   className={cn(
                     navigationMenuTriggerStyle(),
-                    "text-muted-foreground hover:bg-accent hover:text-accent-foreground bg-transparent",
+                    "bg-transparent text-white/70 hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white",
                     pathname === "/discover" &&
-                      "bg-accent text-accent-foreground",
+                      "bg-white/10 font-semibold text-white shadow-sm backdrop-blur-sm",
                   )}
                 >
                   <Link href="/discover">Discover</Link>

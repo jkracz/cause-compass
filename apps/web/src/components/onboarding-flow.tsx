@@ -18,7 +18,6 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
   const router = useRouter();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
-  const [completedPieces, setCompletedPieces] = useState<number[]>([]);
   const [locationPermission, setLocationPermission] = useState<string | null>(
     null,
   );
@@ -29,11 +28,6 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
 
   const handleAnswer = (questionId: string, answer: string | string[]) => {
     setAnswers((prev) => ({ ...prev, [questionId]: answer }));
-
-    // Add this question index to completed pieces
-    if (!completedPieces.includes(currentQuestionIndex)) {
-      setCompletedPieces((prev) => [...prev, currentQuestionIndex]);
-    }
   };
 
   const handleLocationRequest = async () => {
@@ -124,7 +118,7 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
               key={index}
               index={index}
               total={questions.length}
-              isCompleted={completedPieces.includes(index)}
+              isActive={index <= currentQuestionIndex}
             />
           ))}
         </div>
@@ -133,7 +127,7 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
       <div className="w-full max-w-md">
         <GlassmorphicCard>
           {currentQuestion?.type === "location" ? (
-            <div className="space-y-4">
+            <div className="min-h-[200px] space-y-4">
               <h2 className="text-center text-xl font-semibold">
                 {currentQuestion.question}
               </h2>
@@ -190,7 +184,7 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
               )}
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="min-h-[200px] space-y-4">
               <div className="text-center">
                 <h2 className="mb-2 text-xl font-semibold">
                   {currentQuestion?.question}

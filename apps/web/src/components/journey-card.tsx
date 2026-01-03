@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
 import { Cause } from "@cause/types";
+import { Compass } from "lucide-react";
 
 interface JourneyCardProps {
   likedOrgs: Cause[];
@@ -22,8 +23,8 @@ export function JourneyCard({ likedOrgs }: JourneyCardProps) {
   return (
     <GlassmorphicCard>
       <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-indigo-600">
-          <span className="text-xl">🧭</span>
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-400/20 to-indigo-600/20 ring-1 ring-white/20">
+          <Compass className="h-5 w-5 text-indigo-300" />
         </div>
         <h2 className="text-xl font-semibold text-white">Your Journey</h2>
       </div>

@@ -1,12 +1,9 @@
-import { BackButton } from "@/components/back-button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
 
 export default function TermsPage() {
   return (
     <main className="relative min-h-screen w-full">
       <div className="relative z-10 container mx-auto px-4 py-12">
-        <BackButton fallbackHref="/" />
-
         <div className="mx-auto max-w-4xl">
           <div className="mb-8 text-center">
             <h1 className="mb-4 text-3xl font-bold text-white">

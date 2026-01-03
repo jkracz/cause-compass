@@ -1,7 +1,8 @@
-import Discover from "@/components/discover";
-import { getRecommendedCauses } from "@/server/db/organization/queries";
+import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { DiscoverContent } from "./discover-content";
+import { DiscoverSkeleton } from "./discover-skeleton";
 
 export default async function DiscoverPage() {
   const cookieStore = await cookies();
@@ -11,11 +12,11 @@ export default async function DiscoverPage() {
     redirect("/onboarding");
   }
 
-  const causes = userId ? await getRecommendedCauses(userId) : [];
-
   return (
     <main className="relative min-h-screen w-full">
-      <Discover causes={causes} />
+      <Suspense fallback={<DiscoverSkeleton />}>
+        <DiscoverContent userId={userId} />
+      </Suspense>
     </main>
   );
 }

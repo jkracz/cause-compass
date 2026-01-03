@@ -32,7 +32,7 @@ export default function Loading() {
                 key={index}
                 index={index}
                 total={totalPieces}
-                isCompleted={animatingPieces.includes(index)}
+                isActive={animatingPieces.includes(index)}
               />
             ))}
           </div>

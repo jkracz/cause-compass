@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function MosaicBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [opacity, setOpacity] = useState(0.7);
+  const opacityRef = useRef(0.7);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -13,11 +15,109 @@ export function MosaicBackground() {
     if (!ctx) return;
 
     let animationFrame: number;
+    let resizeTimeout: NodeJS.Timeout | null = null;
+    let fadeAnimationFrame: number | null = null;
+    let lastWidth = 0;
+    let lastHeight = 0;
 
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      drawMosaic();
+    const updateOpacity = (newOpacity: number) => {
+      opacityRef.current = newOpacity;
+      setOpacity(newOpacity);
+    };
+
+    const animateFadeTransition = (
+      callback: () => void,
+      duration = 300,
+    ): Promise<void> => {
+      return new Promise((resolve) => {
+        const startOpacity = opacityRef.current;
+        const targetOpacity = 0;
+        const startTime = performance.now();
+
+        const fadeOut = (currentTime: number) => {
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const easeProgress = 1 - Math.pow(1 - progress, 3); // Ease out cubic
+
+          const currentOpacity =
+            startOpacity + (targetOpacity - startOpacity) * easeProgress;
+          updateOpacity(currentOpacity);
+
+          if (progress < 1) {
+            fadeAnimationFrame = requestAnimationFrame(fadeOut);
+          } else {
+            // Fade out complete, execute callback
+            callback();
+
+            // Fade back in
+            const fadeInStartTime = performance.now();
+            const fadeIn = (currentTime: number) => {
+              const elapsed = currentTime - fadeInStartTime;
+              const progress = Math.min(elapsed / duration, 1);
+              const easeProgress = 1 - Math.pow(1 - progress, 3); // Ease out cubic
+
+              const currentOpacity =
+                targetOpacity + (startOpacity - targetOpacity) * easeProgress;
+              updateOpacity(currentOpacity);
+
+              if (progress < 1) {
+                fadeAnimationFrame = requestAnimationFrame(fadeIn);
+              } else {
+                fadeAnimationFrame = null;
+                resolve();
+              }
+            };
+            fadeAnimationFrame = requestAnimationFrame(fadeIn);
+          }
+        };
+
+        fadeAnimationFrame = requestAnimationFrame(fadeOut);
+      });
+    };
+
+    const resizeCanvas = async () => {
+      const newWidth = window.innerWidth;
+      const newHeight = window.innerHeight;
+
+      // Only redraw if dimensions actually changed significantly (more than 50px difference)
+      const widthDiff = Math.abs(newWidth - lastWidth);
+      const heightDiff = Math.abs(newHeight - lastHeight);
+
+      if (
+        widthDiff < 50 &&
+        heightDiff < 50 &&
+        lastWidth > 0 &&
+        lastHeight > 0
+      ) {
+        return;
+      }
+
+      // Cancel any ongoing fade animation
+      if (fadeAnimationFrame) {
+        cancelAnimationFrame(fadeAnimationFrame);
+        fadeAnimationFrame = null;
+      }
+
+      // Animate fade out, redraw, fade in
+      await animateFadeTransition(() => {
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        lastWidth = newWidth;
+        lastHeight = newHeight;
+        drawMosaic();
+      });
+    };
+
+    const debouncedResize = () => {
+      // Clear existing timeout
+      if (resizeTimeout) {
+        clearTimeout(resizeTimeout);
+      }
+
+      // Set new timeout - wait 400ms after resize stops before redrawing
+      resizeTimeout = setTimeout(() => {
+        resizeCanvas();
+      }, 400);
     };
 
     const drawMosaic = () => {
@@ -193,8 +293,11 @@ export function MosaicBackground() {
     };
 
     // Initialize
+    updateOpacity(0.7);
     resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
+    lastWidth = canvas.width;
+    lastHeight = canvas.height;
+    window.addEventListener("resize", debouncedResize);
 
     // Simple animation loop that doesn't interfere with the main drawing
     let time = 0;
@@ -230,9 +333,15 @@ export function MosaicBackground() {
     animate();
 
     return () => {
-      window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener("resize", debouncedResize);
+      if (resizeTimeout) {
+        clearTimeout(resizeTimeout);
+      }
       if (animationFrame) {
         cancelAnimationFrame(animationFrame);
+      }
+      if (fadeAnimationFrame) {
+        cancelAnimationFrame(fadeAnimationFrame);
       }
     };
   }, []);
@@ -241,8 +350,8 @@ export function MosaicBackground() {
     <div className="pointer-events-none fixed inset-0 z-0">
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 h-full w-full opacity-70"
-        style={{ mixBlendMode: "normal" }}
+        className="absolute inset-0 h-full w-full"
+        style={{ mixBlendMode: "normal", opacity }}
       />
     </div>
   );
