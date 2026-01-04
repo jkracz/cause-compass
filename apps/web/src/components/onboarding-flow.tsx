@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import posthog from "posthog-js";
 
 import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
@@ -10,13 +11,26 @@ import { MirrorQuestion } from "@/components/mirror-question";
 import { MosaicPiece } from "@/components/mosaic-piece";
 import type { Question } from "@/lib/questions";
 import { saveUserPreferences } from "@/lib/actions";
+
 interface OnboardingFlowProps {
   questions: Question[];
 }
 
+// Track onboarding start only once per page load
+let hasTrackedOnboardingStart = false;
+
 export function OnboardingFlow({ questions }: OnboardingFlowProps) {
   const router = useRouter();
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(() => {
+    // Track onboarding started on initial mount (lazy initializer runs only once)
+    if (!hasTrackedOnboardingStart) {
+      hasTrackedOnboardingStart = true;
+      posthog.capture("onboarding_started", {
+        total_questions: questions.length,
+      });
+    }
+    return 0;
+  });
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [locationPermission, setLocationPermission] = useState<string | null>(
     null,
@@ -28,6 +42,14 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
 
   const handleAnswer = (questionId: string, answer: string | string[]) => {
     setAnswers((prev) => ({ ...prev, [questionId]: answer }));
+
+    // Track question answered
+    posthog.capture("onboarding_question_answered", {
+      question_id: questionId,
+      question_type: currentQuestion?.type,
+      question_index: currentQuestionIndex,
+      total_questions: questions.length,
+    });
   };
 
   const handleLocationRequest = async () => {
@@ -49,20 +71,41 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
 
         setLocationPermission("granted");
         handleAnswer("location", JSON.stringify(location));
+
+        // Track location permission granted
+        posthog.capture("location_permission_granted", {
+          has_coordinates: true,
+        });
       } catch (error) {
         console.error("Error getting location:", error);
         setLocationPermission("denied");
         handleAnswer("location", "denied");
+
+        // Track location permission denied
+        posthog.capture("location_permission_denied", {
+          reason: "user_denied",
+        });
+        posthog.captureException(error);
       }
     } else {
       setLocationPermission("unavailable");
       handleAnswer("location", "unavailable");
+
+      // Track location unavailable
+      posthog.capture("location_permission_denied", {
+        reason: "unavailable",
+      });
     }
   };
 
   const handleLocationSkip = () => {
     setLocationPermission("skipped");
     handleAnswer("location", "skipped");
+
+    // Track location skipped
+    posthog.capture("location_permission_denied", {
+      reason: "skipped",
+    });
   };
 
   const handleNext = async () => {
@@ -87,9 +130,18 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
 
       try {
         await saveUserPreferences(formData);
+
+        // Track onboarding completed (key conversion event)
+        posthog.capture("onboarding_completed", {
+          total_questions: questions.length,
+          questions_answered: Object.keys(answers).length,
+          has_location: locationPermission === "granted",
+        });
+
         // Navigation will be handled by the server action
       } catch (error) {
         console.error("Error saving preferences:", error);
+        posthog.captureException(error);
         // Fallback navigation in case of error
         router.push("/discover");
       }

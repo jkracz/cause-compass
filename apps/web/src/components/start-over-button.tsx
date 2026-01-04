@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import posthog from "posthog-js";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +20,12 @@ export function StartOverButton() {
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
 
   const handleStartOver = () => {
+    // Track journey reset (potential churn indicator)
+    posthog.capture("journey_reset");
+
+    // Reset PostHog user identity
+    posthog.reset();
+
     console.log("start over");
     setIsResetDialogOpen(false);
   };
