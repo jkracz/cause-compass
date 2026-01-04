@@ -4,6 +4,7 @@ packages:
 
 onlyBuiltDependencies:
   - '@tailwindcss/oxide'
+  - core-js
   - esbuild
   - local-reverse-geocoder
   - sharp

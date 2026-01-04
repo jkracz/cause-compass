@@ -10,6 +10,7 @@ import {
   updateUserPreferences as updateUserPreferencesDB,
 } from "@/server/db/user/mutations";
 import { UserPreferences, UserSchema, User } from "@cause/types";
+import { getPostHogClient, flushPostHog } from "@/lib/posthog-server";
 
 export async function saveUserPreferences(formData: FormData) {
   const cookieStore = await cookies();
@@ -42,6 +43,39 @@ export async function saveUserPreferences(formData: FormData) {
       sameSite: "strict",
       maxAge: 60 * 60 * 24 * 365,
     });
+
+    // Server-side PostHog tracking: identify user and capture preferences saved
+    try {
+      const posthog = getPostHogClient();
+      posthog.identify({
+        distinctId: userId,
+        properties: {
+          causes: preferences.causes,
+          help_methods: preferences.helpMethod,
+          change_scope: preferences.changeScope,
+          has_location:
+            preferences.location !== "skipped" &&
+            preferences.location !== "denied",
+        },
+      });
+      posthog.capture({
+        distinctId: userId,
+        event: "server_preferences_saved",
+        properties: {
+          causes_count: preferences.causes?.length ?? 0,
+          help_methods_count: preferences.helpMethod?.length ?? 0,
+          change_scope: preferences.changeScope,
+          has_location:
+            preferences.location !== "skipped" &&
+            preferences.location !== "denied",
+        },
+      });
+      // Flush events to ensure they're sent before redirect
+      await flushPostHog();
+    } catch (error) {
+      // Log PostHog errors but don't abort the server action
+      console.error("Error sending PostHog events:", error);
+    }
   } catch (error) {
     console.error("Error saving user preferences:", error);
     throw new Error("Failed to save user preferences");

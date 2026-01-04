@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import posthog from "posthog-js";
 
 import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
@@ -10,17 +11,30 @@ import { MirrorQuestion } from "@/components/mirror-question";
 import { MosaicPiece } from "@/components/mosaic-piece";
 import type { Question } from "@/lib/questions";
 import { saveUserPreferences } from "@/lib/actions";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
+
 interface OnboardingFlowProps {
   questions: Question[];
 }
 
 export function OnboardingFlow({ questions }: OnboardingFlowProps) {
   const router = useRouter();
+  const hasTrackedOnboardingStartRef = useRef(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [locationPermission, setLocationPermission] = useState<string | null>(
     null,
   );
+
+  // Track onboarding started on initial mount
+  useEffect(() => {
+    if (!hasTrackedOnboardingStartRef.current) {
+      hasTrackedOnboardingStartRef.current = true;
+      posthog.capture("onboarding_started", {
+        total_questions: questions.length,
+      });
+    }
+  }, [questions.length]);
 
   const currentQuestion = questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
@@ -28,6 +42,14 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
 
   const handleAnswer = (questionId: string, answer: string | string[]) => {
     setAnswers((prev) => ({ ...prev, [questionId]: answer }));
+
+    // Track question answered
+    posthog.capture("onboarding_question_answered", {
+      question_id: questionId,
+      question_type: currentQuestion?.type,
+      question_index: currentQuestionIndex,
+      total_questions: questions.length,
+    });
   };
 
   const handleLocationRequest = async () => {
@@ -49,20 +71,55 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
 
         setLocationPermission("granted");
         handleAnswer("location", JSON.stringify(location));
+
+        // Track location permission granted
+        posthog.capture("location_permission_granted", {
+          has_coordinates: true,
+        });
       } catch (error) {
         console.error("Error getting location:", error);
         setLocationPermission("denied");
         handleAnswer("location", "denied");
+
+        // Track location permission denied
+        posthog.capture("location_permission_denied", {
+          reason: "user_denied",
+        });
+
+        // Only capture unexpected errors, not user denials
+        const isUserDenial =
+          (error &&
+            typeof error === "object" &&
+            "code" in error &&
+            (error as { code: number }).code === 1) ||
+          (error instanceof Error &&
+            (error.name === "NotAllowedError" ||
+              error.message.toLowerCase().includes("denied") ||
+              error.message.toLowerCase().includes("permission")));
+
+        if (!isUserDenial) {
+          posthog.captureException(error);
+        }
       }
     } else {
       setLocationPermission("unavailable");
       handleAnswer("location", "unavailable");
+
+      // Track location unavailable
+      posthog.capture("location_permission_denied", {
+        reason: "unavailable",
+      });
     }
   };
 
   const handleLocationSkip = () => {
     setLocationPermission("skipped");
     handleAnswer("location", "skipped");
+
+    // Track location skipped
+    posthog.capture("location_permission_denied", {
+      reason: "skipped",
+    });
   };
 
   const handleNext = async () => {
@@ -85,13 +142,22 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
         }
       });
 
+      posthog.capture("onboarding_completed", {
+        total_questions: questions.length,
+        questions_answered: Object.keys(answers).length,
+        has_location: locationPermission === "granted",
+      });
+
       try {
         await saveUserPreferences(formData);
-        // Navigation will be handled by the server action
+        // Navigation will be handled by the server action (redirect throws internally)
       } catch (error) {
+        // Don't track redirect errors - they're expected behavior
+        if (isRedirectError(error)) {
+          throw error;
+        }
         console.error("Error saving preferences:", error);
-        // Fallback navigation in case of error
-        router.push("/discover");
+        posthog.captureException(error);
       }
     } else {
       setCurrentQuestionIndex((prev) => prev + 1);

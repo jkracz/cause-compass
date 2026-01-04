@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
+import posthog from "posthog-js";
 
 import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
@@ -20,6 +21,16 @@ export function MyCauses({ likedCauses }: { likedCauses: Cause[] }) {
   const handleOpenModal = (org: Cause) => {
     setSelectedOrg(org);
     setIsModalOpen(true);
+
+    // Track organization details viewed
+    posthog.capture("organization_details_viewed", {
+      organization_id: org.dbId,
+      organization_name: org.name,
+      organization_ein: org.ein,
+      organization_city: org.city,
+      organization_state: org.state,
+      source: "my_causes",
+    });
   };
 
   const handleCloseModal = () => {
@@ -27,11 +38,20 @@ export function MyCauses({ likedCauses }: { likedCauses: Cause[] }) {
   };
 
   const handleRemoveOrganization = async (orgId: string) => {
+    const orgToRemove = likedOrgs.find((org) => org.dbId === orgId);
     const updatedUser = await removeLikedOrganization(orgId);
     const updatedOrgs = likedOrgs.filter((org) =>
       updatedUser.likedOrganizations.includes(org.dbId),
     );
     setLikedOrgs(updatedOrgs);
+
+    // Track organization removed
+    posthog.capture("organization_removed", {
+      organization_id: orgId,
+      organization_name: orgToRemove?.name,
+      organization_ein: orgToRemove?.ein,
+      remaining_liked_count: updatedOrgs.length,
+    });
   };
 
   return (

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Heart, X } from "lucide-react";
 import { motion } from "motion/react";
+import posthog from "posthog-js";
 
 import { SwipeableCard } from "@/components/swipeable-card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ export default function Discover({ causes }: { causes: Cause[] }) {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likedCauses, setLikedCauses] = useState<Cause[]>([]);
+  const hasTrackedCompletionRef = useRef(false);
   console.log("causes", causes);
 
   const handleLike = async () => {
@@ -25,12 +27,36 @@ export default function Discover({ causes }: { causes: Cause[] }) {
       await addLikedOrganization(org.dbId);
       const updatedLikedCauses = [...likedCauses, org];
       setLikedCauses(updatedLikedCauses);
+
+      // Track organization liked (key engagement event)
+      posthog.capture("organization_liked", {
+        organization_id: org.dbId,
+        organization_name: org.name,
+        organization_ein: org.ein,
+        organization_city: org.city,
+        organization_state: org.state,
+        position_in_stack: currentIndex,
+        total_causes: causes.length,
+        total_liked_so_far: updatedLikedCauses.length,
+      });
+
       setCurrentIndex(currentIndex + 1);
     }
   };
 
   const handleSkip = () => {
     if (currentIndex < causes.length) {
+      const org = causes[currentIndex];
+
+      // Track organization skipped
+      posthog.capture("organization_skipped", {
+        organization_id: org?.dbId,
+        organization_name: org?.name,
+        organization_ein: org?.ein,
+        position_in_stack: currentIndex,
+        total_causes: causes.length,
+      });
+
       setCurrentIndex(currentIndex + 1);
     }
   };
@@ -40,6 +66,19 @@ export default function Discover({ causes }: { causes: Cause[] }) {
   };
 
   const isFinished = currentIndex >= causes.length;
+
+  // Track discovery session completed when user finishes all cards
+  useEffect(() => {
+    if (isFinished && !hasTrackedCompletionRef.current) {
+      hasTrackedCompletionRef.current = true;
+      posthog.capture("discovery_session_completed", {
+        total_causes_shown: causes.length,
+        total_liked: likedCauses.length,
+        total_skipped: causes.length - likedCauses.length,
+        like_rate: causes.length > 0 ? likedCauses.length / causes.length : 0,
+      });
+    }
+  }, [isFinished, causes, likedCauses]);
 
   return (
     <>

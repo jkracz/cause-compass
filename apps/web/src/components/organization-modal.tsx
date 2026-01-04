@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ExternalLink, X, Heart, Share2 } from "lucide-react";
 import Image from "next/image";
+import posthog from "posthog-js";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,6 +57,16 @@ export function OrganizationModal({
     onClose();
   };
 
+  const handleWebsiteClick = () => {
+    // Track organization website clicked (key conversion event)
+    posthog.capture("organization_website_clicked", {
+      organization_id: organization.dbId,
+      organization_name: organization.name,
+      organization_ein: organization.ein,
+      website_url: organization.websiteUrl,
+    });
+  };
+
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/org/${organization.slug}`;
     const shareData = {
@@ -67,20 +78,53 @@ export function OrganizationModal({
     try {
       if (navigator.share && navigator.canShare(shareData)) {
         await navigator.share(shareData);
+
+        // Track organization shared via native share
+        posthog.capture("organization_shared", {
+          organization_id: organization.dbId,
+          organization_name: organization.name,
+          organization_ein: organization.ein,
+          share_method: "native_share",
+        });
       } else {
         await navigator.clipboard.writeText(shareUrl);
         toast.success("Link copied!", {
           description: "Organization link has been copied to your clipboard.",
         });
+
+        // Track organization shared via clipboard
+        posthog.capture("organization_shared", {
+          organization_id: organization.dbId,
+          organization_name: organization.name,
+          organization_ein: organization.ein,
+          share_method: "clipboard",
+        });
       }
     } catch (error) {
-      console.error("Error sharing:", error);
+      // User cancelled the share dialog - this is normal behavior, not an error
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+
       try {
         await navigator.clipboard.writeText(shareUrl);
         toast.success("Link copied!", {
           description: "Organization link has been copied to your clipboard.",
         });
-      } catch (_error) {
+
+        // Track organization shared via clipboard fallback
+        posthog.capture("organization_shared", {
+          organization_id: organization.dbId,
+          organization_name: organization.name,
+          organization_ein: organization.ein,
+          share_method: "clipboard_fallback",
+        });
+      } catch (clipboardError) {
+        console.error("Error sharing:", error);
+        console.error("Clipboard fallback error:", clipboardError);
+        posthog.captureException(error);
+        posthog.captureException(clipboardError);
+
         toast.error("Share failed", {
           description: "Unable to share or copy link. Please try again.",
         });
@@ -151,6 +195,7 @@ export function OrganizationModal({
             href={organization.websiteUrl || ""}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={handleWebsiteClick}
           >
             <Button className="w-full">
               Visit Website

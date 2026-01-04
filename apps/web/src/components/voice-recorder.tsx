@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Mic, MicOff, Play, Pause, RotateCcw } from "lucide-react";
+import posthog from "posthog-js";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -71,12 +72,16 @@ export function VoiceRecorder({
       setIsRecording(true);
       setRecordingTime(0);
 
+      // Track voice recording started
+      posthog.capture("voice_recording_started");
+
       // Start timer
       timerRef.current = setInterval(() => {
         setRecordingTime((prev) => prev + 1);
       }, 1000);
     } catch (error) {
       console.error("Error accessing microphone:", error);
+      posthog.captureException(error);
       alert("Unable to access microphone. Please check your permissions.");
     }
   };
