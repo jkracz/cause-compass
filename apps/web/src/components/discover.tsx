@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Heart, X } from "lucide-react";
 import { motion } from "motion/react";
@@ -15,7 +15,7 @@ export default function Discover({ causes }: { causes: Cause[] }) {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likedCauses, setLikedCauses] = useState<Cause[]>([]);
-  const [hasTrackedCompletion, setHasTrackedCompletion] = useState(false);
+  const hasTrackedCompletionRef = useRef(false);
   console.log("causes", causes);
 
   const handleLike = async () => {
@@ -68,15 +68,17 @@ export default function Discover({ causes }: { causes: Cause[] }) {
   const isFinished = currentIndex >= causes.length;
 
   // Track discovery session completed when user finishes all cards
-  if (isFinished && !hasTrackedCompletion) {
-    setHasTrackedCompletion(true);
-    posthog.capture("discovery_session_completed", {
-      total_causes_shown: causes.length,
-      total_liked: likedCauses.length,
-      total_skipped: causes.length - likedCauses.length,
-      like_rate: causes.length > 0 ? likedCauses.length / causes.length : 0,
-    });
-  }
+  useEffect(() => {
+    if (isFinished && !hasTrackedCompletionRef.current) {
+      hasTrackedCompletionRef.current = true;
+      posthog.capture("discovery_session_completed", {
+        total_causes_shown: causes.length,
+        total_liked: likedCauses.length,
+        total_skipped: causes.length - likedCauses.length,
+        like_rate: causes.length > 0 ? likedCauses.length / causes.length : 0,
+      });
+    }
+  }, [isFinished, causes, likedCauses]);
 
   return (
     <>

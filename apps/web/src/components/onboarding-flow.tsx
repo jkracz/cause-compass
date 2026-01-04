@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import posthog from "posthog-js";
@@ -16,25 +16,24 @@ interface OnboardingFlowProps {
   questions: Question[];
 }
 
-// Track onboarding start only once per page load
-let hasTrackedOnboardingStart = false;
-
 export function OnboardingFlow({ questions }: OnboardingFlowProps) {
   const router = useRouter();
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(() => {
-    // Track onboarding started on initial mount (lazy initializer runs only once)
-    if (!hasTrackedOnboardingStart) {
-      hasTrackedOnboardingStart = true;
-      posthog.capture("onboarding_started", {
-        total_questions: questions.length,
-      });
-    }
-    return 0;
-  });
+  const hasTrackedOnboardingStartRef = useRef(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [locationPermission, setLocationPermission] = useState<string | null>(
     null,
   );
+
+  // Track onboarding started on initial mount
+  useEffect(() => {
+    if (!hasTrackedOnboardingStartRef.current) {
+      hasTrackedOnboardingStartRef.current = true;
+      posthog.capture("onboarding_started", {
+        total_questions: questions.length,
+      });
+    }
+  }, [questions.length]);
 
   const currentQuestion = questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
