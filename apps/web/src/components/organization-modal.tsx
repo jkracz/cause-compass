@@ -106,9 +106,6 @@ export function OrganizationModal({
         return;
       }
 
-      // Only log and track unexpected errors
-      console.error("Error sharing:", error);
-      posthog.captureException(error);
       try {
         await navigator.clipboard.writeText(shareUrl);
         toast.success("Link copied!", {
@@ -122,7 +119,12 @@ export function OrganizationModal({
           organization_ein: organization.ein,
           share_method: "clipboard_fallback",
         });
-      } catch (_error) {
+      } catch (clipboardError) {
+        console.error("Error sharing:", error);
+        console.error("Clipboard fallback error:", clipboardError);
+        posthog.captureException(error);
+        posthog.captureException(clipboardError);
+
         toast.error("Share failed", {
           description: "Unable to share or copy link. Please try again.",
         });
