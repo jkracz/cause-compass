@@ -294,9 +294,14 @@ export function MosaicBackground() {
 
     // Initialize
     updateOpacity(0.7);
-    resizeCanvas();
-    lastWidth = canvas.width;
-    lastHeight = canvas.height;
+    // Initialize canvas dimensions synchronously first
+    const initialWidth = window.innerWidth;
+    const initialHeight = window.innerHeight;
+    canvas.width = initialWidth;
+    canvas.height = initialHeight;
+    lastWidth = initialWidth;
+    lastHeight = initialHeight;
+    drawMosaic();
     window.addEventListener("resize", debouncedResize);
 
     // Simple animation loop that doesn't interfere with the main drawing
