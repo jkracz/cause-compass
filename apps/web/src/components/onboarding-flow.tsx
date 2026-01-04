@@ -11,6 +11,7 @@ import { MirrorQuestion } from "@/components/mirror-question";
 import { MosaicPiece } from "@/components/mosaic-piece";
 import type { Question } from "@/lib/questions";
 import { saveUserPreferences } from "@/lib/actions";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 interface OnboardingFlowProps {
   questions: Question[];
@@ -84,7 +85,21 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
         posthog.capture("location_permission_denied", {
           reason: "user_denied",
         });
-        posthog.captureException(error);
+
+        // Only capture unexpected errors, not user denials
+        const isUserDenial =
+          (error &&
+            typeof error === "object" &&
+            "code" in error &&
+            (error as { code: number }).code === 1) ||
+          (error instanceof Error &&
+            (error.name === "NotAllowedError" ||
+              error.message.toLowerCase().includes("denied") ||
+              error.message.toLowerCase().includes("permission")));
+
+        if (!isUserDenial) {
+          posthog.captureException(error);
+        }
       }
     } else {
       setLocationPermission("unavailable");
@@ -127,22 +142,22 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
         }
       });
 
+      posthog.capture("onboarding_completed", {
+        total_questions: questions.length,
+        questions_answered: Object.keys(answers).length,
+        has_location: locationPermission === "granted",
+      });
+
       try {
         await saveUserPreferences(formData);
-
-        // Track onboarding completed (key conversion event)
-        posthog.capture("onboarding_completed", {
-          total_questions: questions.length,
-          questions_answered: Object.keys(answers).length,
-          has_location: locationPermission === "granted",
-        });
-
-        // Navigation will be handled by the server action
+        // Navigation will be handled by the server action (redirect throws internally)
       } catch (error) {
+        // Don't track redirect errors - they're expected behavior
+        if (isRedirectError(error)) {
+          throw error;
+        }
         console.error("Error saving preferences:", error);
         posthog.captureException(error);
-        // Fallback navigation in case of error
-        router.push("/discover");
       }
     } else {
       setCurrentQuestionIndex((prev) => prev + 1);

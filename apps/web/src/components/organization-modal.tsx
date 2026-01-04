@@ -101,6 +101,12 @@ export function OrganizationModal({
         });
       }
     } catch (error) {
+      // User cancelled the share dialog - this is normal behavior, not an error
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+
+      // Only log and track unexpected errors
       console.error("Error sharing:", error);
       posthog.captureException(error);
       try {
