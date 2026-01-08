@@ -2,10 +2,10 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:base"],
 
-  "schedule": ["before 10am on monday"],
+  "schedule": ["on monday"],
   "timezone": "America/Los_Angeles",
 
-  "dependencyDashboard": false,
+  "dependencyDashboard": true,
   "prCreation": "immediate",
   "prConcurrentLimit": 10,
 
