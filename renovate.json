@@ -2,8 +2,8 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:base"],
 
-  "schedule": ["on monday"],
   "timezone": "America/Los_Angeles",
+  "schedule": ["* * * * 5,6"],
 
   "dependencyDashboard": true,
   "prCreation": "immediate",
