@@ -21,10 +21,6 @@
     }
   ],
 
-  "pnpm": {
-    "enabled": true
-  },
-
   "lockFileMaintenance": {
     "enabled": true
   }
