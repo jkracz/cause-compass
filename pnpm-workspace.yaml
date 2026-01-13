@@ -7,5 +7,6 @@ onlyBuiltDependencies:
   - core-js
   - esbuild
   - local-reverse-geocoder
+  - protobufjs
   - sharp
   - unrs-resolver

@@ -17,8 +17,5 @@
       "groupName": "all non-major dependencies",
       "groupSlug": "all-minor-patch"
     }
-  ],
-  "lockFileMaintenance": {
-    "enabled": true
-  }
+  ]
 }

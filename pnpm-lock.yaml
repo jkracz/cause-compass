@@ -45,8 +45,8 @@ importers:
         specifier: ^17.2.3
         version: 17.2.3
       googleapis:
-        specifier: ^169.0.0
-        version: 169.0.0
+        specifier: ^170.0.0
+        version: 170.0.0
       mongodb:
         specifier: ^7.0.0
         version: 7.0.0(gcp-metadata@7.0.1)(socks@2.8.7)
@@ -103,8 +103,8 @@ importers:
         specifier: ^9.39.2
         version: 9.39.2(jiti@2.6.1)
       globals:
-        specifier: ^16.5.0
-        version: 16.5.0
+        specifier: ^17.0.0
+        version: 17.0.0
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@25.0.8)(typescript@5.9.3)
@@ -284,8 +284,8 @@ importers:
         specifier: ^2.7.4
         version: 2.7.4(eslint@9.39.2(jiti@2.6.1))(turbo@2.7.4)
       globals:
-        specifier: ^16.5.0
-        version: 16.5.0
+        specifier: ^17.0.0
+        version: 17.0.0
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -2740,8 +2740,8 @@ packages:
     resolution: {integrity: sha512-ob/2LcVVaVGCYN+r14cnwnoDPUufjiYgSqRhiFD0Q1iI4Odora5RE8Iv1D24hAz5oMophRGkGz+yuvQmmUMnMw==}
     engines: {node: '>=18'}
 
-  globals@16.5.0:
-    resolution: {integrity: sha512-c/c15i26VrJ4IRt5Z89DnIzCGDn9EcebibhAOjw5ibqEHsE1wLUgkPn9RDmNcUKyU87GeaL633nyJ+pplFR2ZQ==}
+  globals@17.0.0:
+    resolution: {integrity: sha512-gv5BeD2EssA793rlFWVPMMCqefTlpusw6/2TbAVMy0FzcG8wKJn4O+NqJ4+XWmmwrayJgw5TzrmWjFgmz1XPqw==}
     engines: {node: '>=18'}
 
   globalthis@1.0.4:
@@ -2760,8 +2760,8 @@ packages:
     resolution: {integrity: sha512-66if47It7y+Sab3HMkwEXx1kCq9qUC9px8ZXoj1CMrmLmUw81GpbnsNlXnlyZyGbGPGcj+tDD9XsZ23m7GLaJQ==}
     engines: {node: '>=18.0.0'}
 
-  googleapis@169.0.0:
-    resolution: {integrity: sha512-IOGMG8tljCZSLvYgdojRu6mB10KEsK0J7X62sXXlQz9koe5BUAW+rqkY3qhQM9wXM6hVL3/Hase7XbxoMyeYiQ==}
+  googleapis@170.0.0:
+    resolution: {integrity: sha512-UJz71WZ3ubMr4NhkEU+CFTS0CMrrXq+ltrFnAQo8Llf9M3cy0AIfKLyFQdUJyhqIpJ4jPW4SRCcBBntrLQ72/A==}
     engines: {node: '>=18'}
 
   gopd@1.2.0:
@@ -7131,7 +7131,7 @@ snapshots:
 
   globals@16.4.0: {}
 
-  globals@16.5.0: {}
+  globals@17.0.0: {}
 
   globalthis@1.0.4:
     dependencies:
@@ -7162,7 +7162,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  googleapis@169.0.0:
+  googleapis@170.0.0:
     dependencies:
       google-auth-library: 10.3.0
       googleapis-common: 8.0.0
