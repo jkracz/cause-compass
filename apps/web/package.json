@@ -23,7 +23,7 @@
     "class-variance-authority": "^0.7.1",
     "client-only": "^0.0.1",
     "clsx": "^2.1.1",
-    "convex": "^1.31.2",
+    "convex": "^1.31.5",
     "local-reverse-geocoder": "^0.16.7",
     "lucide-react": "^0.562.0",
     "mongoose": "^9.1.4",
