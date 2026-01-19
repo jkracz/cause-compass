@@ -1,13 +1,18 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
-import { Cause } from "@cause/types";
 import { Compass } from "lucide-react";
+import { Preloaded, usePreloadedQuery } from "convex/react";
+import { api } from "@cause/backend/convex/_generated/api";
 
 interface JourneyCardProps {
-  likedOrgs: Cause[];
+  preloadedLikedOrgs: Preloaded<typeof api.organizations.getLikedByUser>;
 }
 
-export function JourneyCard({ likedOrgs }: JourneyCardProps) {
+export function JourneyCard({ preloadedLikedOrgs }: JourneyCardProps) {
+  const likedOrgs = usePreloadedQuery(preloadedLikedOrgs);
+
   // Get unique categories from liked organizations
   const getUniqueCategoriesFromLikedOrgs = () => {
     const categories = new Set<string>();

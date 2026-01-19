@@ -38,4 +38,3 @@ export const config = {
   // - Favicon
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
-

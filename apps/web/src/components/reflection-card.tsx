@@ -3,18 +3,22 @@
 import { Edit3, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
-import { Cause, UserPreferences } from "@cause/types";
 import { useRouter } from "next/navigation";
+import { Preloaded, usePreloadedQuery } from "convex/react";
+import { api } from "@cause/backend/convex/_generated/api";
 
 interface ReflectionCardProps {
-  userPreferences: UserPreferences;
-  likedOrgs: Cause[];
+  preloadedUser: Preloaded<typeof api.users.getOne>;
+  preloadedLikedOrgs: Preloaded<typeof api.organizations.getLikedByUser>;
 }
 
 export function ReflectionCard({
-  userPreferences,
-  likedOrgs,
+  preloadedUser,
+  preloadedLikedOrgs,
 }: ReflectionCardProps) {
+  const user = usePreloadedQuery(preloadedUser);
+  const likedOrgs = usePreloadedQuery(preloadedLikedOrgs);
+  const preferences = user?.preferences;
   const router = useRouter();
   const handleEditReflection = () => {
     router.push("/onboarding");
@@ -22,13 +26,13 @@ export function ReflectionCard({
 
   // Generate reflection summary from user preferences
   const generateReflectionSummary = () => {
-    if (!userPreferences || Object.keys(userPreferences).length === 0) {
+    if (!preferences || Object.keys(preferences).length === 0) {
       return "Complete your mirror check to see your reflection here.";
     }
 
-    const causes = userPreferences.causes || [];
-    const helpMethod = userPreferences.helpMethod || [];
-    const changeScope = userPreferences.changeScope || "global";
+    const causes = preferences.causes || [];
+    const helpMethod = preferences.helpMethod || [];
+    const changeScope = preferences.changeScope || "global";
 
     let summary = "You care deeply about ";
 
@@ -155,7 +159,7 @@ export function ReflectionCard({
                 background: `linear-gradient(90deg, ${uniqueCategories
                   .slice(0, 3)
                   .map(
-                    (_, index) => `hsla(${(index * 120) % 360}, 70%, 60%, 0.8)`,
+                    (_, index) => `hsla(${(index * 120) % 360}, 70%, 60%, 0.8)`
                   )
                   .join(", ")})`,
               }}

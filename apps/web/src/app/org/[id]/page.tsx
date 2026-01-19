@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { ExternalLink } from "lucide-react";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "@cause/backend/convex/_generated/api";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
-import { getCauseById } from "@/server/db/organization/queries";
 
 interface OrgPageProps {
   params: Promise<{
@@ -15,7 +16,9 @@ interface OrgPageProps {
 
 export default async function OrgPage({ params }: OrgPageProps) {
   const { id } = await params;
-  const organization = await getCauseById(id);
+  const organization = await fetchQuery(api.organizations.getBySlug, {
+    slug: id,
+  });
 
   if (!organization) {
     notFound();
@@ -35,6 +38,7 @@ export default async function OrgPage({ params }: OrgPageProps) {
                 alt={organization.name}
                 fill
                 className="object-cover"
+                unoptimized
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60" />
             </div>

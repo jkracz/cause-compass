@@ -1,0 +1,4 @@
+nlx convex import --table organizations /Users/joekracz/documents/projects/cause-compass/cause-compass/apps/parsley/data/convex-import/organizations.jsonl
+nlx convex import --table aiConfirmations /Users/joekracz/documents/projects/cause-compass/cause-compass/apps/parsley/data/convex-import/aiConfirmations.jsonl
+nlx convex import --table crawlResults /Users/joekracz/documents/projects/cause-compass/cause-compass/apps/parsley/data/convex-import/crawlResults.jsonl
+nlx convex import --table searchResults /Users/joekracz/documents/projects/cause-compass/cause-compass/apps/parsley/data/convex-import/searchResults.jsonl

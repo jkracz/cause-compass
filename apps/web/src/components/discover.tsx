@@ -5,39 +5,47 @@ import { useRouter } from "next/navigation";
 import { Heart, X } from "lucide-react";
 import { motion } from "motion/react";
 import posthog from "posthog-js";
+import { Preloaded, usePreloadedQuery } from "convex/react";
 
 import { SwipeableCard } from "@/components/swipeable-card";
 import { Button } from "@/components/ui/button";
-import { Cause } from "@cause/types";
+import { api } from "@cause/backend/convex/_generated/api";
+import { Doc } from "@cause/backend/convex/_generated/dataModel";
 import { addLikedOrganization } from "@/lib/actions";
 
-export default function Discover({ causes }: { causes: Cause[] }) {
+type Organization = Doc<"organizations">;
+
+interface DiscoverProps {
+  preloadedOrganizations: Preloaded<typeof api.organizations.getRecommended>;
+}
+
+export default function Discover({ preloadedOrganizations }: DiscoverProps) {
+  const organizations = usePreloadedQuery(preloadedOrganizations);
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [likedCauses, setLikedCauses] = useState<Cause[]>([]);
+  const [likedOrgs, setLikedOrgs] = useState<Organization[]>([]);
   const hasTrackedCompletionRef = useRef(false);
-  console.log("causes", causes);
 
   const handleLike = async () => {
-    if (currentIndex < causes.length) {
-      const org = causes[currentIndex];
+    if (currentIndex < organizations.length) {
+      const org = organizations[currentIndex];
       if (!org) {
         return;
       }
-      await addLikedOrganization(org.dbId);
-      const updatedLikedCauses = [...likedCauses, org];
-      setLikedCauses(updatedLikedCauses);
+      await addLikedOrganization(org.slug);
+      const updatedLikedOrgs = [...likedOrgs, org];
+      setLikedOrgs(updatedLikedOrgs);
 
       // Track organization liked (key engagement event)
       posthog.capture("organization_liked", {
-        organization_id: org.dbId,
+        organization_id: org.slug,
         organization_name: org.name,
         organization_ein: org.ein,
         organization_city: org.city,
         organization_state: org.state,
         position_in_stack: currentIndex,
-        total_causes: causes.length,
-        total_liked_so_far: updatedLikedCauses.length,
+        total_causes: organizations.length,
+        total_liked_so_far: updatedLikedOrgs.length,
       });
 
       setCurrentIndex(currentIndex + 1);
@@ -45,16 +53,16 @@ export default function Discover({ causes }: { causes: Cause[] }) {
   };
 
   const handleSkip = () => {
-    if (currentIndex < causes.length) {
-      const org = causes[currentIndex];
+    if (currentIndex < organizations.length) {
+      const org = organizations[currentIndex];
 
       // Track organization skipped
       posthog.capture("organization_skipped", {
-        organization_id: org?.dbId,
+        organization_id: org?.slug,
         organization_name: org?.name,
         organization_ein: org?.ein,
         position_in_stack: currentIndex,
-        total_causes: causes.length,
+        total_causes: organizations.length,
       });
 
       setCurrentIndex(currentIndex + 1);
@@ -65,20 +73,21 @@ export default function Discover({ causes }: { causes: Cause[] }) {
     router.push("/my-causes");
   };
 
-  const isFinished = currentIndex >= causes.length;
+  const isFinished = currentIndex >= organizations.length;
 
   // Track discovery session completed when user finishes all cards
   useEffect(() => {
     if (isFinished && !hasTrackedCompletionRef.current) {
       hasTrackedCompletionRef.current = true;
       posthog.capture("discovery_session_completed", {
-        total_causes_shown: causes.length,
-        total_liked: likedCauses.length,
-        total_skipped: causes.length - likedCauses.length,
-        like_rate: causes.length > 0 ? likedCauses.length / causes.length : 0,
+        total_causes_shown: organizations.length,
+        total_liked: likedOrgs.length,
+        total_skipped: organizations.length - likedOrgs.length,
+        like_rate:
+          organizations.length > 0 ? likedOrgs.length / organizations.length : 0,
       });
     }
-  }, [isFinished, causes, likedCauses]);
+  }, [isFinished, organizations, likedOrgs]);
 
   return (
     <>
@@ -89,7 +98,7 @@ export default function Discover({ causes }: { causes: Cause[] }) {
               You&apos;ve seen all organizations for this session!
             </h2>
             <p className="mb-8 text-lg">
-              You liked {likedCauses.length} organizations.
+              You liked {likedOrgs.length} organizations.
             </p>
             <Button size="lg" onClick={handleViewMyCauses}>
               View My Causes
@@ -105,12 +114,12 @@ export default function Discover({ causes }: { causes: Cause[] }) {
             </div>
 
             <div className="relative mb-8 h-[500px] w-full">
-              {causes
+              {organizations
                 .slice(currentIndex, currentIndex + 2)
-                .map((cause, stackIndex) => {
+                .map((org, stackIndex) => {
                   return (
                     <motion.div
-                      key={cause.ein}
+                      key={org.ein}
                       className="absolute inset-0"
                       initial={{
                         scale: 1 - stackIndex * 0.02,
@@ -131,7 +140,7 @@ export default function Discover({ causes }: { causes: Cause[] }) {
                       }}
                     >
                       <SwipeableCard
-                        organization={cause}
+                        organization={org}
                         onSwipeLeft={stackIndex === 0 ? handleSkip : () => {}}
                         onSwipeRight={stackIndex === 0 ? handleLike : () => {}}
                       />
@@ -163,7 +172,7 @@ export default function Discover({ causes }: { causes: Cause[] }) {
 
             {/* Reserved space for the "View My Organizations" button to prevent layout shift */}
             <div className="flex h-10 items-center justify-center">
-              {likedCauses.length > 0 && (
+              {likedOrgs.length > 0 && (
                 <Button variant="outline" onClick={handleViewMyCauses}>
                   View My Causes
                 </Button>

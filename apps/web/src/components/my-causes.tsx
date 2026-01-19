@@ -4,27 +4,37 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 import posthog from "posthog-js";
+import { Preloaded, usePreloadedQuery } from "convex/react";
 
 import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
 import { OrganizationCard } from "@/components/organization-card";
 import { OrganizationModal } from "@/components/organization-modal";
-import { Cause } from "@cause/types";
+import { api } from "@cause/backend/convex/_generated/api";
+import { Doc } from "@cause/backend/convex/_generated/dataModel";
 import { removeLikedOrganization } from "@/lib/actions";
 
-export function MyCauses({ likedCauses }: { likedCauses: Cause[] }) {
+type Organization = Doc<"organizations">;
+
+interface MyCausesProps {
+  preloadedLikedOrgs: Preloaded<typeof api.organizations.getLikedByUser>;
+}
+
+export function MyCauses({ preloadedLikedOrgs }: MyCausesProps) {
+  const likedOrgsFromQuery = usePreloadedQuery(preloadedLikedOrgs);
   const router = useRouter();
-  const [likedOrgs, setLikedOrgs] = useState<Cause[]>(likedCauses);
-  const [selectedOrg, setSelectedOrg] = useState<Cause | null>(null);
+  const [organizations, setOrganizations] =
+    useState<Organization[]>(likedOrgsFromQuery);
+  const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleOpenModal = (org: Cause) => {
+  const handleOpenModal = (org: Organization) => {
     setSelectedOrg(org);
     setIsModalOpen(true);
 
     // Track organization details viewed
     posthog.capture("organization_details_viewed", {
-      organization_id: org.dbId,
+      organization_id: org.slug,
       organization_name: org.name,
       organization_ein: org.ein,
       organization_city: org.city,
@@ -37,17 +47,17 @@ export function MyCauses({ likedCauses }: { likedCauses: Cause[] }) {
     setIsModalOpen(false);
   };
 
-  const handleRemoveOrganization = async (orgId: string) => {
-    const orgToRemove = likedOrgs.find((org) => org.dbId === orgId);
-    const updatedUser = await removeLikedOrganization(orgId);
-    const updatedOrgs = likedOrgs.filter((org) =>
-      updatedUser.likedOrganizations.includes(org.dbId),
+  const handleRemoveOrganization = async (orgSlug: string) => {
+    const orgToRemove = organizations.find((org) => org.slug === orgSlug);
+    const updatedUser = await removeLikedOrganization(orgSlug);
+    const updatedOrgs = organizations.filter((org) =>
+      updatedUser?.likedOrganizations.includes(org.slug)
     );
-    setLikedOrgs(updatedOrgs);
+    setOrganizations(updatedOrgs);
 
     // Track organization removed
     posthog.capture("organization_removed", {
-      organization_id: orgId,
+      organization_id: orgSlug,
       organization_name: orgToRemove?.name,
       organization_ein: orgToRemove?.ein,
       remaining_liked_count: updatedOrgs.length,
@@ -63,7 +73,7 @@ export function MyCauses({ likedCauses }: { likedCauses: Cause[] }) {
         </p>
       </div>
 
-      {likedOrgs.length === 0 ? (
+      {organizations.length === 0 ? (
         <GlassmorphicCard className="mx-auto max-w-md text-center">
           <div className="mb-4 flex justify-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500/20 to-purple-600/20 ring-1 ring-white/20">
@@ -86,9 +96,9 @@ export function MyCauses({ likedCauses }: { likedCauses: Cause[] }) {
         </GlassmorphicCard>
       ) : (
         <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {likedOrgs.map((org) => (
+          {organizations.map((org) => (
             <OrganizationCard
-              key={org.dbId}
+              key={org.slug}
               organization={org}
               onClick={() => handleOpenModal(org)}
             />
@@ -101,7 +111,7 @@ export function MyCauses({ likedCauses }: { likedCauses: Cause[] }) {
           organization={selectedOrg}
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          onRemove={() => handleRemoveOrganization(selectedOrg.dbId)}
+          onRemove={() => handleRemoveOrganization(selectedOrg.slug)}
           showRemoveButton={true}
         />
       )}

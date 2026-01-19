@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Footer } from "@/components/footer";
 import { Toaster } from "@/components/ui/sonner";
 import { TopNav } from "@/components/top-nav";
+import { ConvexClientProvider } from "./ConvexClientProvider";
 
 const archivo = Archivo({
   variable: "--font-archivo",
@@ -38,12 +39,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <MosaicBackground />
-          <div className="relative z-10 flex min-h-screen flex-col">
-            <TopNav />
-            <div className="page-transition-wrapper flex-1">{children}</div>
-            <Footer />
-          </div>
+          <ConvexClientProvider>
+            <MosaicBackground />
+            <div className="relative z-10 flex min-h-screen flex-col">
+              <TopNav />
+              <div className="page-transition-wrapper flex-1">{children}</div>
+              <Footer />
+            </div>
+          </ConvexClientProvider>
         </ThemeProvider>
         <Toaster />
       </body>
