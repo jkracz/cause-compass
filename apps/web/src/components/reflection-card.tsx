@@ -3,21 +3,21 @@
 import { Edit3, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
-import { Cause } from "@cause/types";
 import { useRouter } from "next/navigation";
 import { Preloaded, usePreloadedQuery } from "convex/react";
 import { api } from "@cause/backend/convex/_generated/api";
 
 interface ReflectionCardProps {
-  likedOrgs: Cause[];
   preloadedUser: Preloaded<typeof api.users.getOne>;
+  preloadedLikedOrgs: Preloaded<typeof api.organizations.getLikedByUser>;
 }
 
 export function ReflectionCard({
-  likedOrgs,
   preloadedUser,
+  preloadedLikedOrgs,
 }: ReflectionCardProps) {
   const user = usePreloadedQuery(preloadedUser);
+  const likedOrgs = usePreloadedQuery(preloadedLikedOrgs);
   const preferences = user?.preferences;
   const router = useRouter();
   const handleEditReflection = () => {
@@ -159,7 +159,7 @@ export function ReflectionCard({
                 background: `linear-gradient(90deg, ${uniqueCategories
                   .slice(0, 3)
                   .map(
-                    (_, index) => `hsla(${(index * 120) % 360}, 70%, 60%, 0.8)`,
+                    (_, index) => `hsla(${(index * 120) % 360}, 70%, 60%, 0.8)`
                   )
                   .join(", ")})`,
               }}

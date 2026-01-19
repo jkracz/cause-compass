@@ -6,10 +6,12 @@ import { Heart, X } from "lucide-react";
 import Image from "next/image";
 
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
-import { Cause } from "@cause/types";
+import { Doc } from "@cause/backend/convex/_generated/dataModel";
+
+type Organization = Doc<"organizations">;
 
 interface SwipeableCardProps {
-  organization: Cause;
+  organization: Organization;
   onSwipeLeft: () => void;
   onSwipeRight: () => void;
 }
@@ -36,8 +38,7 @@ export function SwipeableCard({
   const displayTagline =
     organization.tagline ||
     organization.mission ||
-    organization.whySupport ||
-    organization.uniqueTrait;
+    organization.whySupport;
 
   const handleDragEnd = (
     _event: MouseEvent | TouchEvent | PointerEvent,

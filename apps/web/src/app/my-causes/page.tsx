@@ -4,8 +4,6 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { DashboardContent } from "./dashboard-content";
 import { DashboardSkeleton } from "./dashboard-skeleton";
-import { preloadQuery } from "convex/nextjs";
-import { api } from "@cause/backend/convex/_generated/api";
 
 export default async function MyOrgsPage() {
   const cookieStore = await cookies();
@@ -14,11 +12,6 @@ export default async function MyOrgsPage() {
   if (!userId) {
     redirect("/onboarding");
   }
-  const preloadedUser = await preloadQuery(api.users.getOne, {
-    userId,
-  });
-
-  const likedCauses: Cause[] = await getLikedCauses(userId);
 
   return (
     <main className="relative min-h-screen w-full">

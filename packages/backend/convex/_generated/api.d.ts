@@ -11,6 +11,7 @@
 import type * as crons from "../crons.js";
 import type * as lib_googleSearch from "../lib/googleSearch.js";
 import type * as migrations from "../migrations.js";
+import type * as organizations from "../organizations.js";
 import type * as searchOrgs from "../searchOrgs.js";
 import type * as users from "../users.js";
 
@@ -24,6 +25,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   "lib/googleSearch": typeof lib_googleSearch;
   migrations: typeof migrations;
+  organizations: typeof organizations;
   searchOrgs: typeof searchOrgs;
   users: typeof users;
 }>;

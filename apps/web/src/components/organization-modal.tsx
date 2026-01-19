@@ -27,10 +27,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useMobile } from "@/hooks/use-mobile";
-import { Cause } from "@cause/types";
+import { Doc } from "@cause/backend/convex/_generated/dataModel";
+
+type Organization = Doc<"organizations">;
 
 interface OrganizationModalProps {
-  organization: Cause;
+  organization: Organization;
   isOpen: boolean;
   onClose: () => void;
   onRemove?: () => void;
@@ -60,7 +62,7 @@ export function OrganizationModal({
   const handleWebsiteClick = () => {
     // Track organization website clicked (key conversion event)
     posthog.capture("organization_website_clicked", {
-      organization_id: organization.dbId,
+      organization_id: organization.slug,
       organization_name: organization.name,
       organization_ein: organization.ein,
       website_url: organization.websiteUrl,
@@ -81,7 +83,7 @@ export function OrganizationModal({
 
         // Track organization shared via native share
         posthog.capture("organization_shared", {
-          organization_id: organization.dbId,
+          organization_id: organization.slug,
           organization_name: organization.name,
           organization_ein: organization.ein,
           share_method: "native_share",
@@ -94,7 +96,7 @@ export function OrganizationModal({
 
         // Track organization shared via clipboard
         posthog.capture("organization_shared", {
-          organization_id: organization.dbId,
+          organization_id: organization.slug,
           organization_name: organization.name,
           organization_ein: organization.ein,
           share_method: "clipboard",
@@ -114,7 +116,7 @@ export function OrganizationModal({
 
         // Track organization shared via clipboard fallback
         posthog.capture("organization_shared", {
-          organization_id: organization.dbId,
+          organization_id: organization.slug,
           organization_name: organization.name,
           organization_ein: organization.ein,
           share_method: "clipboard_fallback",

@@ -4,10 +4,12 @@ import type React from "react";
 
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-import type { Cause } from "@cause/types";
+import { Doc } from "@cause/backend/convex/_generated/dataModel";
+
+type Organization = Doc<"organizations">;
 
 interface OrganizationCardProps {
-  organization: Cause;
+  organization: Organization;
   onClick: () => void;
 }
 
@@ -18,7 +20,6 @@ export function OrganizationCard({
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("Card clicked for:", organization.name); // Debug log
     onClick();
   };
 
