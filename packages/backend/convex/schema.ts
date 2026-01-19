@@ -31,6 +31,16 @@ const activityValidator = v.object({
   description: v.string(),
 });
 
+const socialMediaUrlsValidator = v.object({
+  linkedin: v.optional(v.string()),
+  youtube: v.optional(v.string()),
+  x: v.optional(v.string()),
+  instagram: v.optional(v.string()),
+  threads: v.optional(v.string()),
+  facebook: v.optional(v.string()),
+  twitter: v.optional(v.string()),
+});
+
 export default defineSchema({
   // Existing users table
   users: defineTable({
@@ -52,12 +62,14 @@ export default defineSchema({
     .index("by_userId", ["userId"])
     .index("by_likedOrganizations", ["likedOrganizations"]),
 
-  // Main organizations table (hot path, user-facing)
   organizations: defineTable({
     // Core identifiers
     ein: v.string(),
     name: v.string(),
     slug: v.string(),
+
+    // Timestamps
+    updatedAt: v.optional(v.number()),
 
     // Location
     street: v.string(),
@@ -71,7 +83,7 @@ export default defineSchema({
     nteeMajor: v.optional(v.string()), // e.g., "A" (first char of nteeCode)
     activityCodes: v.optional(v.array(v.string())),
     classification: v.optional(v.string()), // Classification code(s)
-    deductible: v.boolean(),
+    deductibilityCode: v.optional(v.string()),
 
     // IRS codes (reference data dictionaries for descriptions)
     subsection: v.optional(v.string()), // Subsection code
@@ -81,12 +93,6 @@ export default defineSchema({
     statusCode: v.optional(v.string()), // EO Status Code
     organizationCode: v.optional(v.string()), // Organization Code
     foundationCode: v.optional(v.string()), // Foundation Code
-    irsAssetCode: v.optional(v.string()), // IRS Asset Code
-    irsIncomeCode: v.optional(v.string()), // IRS Income Code
-    filingReqCode: v.optional(v.string()), // Filing Requirement Code
-    pfFilingReqCode: v.optional(v.string()), // PF Filing Requirement Code
-    acctPeriod: v.optional(v.string()), // Accounting Period
-    taxPeriod: v.optional(v.string()), // Tax Period
 
     // Financials (bucketed for filtering)
     assetBucket: amountBucketValidator,
@@ -100,7 +106,12 @@ export default defineSchema({
     whySupport: v.optional(v.string()),
     targetAudience: v.optional(v.string()),
     geographicFocus: v.optional(geographicFocusValidator),
-    activites: v.optional(v.array(activityValidator)),
+    activities: v.optional(v.array(activityValidator)),
+    keywords: v.optional(v.array(v.string())),
+    socialMediaUrls: v.optional(socialMediaUrlsValidator),
+    donationUrl: v.optional(v.string()),
+    logoUrl: v.optional(v.string()),
+    emailAddresses: v.optional(v.array(v.string())),
 
     // Workflow status
     enrichmentStage: enrichmentStageValidator,
@@ -111,14 +122,12 @@ export default defineSchema({
     .index("by_nteeMajor", ["nteeMajor"])
     .index("by_enrichmentStage", ["enrichmentStage"]),
 
-  // Search results table (workflow input)
   searchResults: defineTable({
     ein: v.string(), // For linking to organizations
     orgId: v.optional(v.id("organizations")), // Set by post-import migration
-    provider: v.string(), // "google"
     query: v.string(), // Search query used
     runAt: v.string(), // ISO timestamp
-    results: v.array(v.any()), // Raw search result objects
+    resultsJson: v.string(), // JSON-stringified search results (raw objects have invalid field names like "theme-color")
   })
     .index("by_ein", ["ein"])
     .index("by_orgId", ["orgId"]),
@@ -137,6 +146,7 @@ export default defineSchema({
     socialMediaUrls: v.optional(v.array(v.string())),
     logoLinks: v.optional(v.array(v.string())),
     hasNewsletterSignup: v.optional(v.boolean()),
+    emailAddresses: v.optional(v.array(v.string())),
   })
     .index("by_ein", ["ein"])
     .index("by_orgId", ["orgId"]),
@@ -146,7 +156,6 @@ export default defineSchema({
     ein: v.string(), // For linking to organizations
     orgId: v.optional(v.id("organizations")), // Set by post-import migration
     model: v.string(), // e.g., "gpt-4o-mini-2024-07-18"
-    promptVersion: v.string(), // Version identifier
     runAt: v.string(), // ISO timestamp
 
     // Input references (set by post-import migration)

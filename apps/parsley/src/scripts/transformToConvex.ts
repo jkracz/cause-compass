@@ -26,6 +26,16 @@ type EnrichmentStage =
 
 type GeographicFocus = "Global" | "National" | "Regional" | "Local";
 
+type SocialMediaUrls = {
+  linkedin?: string;
+  youtube?: string;
+  x?: string;
+  instagram?: string;
+  threads?: string;
+  facebook?: string;
+  twitter?: string;
+};
+
 // Omit system fields (_id, _creationTime) for document creation
 type ConvexOrganization = Omit<Doc<"organizations">, "_id" | "_creationTime">;
 
@@ -121,6 +131,36 @@ function extractActivityCodes(
   return doc.activityCodes.map((ac) => ac.code);
 }
 
+function extractSocialMediaUrls(
+  doc: TaxExemptOrganization,
+): SocialMediaUrls | undefined {
+  const social = doc.socialMediaUrls;
+  if (!social) return undefined;
+
+  const result: SocialMediaUrls = {};
+  if (social.linkedin) result.linkedin = social.linkedin;
+  if (social.youtube) result.youtube = social.youtube;
+  if (social.x) result.x = social.x;
+  if (social.instagram) result.instagram = social.instagram;
+  if (social.threads) result.threads = social.threads;
+  if (social.facebook) result.facebook = social.facebook;
+  if (social.twitter) result.twitter = social.twitter;
+
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
+function parseTimestamp(
+  isoString: string | undefined | null,
+): number | undefined {
+  if (!isoString) return undefined;
+  try {
+    const timestamp = new Date(isoString).getTime();
+    return isNaN(timestamp) ? undefined : timestamp;
+  } catch {
+    return undefined;
+  }
+}
+
 interface TransformResult {
   organization: ConvexOrganization;
   searchResult: ConvexSearchResult | null;
@@ -130,12 +170,17 @@ interface TransformResult {
 
 function transformDocument(doc: TaxExemptOrganization): TransformResult {
   const now = new Date().toISOString();
+  const nowTimestamp = Date.now();
 
   // 1. Transform organization
   const organization: ConvexOrganization = {
     ein: doc.ein,
     name: doc.name,
     slug: doc.slug ?? generateSlug(doc.name, doc.ein),
+    updatedAt:
+      parseTimestamp(doc.lastUpdated) ??
+      parseTimestamp(doc.createdAt) ??
+      nowTimestamp,
     street: doc.street,
     city: doc.city,
     state: doc.state,
@@ -146,7 +191,7 @@ function transformDocument(doc: TaxExemptOrganization): TransformResult {
     nteeMajor: doc.nteeCode?.majorCode?.code,
     activityCodes: extractActivityCodes(doc),
     classification: doc.classification ?? undefined,
-    deductible: doc.deductibility?.code === "1",
+    deductibilityCode: doc.deductibility?.code,
     // IRS codes
     subsection: doc.subsection ?? undefined,
     affiliation: doc.affiliation?.code,
@@ -155,12 +200,6 @@ function transformDocument(doc: TaxExemptOrganization): TransformResult {
     statusCode: doc.status?.code,
     organizationCode: doc.organization?.code,
     foundationCode: doc.foundation?.code,
-    irsAssetCode: doc.assetCode?.code,
-    irsIncomeCode: doc.incomeCode ?? undefined,
-    filingReqCode: doc.filingReqCode?.code,
-    pfFilingReqCode: doc.pfFilingReqCode?.code,
-    acctPeriod: doc.acctPeriod ?? undefined,
-    taxPeriod: doc.taxPeriod ?? undefined,
     // Financials
     assetBucket: getAmountBucket(doc.assetAmt),
     incomeBucket: getAmountBucket(doc.incomeAmt),
@@ -173,7 +212,12 @@ function transformDocument(doc: TaxExemptOrganization): TransformResult {
     whySupport: doc.whySupport ?? undefined,
     targetAudience: doc.targetAudience ?? undefined,
     geographicFocus: parseGeographicFocus(doc.geographicFocus),
-    activites: doc.activities ?? undefined,
+    activities: doc.activities ?? undefined,
+    keywords: doc.keywords ?? undefined,
+    socialMediaUrls: extractSocialMediaUrls(doc),
+    donationUrl: doc.donationUrl ?? undefined,
+    logoUrl: doc.logoUrl ?? undefined,
+    emailAddresses: doc.emailAddresses ?? undefined,
   };
 
   // 2. Transform search results (if present)
@@ -181,10 +225,9 @@ function transformDocument(doc: TaxExemptOrganization): TransformResult {
   if (doc.searchResults && doc.searchResults.length > 0) {
     searchResult = {
       ein: doc.ein,
-      provider: "google",
       query: `${doc.name} ${doc.city} ${doc.state} nonprofit`,
       runAt: doc.searchedAt ?? doc.createdAt ?? now,
-      results: doc.searchResults,
+      resultsJson: JSON.stringify(doc.searchResults), // Stringify to avoid invalid field names like "theme-color"
     };
   }
 
@@ -192,16 +235,29 @@ function transformDocument(doc: TaxExemptOrganization): TransformResult {
   const crawlResults: ConvexCrawlResult[] = [];
   if (doc.confirmationCrawlItems && doc.confirmationCrawlItems.length > 0) {
     for (const item of doc.confirmationCrawlItems) {
+      // Helper to filter and validate string arrays
+      const cleanStringArray = (
+        arr: unknown[] | undefined | null,
+      ): string[] | undefined => {
+        if (!arr || !Array.isArray(arr)) return undefined;
+        const cleaned = arr.filter(
+          (item): item is string =>
+            typeof item === "string" && item.trim().length > 0,
+        );
+        return cleaned.length > 0 ? cleaned : undefined;
+      };
+
       crawlResults.push({
         ein: doc.ein,
         sourceUrl: item.url,
         runAt: doc.resultsParsedAt ?? doc.searchedAt ?? now,
         textContent: item.textContent,
-        aboutLinks: item.aboutLinks,
-        donationLinks: item.donationLinks,
-        socialMediaUrls: item.socialMediaUrls,
-        logoLinks: item.logoLinks,
+        aboutLinks: cleanStringArray(item.aboutLinks),
+        donationLinks: cleanStringArray(item.donationLinks),
+        socialMediaUrls: cleanStringArray(item.socialMediaUrls),
+        logoLinks: cleanStringArray(item.logoLinks),
         hasNewsletterSignup: item.hasNewsletterSignup,
+        emailAddresses: cleanStringArray(item.emailAddresses),
       });
     }
   }
@@ -214,7 +270,6 @@ function transformDocument(doc: TaxExemptOrganization): TransformResult {
       aiConfirmation = {
         ein: doc.ein,
         model: extractModel(doc.aiConfirmationResponse),
-        promptVersion: "v1",
         runAt: doc.lastUpdated ?? doc.resultsParsedAt ?? now,
         inputs: {},
         outputs: {
