@@ -6,6 +6,7 @@ import {
 } from "crawlee";
 import { CrawlItem } from "@cause/types";
 import { logger } from "@/utils/logger";
+import { truncateTextContent } from "@/utils/textUtils";
 
 interface CrawlOptions {
   maxRequestsPerCrawl?: number;
@@ -310,7 +311,7 @@ export const createCrawler = async (options?: CrawlOptions) => {
               dataset.pushData({
                 title,
                 url: request.loadedUrl,
-                textContent,
+                textContent: truncateTextContent(textContent),
                 socialMediaUrls,
                 hasNewsletterSignup,
                 donationLinks,

@@ -5,6 +5,7 @@ import slugify from "slugify";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { logger } from "@/utils/logger";
+import { truncateTextContent, MAX_TEXT_CONTENT_LENGTH, limitArrayBySize } from "@/utils/textUtils";
 import type { TaxExemptOrganization, WebsiteConfirmation } from "@cause/types";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
 
@@ -166,6 +167,7 @@ interface TransformResult {
   searchResult: ConvexSearchResult | null;
   crawlResults: ConvexCrawlResult[];
   aiConfirmation: ConvexAiConfirmation | null;
+  truncatedCrawlResults: number;
 }
 
 function transformDocument(doc: TaxExemptOrganization): TransformResult {
@@ -233,6 +235,7 @@ function transformDocument(doc: TaxExemptOrganization): TransformResult {
 
   // 3. Transform crawl results (if present)
   const crawlResults: ConvexCrawlResult[] = [];
+  let truncatedCrawlResults = 0;
   if (doc.confirmationCrawlItems && doc.confirmationCrawlItems.length > 0) {
     for (const item of doc.confirmationCrawlItems) {
       // Helper to filter and validate string arrays
@@ -247,17 +250,23 @@ function transformDocument(doc: TaxExemptOrganization): TransformResult {
         return cleaned.length > 0 ? cleaned : undefined;
       };
 
+      // Track if content was truncated
+      const originalLength = item.textContent?.length ?? 0;
+      if (originalLength > MAX_TEXT_CONTENT_LENGTH) {
+        truncatedCrawlResults++;
+      }
+
       crawlResults.push({
         ein: doc.ein,
         sourceUrl: item.url,
         runAt: doc.resultsParsedAt ?? doc.searchedAt ?? now,
-        textContent: item.textContent,
-        aboutLinks: cleanStringArray(item.aboutLinks),
-        donationLinks: cleanStringArray(item.donationLinks),
-        socialMediaUrls: cleanStringArray(item.socialMediaUrls),
-        logoLinks: cleanStringArray(item.logoLinks),
+        textContent: truncateTextContent(item.textContent),
+        aboutLinks: limitArrayBySize(cleanStringArray(item.aboutLinks)),
+        donationLinks: limitArrayBySize(cleanStringArray(item.donationLinks)),
+        socialMediaUrls: limitArrayBySize(cleanStringArray(item.socialMediaUrls)),
+        logoLinks: limitArrayBySize(cleanStringArray(item.logoLinks)),
         hasNewsletterSignup: item.hasNewsletterSignup,
-        emailAddresses: cleanStringArray(item.emailAddresses),
+        emailAddresses: limitArrayBySize(cleanStringArray(item.emailAddresses)),
       });
     }
   }
@@ -289,7 +298,7 @@ function transformDocument(doc: TaxExemptOrganization): TransformResult {
     }
   }
 
-  return { organization, searchResult, crawlResults, aiConfirmation };
+  return { organization, searchResult, crawlResults, aiConfirmation, truncatedCrawlResults };
 }
 
 // Utility to remove undefined values (Convex doesn't like undefined)
@@ -352,6 +361,7 @@ async function main() {
   let crawlCount = 0;
   let aiCount = 0;
   let errorCount = 0;
+  let truncatedCount = 0;
 
   // Track enrichment stage distribution
   const stageCounts: Record<EnrichmentStage, number> = {
@@ -374,6 +384,9 @@ async function main() {
 
       // Track enrichment stage
       stageCounts[result.organization.enrichmentStage]++;
+
+      // Track truncated crawl results
+      truncatedCount += result.truncatedCrawlResults;
 
       // Write organization (clean undefined values)
       orgStream.write(
@@ -431,6 +444,9 @@ async function main() {
   logger.info(`  Search Results: ${searchCount}`);
   logger.info(`  Crawl Results: ${crawlCount}`);
   logger.info(`  AI Confirmations: ${aiCount}`);
+  if (truncatedCount > 0) {
+    logger.info(`  Crawl Results Truncated: ${truncatedCount} (textContent exceeded ${MAX_TEXT_CONTENT_LENGTH} chars)`);
+  }
   logger.info("");
   logger.info("Enrichment stage distribution:");
   logger.info(`  created: ${stageCounts.created}`);

@@ -59,8 +59,7 @@ export default defineSchema({
     }),
     likedOrganizations: v.array(v.string()),
   })
-    .index("by_userId", ["userId"])
-    .index("by_likedOrganizations", ["likedOrganizations"]),
+    .index("by_userId", ["userId"]),
 
   organizations: defineTable({
     // Core identifiers
@@ -118,8 +117,6 @@ export default defineSchema({
   })
     .index("by_ein", ["ein"])
     .index("by_slug", ["slug"])
-    .index("by_state", ["state"])
-    .index("by_nteeMajor", ["nteeMajor"])
     .index("by_enrichmentStage", ["enrichmentStage"]),
 
   searchResults: defineTable({
@@ -129,8 +126,7 @@ export default defineSchema({
     runAt: v.string(), // ISO timestamp
     resultsJson: v.string(), // JSON-stringified search results (raw objects have invalid field names like "theme-color")
   })
-    .index("by_ein", ["ein"])
-    .index("by_orgId", ["orgId"]),
+    .index("by_ein", ["ein"]),
 
   // Crawl results table (workflow input)
   crawlResults: defineTable({
@@ -148,8 +144,7 @@ export default defineSchema({
     hasNewsletterSignup: v.optional(v.boolean()),
     emailAddresses: v.optional(v.array(v.string())),
   })
-    .index("by_ein", ["ein"])
-    .index("by_orgId", ["orgId"]),
+    .index("by_ein", ["ein"]),
 
   // AI confirmations table (workflow output + provenance)
   aiConfirmations: defineTable({
@@ -178,6 +173,5 @@ export default defineSchema({
       reasoning: v.optional(v.string()),
     }),
   })
-    .index("by_ein", ["ein"])
-    .index("by_orgId", ["orgId"]),
+    .index("by_ein", ["ein"]),
 });
