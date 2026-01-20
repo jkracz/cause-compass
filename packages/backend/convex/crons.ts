@@ -24,4 +24,20 @@ crons.daily(
   internal.searchOrgs.scheduledSearchOrganizations
 );
 
+/**
+ * Hourly OpenAI batch processing job.
+ * Checks for active batch jobs, processes completed ones, and starts new batches.
+ *
+ * Only executes in production when ENABLE_BATCH_CRON=true is set.
+ * In dev, use manual testing instead:
+ *   npx convex run openAiBatch:manualCreateBatch '{"limit": 5}'
+ *   npx convex run openAiBatch:manualCheckStatus '{"jobId": "..."}'
+ *   npx convex run openAiBatch:manualProcessResults '{"jobId": "..."}'
+ */
+crons.hourly(
+  "batch-processing",
+  { minuteUTC: 0 },
+  internal.openAiBatch.scheduledBatchProcessing
+);
+
 export default crons;

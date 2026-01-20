@@ -180,4 +180,48 @@ export default defineSchema({
   })
     .index("by_ein", ["ein"])
     .index("by_orgId", ["orgId"]),
+
+  // Batch jobs table for tracking OpenAI batch processing jobs
+  batchJobs: defineTable({
+    // Job identifier (nanoid from original system)
+    jobId: v.string(),
+
+    // Job status
+    status: v.union(
+      v.literal("pending"),
+      v.literal("generating"),
+      v.literal("uploading"),
+      v.literal("processing"),
+      v.literal("downloading"),
+      v.literal("completed"),
+      v.literal("failed"),
+    ),
+
+    // Timestamps
+    createdAt: v.string(), // ISO timestamp
+    updatedAt: v.string(), // ISO timestamp
+
+    // Batch configuration
+    batchSize: v.number(),
+    totalCount: v.optional(v.number()),
+
+    // OpenAI references
+    fileId: v.optional(v.string()), // OpenAI input file ID
+    batchId: v.optional(v.string()), // OpenAI batch job ID
+    outputFileId: v.optional(v.string()), // OpenAI output file ID
+
+    // Local file references
+    inputFile: v.optional(v.string()),
+    outputFile: v.optional(v.string()),
+
+    // Processing results
+    processedCount: v.optional(v.number()),
+    error: v.optional(v.string()),
+
+    // External references
+    artifactId: v.optional(v.string()), // GitHub artifact ID if stored
+  })
+    .index("by_jobId", ["jobId"])
+    .index("by_status", ["status"])
+    .index("by_createdAt", ["createdAt"]),
 });
