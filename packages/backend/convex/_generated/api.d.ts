@@ -10,6 +10,8 @@
 
 import type * as batchJobs from "../batchJobs.js";
 import type * as crons from "../crons.js";
+import type * as http from "../http.js";
+import type * as lib_batchResponseProcessing from "../lib/batchResponseProcessing.js";
 import type * as lib_googleSearch from "../lib/googleSearch.js";
 import type * as lib_openAiBatch from "../lib/openAiBatch.js";
 import type * as migrations from "../migrations.js";
@@ -27,6 +29,8 @@ import type {
 declare const fullApi: ApiFromModules<{
   batchJobs: typeof batchJobs;
   crons: typeof crons;
+  http: typeof http;
+  "lib/batchResponseProcessing": typeof lib_batchResponseProcessing;
   "lib/googleSearch": typeof lib_googleSearch;
   "lib/openAiBatch": typeof lib_openAiBatch;
   migrations: typeof migrations;

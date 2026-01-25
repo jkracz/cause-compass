@@ -13,6 +13,8 @@
 import { v } from "convex/values";
 import { internalAction, internalMutation, internalQuery, action } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { components } from "./_generated/api";
+import { WorkflowManager, defineEvent, type WorkflowId } from "@convex-dev/workflow";
 import {
   uploadBatchFile,
   createBatch,
@@ -21,17 +23,33 @@ import {
   parseJSONL,
   toJSONL,
   createConfirmationRequestLine,
-  isBatchProcessing,
   isBatchCompleted,
   isBatchFailed,
-  type BatchResponseLine,
-  type OpenAIBatchStatus,
 } from "./lib/openAiBatch";
 import {
   processCrawlDataForConfirmedWebsite,
   type CrawlItemData,
-  type SocialMediaUrls,
 } from "./lib/batchResponseProcessing";
+
+// ============================================================================
+// Workflow Setup
+// ============================================================================
+
+/**
+ * WorkflowManager instance for durable batch processing workflows.
+ */
+const workflow = new WorkflowManager(components.workflow);
+
+/**
+ * Event sent by OpenAI webhook when batch completes.
+ * Unblocks the waiting workflow to process results.
+ */
+export const batchCompletedEvent = defineEvent({
+  name: "batchCompleted" as const,
+  validator: v.object({
+    outputFileId: v.string(),
+  }),
+});
 
 // Type declaration for environment variables in Convex actions
 declare const process: {
@@ -365,9 +383,8 @@ function generateJobId(): string {
  *
  * 1. Fetches organizations ready for AI confirmation
  * 2. Generates JSONL batch file content
- * 3. Uploads to OpenAI
- * 4. Creates the batch job
- * 5. Records job in database
+ * 3. Uploads to OpenAI and creates batch
+ * 4. Records job in database (in "processing" status)
  */
 export const createBatchJob = internalAction({
   args: {
@@ -378,7 +395,6 @@ export const createBatchJob = internalAction({
     success: boolean;
     jobId: string | null;
     batchId: string | null;
-    fileId: string | null;
     totalCount: number;
     error?: string;
   }> => {
@@ -397,7 +413,6 @@ export const createBatchJob = internalAction({
           success: true,
           jobId: null,
           batchId: null,
-          fileId: null,
           totalCount: 0,
         };
       }
@@ -419,57 +434,32 @@ export const createBatchJob = internalAction({
         })
       );
 
-      // 3. Convert to JSONL
+      // 3. Convert to JSONL and upload to OpenAI
       const jsonlContent = toJSONL(requestLines);
       console.log(`Generated JSONL with ${requestLines.length} requests`);
 
-      // 4. Create job record in database
-      const jobId = generateJobId();
-      await ctx.runMutation(internal.batchJobs.internalCreate, {
-        jobId,
-        batchSize: orgs.length,
-        totalCount: orgs.length,
-      });
-
-      // 5. Update status to generating
-      await ctx.runMutation(internal.batchJobs.internalUpdateStatus, {
-        jobId,
-        status: "generating",
-      });
-
-      // 6. Upload file to OpenAI
-      await ctx.runMutation(internal.batchJobs.internalUpdateStatus, {
-        jobId,
-        status: "uploading",
-      });
-
       const uploadedFile = await uploadBatchFile(
         jsonlContent,
-        `batch_${jobId}.jsonl`
+        `batch_${generateJobId()}.jsonl`
       );
       console.log(`Uploaded file to OpenAI: ${uploadedFile.id}`);
 
-      // 7. Create batch job on OpenAI
+      // 4. Create batch job on OpenAI
+      const jobId = generateJobId();
       const batch = await createBatch(uploadedFile.id, { jobId });
       console.log(`Created OpenAI batch: ${batch.id}`);
 
-      // 8. Update job with OpenAI references
-      await ctx.runMutation(internal.batchJobs.internalUpdateOpenAIRefs, {
+      // 5. Record job in database (directly in "processing" status)
+      await ctx.runMutation(internal.batchJobs.internalCreate, {
         jobId,
-        fileId: uploadedFile.id,
+        batchSize: orgs.length,
         batchId: batch.id,
-      });
-
-      await ctx.runMutation(internal.batchJobs.internalUpdateStatus, {
-        jobId,
-        status: "processing",
       });
 
       return {
         success: true,
         jobId,
         batchId: batch.id,
-        fileId: uploadedFile.id,
         totalCount: orgs.length,
       };
     } catch (error) {
@@ -480,136 +470,10 @@ export const createBatchJob = internalAction({
         success: false,
         jobId: null,
         batchId: null,
-        fileId: null,
         totalCount: 0,
         error: errorMessage,
       };
     }
-  },
-});
-
-/**
- * Check the status of a batch job.
- *
- * Polls OpenAI for the batch status and updates the local record.
- */
-export const checkBatchStatus = internalAction({
-  args: {
-    jobId: v.string(),
-  },
-  handler: async (ctx, { jobId }): Promise<{
-    status: "processing" | "downloading" | "failed" | "not_found";
-    openAiStatus?: OpenAIBatchStatus;
-    outputFileId?: string;
-    error?: string;
-  }> => {
-    try {
-      // Get job from database
-      const job = await ctx.runQuery(internal.batchJobs.internalGetByJobId, { jobId });
-
-      if (!job) {
-        return { status: "not_found", error: "Job not found" };
-      }
-
-      if (!job.batchId) {
-        return { status: "failed", error: "Job has no batch ID" };
-      }
-
-      // Check status on OpenAI
-      const batch = await getBatch(job.batchId);
-      console.log(`Batch ${job.batchId} status: ${batch.status}`);
-
-      if (isBatchCompleted(batch.status)) {
-        // Update job with output file ID
-        await ctx.runMutation(internal.batchJobs.internalUpdateOpenAIRefs, {
-          jobId,
-          outputFileId: batch.output_file_id ?? undefined,
-        });
-
-        await ctx.runMutation(internal.batchJobs.internalUpdateStatus, {
-          jobId,
-          status: "downloading",
-        });
-
-        return {
-          status: "downloading",
-          openAiStatus: batch.status,
-          outputFileId: batch.output_file_id ?? undefined,
-        };
-      }
-
-      if (isBatchFailed(batch.status)) {
-        const errorMsg = batch.errors?.data?.[0]?.message ?? `Batch ${batch.status}`;
-        await ctx.runMutation(internal.batchJobs.internalMarkFailed, {
-          jobId,
-          error: errorMsg,
-        });
-
-        return {
-          status: "failed",
-          openAiStatus: batch.status,
-          error: errorMsg,
-        };
-      }
-
-      // Still processing
-      return {
-        status: "processing",
-        openAiStatus: batch.status,
-      };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(`Error checking batch status for job ${jobId}:`, errorMessage);
-
-      return {
-        status: "failed",
-        error: errorMessage,
-      };
-    }
-  },
-});
-
-/**
- * Check status of all processing jobs.
- */
-export const checkAllProcessingJobs = internalAction({
-  args: {},
-  handler: async (ctx): Promise<{
-    checked: number;
-    completed: number;
-    failed: number;
-    stillProcessing: number;
-  }> => {
-    const jobs = await ctx.runQuery(internal.batchJobs.internalGetProcessingJobs, {});
-
-    let completed = 0;
-    let failed = 0;
-    let stillProcessing = 0;
-
-    for (const job of jobs) {
-      const result = await ctx.runAction(internal.openAiBatch.checkBatchStatus, {
-        jobId: job.jobId,
-      });
-
-      if (result.status === "downloading") {
-        completed++;
-      } else if (result.status === "failed") {
-        failed++;
-      } else {
-        stillProcessing++;
-      }
-    }
-
-    console.log(
-      `Checked ${jobs.length} jobs: ${completed} completed, ${failed} failed, ${stillProcessing} still processing`
-    );
-
-    return {
-      checked: jobs.length,
-      completed,
-      failed,
-      stillProcessing,
-    };
   },
 });
 
@@ -777,6 +641,7 @@ export const processResults = internalAction({
       await ctx.runMutation(internal.batchJobs.internalMarkCompleted, {
         jobId,
         processedCount,
+        errorCount,
       });
 
       console.log(`Completed processing job ${jobId}: ${processedCount} processed, ${errorCount} errors`);
@@ -805,167 +670,6 @@ export const processResults = internalAction({
   },
 });
 
-/**
- * Main orchestration action: check and process batches.
- *
- * Similar to BatchManager.checkAndProcessBatch() from parsley.
- * - Checks for active batch jobs
- * - Processes completed batches
- * - Starts new batches if none active
- */
-export const checkAndProcessBatch = internalAction({
-  args: {
-    limit: v.optional(v.number()),
-  },
-  handler: async (ctx, { limit }): Promise<{
-    action: "created" | "processed" | "waiting" | "none" | "error";
-    jobId?: string;
-    details?: string;
-  }> => {
-    const isEnabled = process.env.ENABLE_BATCH_CRON === "true";
-
-    if (!isEnabled) {
-      console.log("Batch processing is disabled (ENABLE_BATCH_CRON !== 'true'). Skipping.");
-      return { action: "none", details: "ENABLE_BATCH_CRON not set to true" };
-    }
-
-    try {
-      // Check for processing jobs
-      const processingJobs = await ctx.runQuery(internal.batchJobs.internalGetProcessingJobs, {});
-
-      if (processingJobs.length > 0) {
-        // Check status of first processing job
-        const job = processingJobs[0]!;
-        const result = await ctx.runAction(internal.openAiBatch.checkBatchStatus, {
-          jobId: job.jobId,
-        });
-
-        if (result.status === "downloading") {
-          // Process the completed batch
-          const processResult = await ctx.runAction(internal.openAiBatch.processResults, {
-            jobId: job.jobId,
-          });
-
-          if (processResult.success) {
-            // Start a new batch after processing
-            const createResult = await ctx.runAction(internal.openAiBatch.createBatchJob, {
-              limit,
-            });
-
-            if (createResult.success && createResult.jobId) {
-              return {
-                action: "created",
-                jobId: createResult.jobId,
-                details: `Processed ${processResult.processedCount} results, started new batch with ${createResult.totalCount} orgs`,
-              };
-            }
-          }
-
-          return {
-            action: "processed",
-            jobId: job.jobId,
-            details: `Processed ${processResult.processedCount} results`,
-          };
-        }
-
-        if (result.status === "failed") {
-          // Start a new batch after failure
-          const createResult = await ctx.runAction(internal.openAiBatch.createBatchJob, {
-            limit,
-          });
-
-          if (createResult.success && createResult.jobId) {
-            return {
-              action: "created",
-              jobId: createResult.jobId,
-              details: `Previous job failed, started new batch with ${createResult.totalCount} orgs`,
-            };
-          }
-        }
-
-        // Still processing
-        return {
-          action: "waiting",
-          jobId: job.jobId,
-          details: `Batch still processing (${result.openAiStatus})`,
-        };
-      }
-
-      // Check for downloading jobs (completed but not processed)
-      const downloadingJobs = await ctx.runQuery(internal.batchJobs.internalListByStatus, {
-        status: "downloading",
-        limit: 1,
-      });
-
-      if (downloadingJobs.length > 0) {
-        const job = downloadingJobs[0]!;
-        const processResult = await ctx.runAction(internal.openAiBatch.processResults, {
-          jobId: job.jobId,
-        });
-
-        // Start a new batch after processing
-        const createResult = await ctx.runAction(internal.openAiBatch.createBatchJob, {
-          limit,
-        });
-
-        return {
-          action: "processed",
-          jobId: job.jobId,
-          details: `Processed ${processResult.processedCount} results${createResult.jobId ? `, started new batch ${createResult.jobId}` : ""}`,
-        };
-      }
-
-      // No active jobs, start a new one
-      const createResult = await ctx.runAction(internal.openAiBatch.createBatchJob, {
-        limit,
-      });
-
-      if (createResult.success && createResult.jobId) {
-        return {
-          action: "created",
-          jobId: createResult.jobId,
-          details: `Started new batch with ${createResult.totalCount} orgs`,
-        };
-      }
-
-      if (createResult.totalCount === 0) {
-        return {
-          action: "none",
-          details: "No organizations ready for AI confirmation",
-        };
-      }
-
-      return {
-        action: "error",
-        details: createResult.error ?? "Unknown error creating batch",
-      };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error("Error in checkAndProcessBatch:", errorMessage);
-
-      return {
-        action: "error",
-        details: errorMessage,
-      };
-    }
-  },
-});
-
-/**
- * Scheduled wrapper for the batch processing job.
- * Set ENABLE_BATCH_CRON=true in Convex Dashboard for production.
- */
-export const scheduledBatchProcessing = internalAction({
-  args: {},
-  handler: async (ctx): Promise<{
-    action: "created" | "processed" | "waiting" | "none" | "error";
-    jobId?: string;
-    details?: string;
-  }> => {
-    return await ctx.runAction(internal.openAiBatch.checkAndProcessBatch, {});
-  },
-});
-
 // ============================================================================
 // Public Actions (for manual testing/debugging)
 // ============================================================================
@@ -982,29 +686,10 @@ export const manualCreateBatch = action({
     success: boolean;
     jobId: string | null;
     batchId: string | null;
-    fileId: string | null;
     totalCount: number;
     error?: string;
   }> => {
     return await ctx.runAction(internal.openAiBatch.createBatchJob, { limit });
-  },
-});
-
-/**
- * Public action to manually check batch status.
- * Use for testing: npx convex run openAiBatch:manualCheckStatus '{"jobId": "..."}'
- */
-export const manualCheckStatus = action({
-  args: {
-    jobId: v.string(),
-  },
-  handler: async (ctx, { jobId }): Promise<{
-    status: "processing" | "downloading" | "failed" | "not_found";
-    openAiStatus?: OpenAIBatchStatus;
-    outputFileId?: string;
-    error?: string;
-  }> => {
-    return await ctx.runAction(internal.openAiBatch.checkBatchStatus, { jobId });
   },
 });
 
@@ -1023,5 +708,450 @@ export const manualProcessResults = action({
     error?: string;
   }> => {
     return await ctx.runAction(internal.openAiBatch.processResults, { jobId });
+  },
+});
+
+// ============================================================================
+// Workflow Definition
+// ============================================================================
+
+/**
+ * Workflow result types
+ */
+type BatchWorkflowResult =
+  | {
+      status: "no_work";
+      totalCount: number;
+      jobId: null;
+    }
+  | {
+      status: "completed";
+      jobId: string;
+      processedCount: number;
+      errorCount: number;
+    };
+
+/**
+ * Durable workflow for batch processing.
+ * Creates a batch, waits for webhook, processes results, then chains to next workflow.
+ *
+ * Flow:
+ * 1. runAction(createBatchJob) → creates batch, uploads to OpenAI
+ * 2. awaitEvent("batchCompleted") → PAUSES until webhook fires
+ * 3. runAction(processResults) → processes results
+ * 4. runAction(chainNextWorkflow) → starts next workflow to continue processing
+ *
+ * The chain continues until there are no more orgs to process.
+ */
+export const batchProcessingWorkflow = workflow.define({
+  args: { limit: v.optional(v.number()) },
+  handler: async (step, args): Promise<BatchWorkflowResult> => {
+    // Step 1: Create batch job (fetch orgs, generate JSONL, upload to OpenAI)
+    const createResult: {
+      success: boolean;
+      jobId: string | null;
+      batchId: string | null;
+      totalCount: number;
+      error?: string;
+    } = await step.runAction(
+      internal.openAiBatch.createBatchJob,
+      { limit: args.limit },
+      { retry: true }
+    );
+
+    if (!createResult.success || !createResult.jobId) {
+      // No more orgs to process - chain ends here
+      return {
+        status: "no_work",
+        totalCount: createResult.totalCount,
+        jobId: null,
+      };
+    }
+
+    const jobId = createResult.jobId;
+
+    // Store workflowId on the batch job for webhook to find
+    await step.runMutation(internal.batchJobs.internalSetWorkflowId, {
+      jobId,
+      workflowId: step.workflowId,
+    });
+
+    // Step 2: Wait for completion event from OpenAI webhook
+    // This pauses the workflow until the webhook sends the event
+    const _completionEvent = await step.awaitEvent(batchCompletedEvent);
+
+    // Step 3: Process results
+    const processResult: {
+      success: boolean;
+      processedCount: number;
+      errorCount: number;
+      error?: string;
+    } = await step.runAction(
+      internal.openAiBatch.processResults,
+      { jobId },
+      { retry: true }
+    );
+
+    // Step 4: Chain to next workflow to continue processing
+    // This starts a new workflow which will either process more orgs or end if none left
+    await step.runAction(
+      internal.openAiBatch.chainNextWorkflow,
+      { limit: args.limit },
+      { retry: true }
+    );
+
+    return {
+      status: "completed",
+      jobId,
+      processedCount: processResult.processedCount,
+      errorCount: processResult.errorCount,
+    };
+  },
+});
+
+// ============================================================================
+// Workflow Orchestration Actions
+// ============================================================================
+
+/**
+ * Polls OpenAI for completed batches and sends events to waiting workflows.
+ * Called by cron every 15 minutes.
+ */
+export const pollAndNotifyCompletedBatches = internalAction({
+  args: {},
+  handler: async (ctx): Promise<{
+    checked: number;
+    notified: number;
+  }> => {
+    const isEnabled = process.env.ENABLE_BATCH_CRON === "true";
+    if (!isEnabled) {
+      console.log("Batch polling disabled (ENABLE_BATCH_CRON !== 'true')");
+      return { checked: 0, notified: 0 };
+    }
+
+    // Get all jobs in "processing" status that have a workflowId
+    const processingJobs = await ctx.runQuery(
+      internal.batchJobs.internalGetProcessingJobsWithWorkflow,
+      {}
+    );
+
+    let notified = 0;
+
+    for (const job of processingJobs) {
+      if (!job.batchId || !job.workflowId) continue;
+
+      try {
+        // Check status on OpenAI
+        const batch = await getBatch(job.batchId);
+        console.log(`Batch ${job.batchId} status: ${batch.status}`);
+
+        if (isBatchCompleted(batch.status) && batch.output_file_id) {
+          // Update job with output file ID
+          await ctx.runMutation(internal.batchJobs.internalSetOutputFileId, {
+            jobId: job.jobId,
+            outputFileId: batch.output_file_id,
+          });
+
+          // Send event to unblock the waiting workflow
+          await workflow.sendEvent(ctx, {
+            ...batchCompletedEvent,
+            workflowId: job.workflowId as WorkflowId,
+            value: { outputFileId: batch.output_file_id },
+          });
+
+          console.log(`Notified workflow ${job.workflowId} that batch ${job.jobId} completed`);
+          notified++;
+        } else if (isBatchFailed(batch.status)) {
+          // Mark job as failed
+          const errorMsg = batch.errors?.data?.[0]?.message ?? `Batch ${batch.status}`;
+          await ctx.runMutation(internal.batchJobs.internalMarkFailed, {
+            jobId: job.jobId,
+            error: errorMsg,
+          });
+
+          // Cancel the workflow
+          await workflow.cancel(ctx, job.workflowId as WorkflowId);
+          console.log(`Canceled workflow ${job.workflowId} due to batch failure: ${errorMsg}`);
+        }
+      } catch (error) {
+        console.error(`Error checking batch ${job.batchId}:`, error);
+      }
+    }
+
+    console.log(`Checked ${processingJobs.length} jobs, notified ${notified} workflows`);
+    return { checked: processingJobs.length, notified };
+  },
+});
+
+/**
+ * Start a new batch processing workflow if none are waiting.
+ * Called by daily cron as a safety net.
+ */
+export const startBatchWorkflow = internalAction({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, args): Promise<{
+    started: boolean;
+    reason: string;
+    workflowId?: string;
+  }> => {
+    const isEnabled = process.env.ENABLE_BATCH_CRON === "true";
+    if (!isEnabled) {
+      console.log("Batch processing disabled (ENABLE_BATCH_CRON !== 'true')");
+      return { started: false, reason: "disabled" };
+    }
+
+    // Check if any jobs are already processing (workflow waiting)
+    const processingJobs = await ctx.runQuery(
+      internal.batchJobs.internalGetProcessingJobs,
+      {}
+    );
+
+    if (processingJobs.length > 0) {
+      console.log("Batch already in progress:", processingJobs[0]!.jobId);
+      return { started: false, reason: "batch_in_progress" };
+    }
+
+    // Start new workflow
+    const workflowId = await workflow.start(
+      ctx,
+      internal.openAiBatch.batchProcessingWorkflow,
+      { limit: args.limit }
+    );
+
+    console.log("Started batch workflow:", workflowId);
+    return { started: true, reason: "started", workflowId };
+  },
+});
+
+/**
+ * Start the next batch workflow in the chain.
+ * Called by a workflow after it completes processing to continue the chain.
+ * Does NOT check ENABLE_BATCH_CRON since it's already part of an active chain.
+ */
+export const chainNextWorkflow = internalAction({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, args): Promise<{
+    started: boolean;
+    workflowId?: string;
+  }> => {
+    // Start next workflow in the chain
+    const workflowId = await workflow.start(
+      ctx,
+      internal.openAiBatch.batchProcessingWorkflow,
+      { limit: args.limit }
+    );
+
+    console.log("Chained next batch workflow:", workflowId);
+    return { started: true, workflowId };
+  },
+});
+
+// ============================================================================
+// Webhook Handler
+// ============================================================================
+
+/**
+ * OpenAI webhook event types we handle.
+ */
+interface OpenAIWebhookEvent {
+  object: "event";
+  id: string;
+  type: "batch.completed" | "batch.failed";
+  created_at: number;
+  data: {
+    id: string; // The batch ID
+    output_file_id?: string;
+    error_file_id?: string;
+    errors?: {
+      data?: Array<{ message?: string }>;
+    };
+  };
+}
+
+/**
+ * Verify webhook signature using Standard Webhooks spec.
+ * https://github.com/standard-webhooks/standard-webhooks/blob/main/spec/standard-webhooks.md
+ */
+async function verifyWebhookSignature(
+  body: string,
+  webhookId: string,
+  webhookTimestamp: string,
+  webhookSignature: string,
+  secret: string
+): Promise<boolean> {
+  // Check timestamp is recent (within 5 minutes)
+  const timestamp = parseInt(webhookTimestamp, 10);
+  const now = Math.floor(Date.now() / 1000);
+  if (Math.abs(now - timestamp) > 300) {
+    console.error("Webhook timestamp too old or in future");
+    return false;
+  }
+
+  // Build the signed payload: "webhook_id.timestamp.body"
+  const signedPayload = `${webhookId}.${webhookTimestamp}.${body}`;
+
+  // The secret is base64 encoded with "whsec_" prefix
+  const secretKey = secret.startsWith("whsec_") ? secret.slice(6) : secret;
+
+  // Decode the base64 secret
+  const keyBytes = Uint8Array.from(atob(secretKey), (c) => c.charCodeAt(0));
+
+  // Import the key for HMAC-SHA256
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    keyBytes,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  // Sign the payload
+  const signatureBytes = await crypto.subtle.sign(
+    "HMAC",
+    cryptoKey,
+    new TextEncoder().encode(signedPayload)
+  );
+
+  // Convert to base64
+  const expectedSignature =
+    "v1," + btoa(String.fromCharCode(...new Uint8Array(signatureBytes)));
+
+  // The webhook-signature header may contain multiple signatures separated by spaces
+  const signatures = webhookSignature.split(" ");
+  return signatures.some((sig) => sig === expectedSignature);
+}
+
+/**
+ * Handle incoming OpenAI webhook.
+ * Called by the HTTP endpoint when OpenAI sends batch.completed or batch.failed.
+ */
+export const handleWebhook = internalAction({
+  args: {
+    body: v.string(),
+    webhookId: v.string(),
+    webhookTimestamp: v.string(),
+    webhookSignature: v.string(),
+  },
+  handler: async (ctx, { body, webhookId, webhookTimestamp, webhookSignature }): Promise<{
+    success: boolean;
+    error?: string;
+  }> => {
+    const webhookSecret = process.env.OPENAI_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+      console.error("OPENAI_WEBHOOK_SECRET not configured");
+      return { success: false, error: "Webhook secret not configured" };
+    }
+
+    // Verify signature
+    const isValid = await verifyWebhookSignature(
+      body,
+      webhookId,
+      webhookTimestamp,
+      webhookSignature,
+      webhookSecret
+    );
+
+    if (!isValid) {
+      console.error("Invalid webhook signature");
+      return { success: false, error: "Invalid signature" };
+    }
+
+    // Parse the event
+    let event: OpenAIWebhookEvent;
+    try {
+      event = JSON.parse(body);
+    } catch {
+      console.error("Failed to parse webhook body");
+      return { success: false, error: "Invalid JSON" };
+    }
+
+    console.log(`Received webhook: ${event.type} for batch ${event.data.id}`);
+
+    // Find the batch job by OpenAI's batch ID
+    const job = await ctx.runQuery(internal.batchJobs.internalGetByBatchId, {
+      batchId: event.data.id,
+    });
+
+    if (!job) {
+      console.warn(`No batch job found for batchId: ${event.data.id}`);
+      // Return success anyway - might be a batch we don't track
+      return { success: true };
+    }
+
+    if (!job.workflowId) {
+      console.warn(`Batch job ${job.jobId} has no workflowId`);
+      return { success: true };
+    }
+
+    if (event.type === "batch.completed") {
+      const outputFileId = event.data.output_file_id;
+      if (!outputFileId) {
+        console.error("batch.completed event missing output_file_id");
+        return { success: false, error: "Missing output_file_id" };
+      }
+
+      // Update job with output file ID
+      await ctx.runMutation(internal.batchJobs.internalSetOutputFileId, {
+        jobId: job.jobId,
+        outputFileId,
+      });
+
+      // Send event to unblock the waiting workflow
+      await workflow.sendEvent(ctx, {
+        ...batchCompletedEvent,
+        workflowId: job.workflowId as WorkflowId,
+        value: { outputFileId },
+      });
+
+      console.log(`Notified workflow ${job.workflowId} that batch ${job.jobId} completed`);
+    } else if (event.type === "batch.failed") {
+      // Mark job as failed
+      const errorMsg =
+        event.data.errors?.data?.[0]?.message ?? "Batch failed (no error message)";
+
+      await ctx.runMutation(internal.batchJobs.internalMarkFailed, {
+        jobId: job.jobId,
+        error: errorMsg,
+      });
+
+      // Cancel the workflow
+      await workflow.cancel(ctx, job.workflowId as WorkflowId);
+      console.log(`Canceled workflow ${job.workflowId} due to batch failure: ${errorMsg}`);
+    }
+
+    return { success: true };
+  },
+});
+
+// ============================================================================
+// Workflow Manual Triggers (for testing)
+// ============================================================================
+
+/**
+ * Manually start a batch processing workflow.
+ * npx convex run openAiBatch:manualStartWorkflow '{"limit": 5}'
+ */
+export const manualStartWorkflow = action({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, args): Promise<{
+    started: boolean;
+    reason: string;
+    workflowId?: string;
+  }> => {
+    return await ctx.runAction(internal.openAiBatch.startBatchWorkflow, args);
+  },
+});
+
+/**
+ * Manually trigger polling for completed batches.
+ * npx convex run openAiBatch:manualPollBatches
+ */
+export const manualPollBatches = action({
+  args: {},
+  handler: async (ctx): Promise<{
+    checked: number;
+    notified: number;
+  }> => {
+    return await ctx.runAction(internal.openAiBatch.pollAndNotifyCompletedBatches, {});
   },
 });

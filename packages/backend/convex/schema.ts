@@ -181,47 +181,40 @@ export default defineSchema({
     .index("by_ein", ["ein"])
     .index("by_orgId", ["orgId"]),
 
-  // Batch jobs table for tracking OpenAI batch processing jobs
+  // Batch jobs table - audit log for OpenAI batch processing
+  // Orchestration is handled by the workflow component; this table tracks results
   batchJobs: defineTable({
-    // Job identifier (nanoid from original system)
+    // Job identifier
     jobId: v.string(),
 
-    // Job status
+    // Simplified status (workflow handles orchestration)
     status: v.union(
-      v.literal("pending"),
-      v.literal("generating"),
-      v.literal("uploading"),
-      v.literal("processing"),
-      v.literal("downloading"),
-      v.literal("completed"),
-      v.literal("failed"),
+      v.literal("processing"), // Submitted to OpenAI, workflow waiting
+      v.literal("completed"), // Successfully processed
+      v.literal("failed"), // Failed
     ),
 
     // Timestamps
-    createdAt: v.string(), // ISO timestamp
-    updatedAt: v.string(), // ISO timestamp
+    createdAt: v.string(),
+    completedAt: v.optional(v.string()),
 
-    // Batch configuration
+    // Batch info
     batchSize: v.number(),
-    totalCount: v.optional(v.number()),
 
     // OpenAI references
-    fileId: v.optional(v.string()), // OpenAI input file ID
     batchId: v.optional(v.string()), // OpenAI batch job ID
     outputFileId: v.optional(v.string()), // OpenAI output file ID
 
-    // Local file references
-    inputFile: v.optional(v.string()),
-    outputFile: v.optional(v.string()),
-
-    // Processing results
+    // Results
     processedCount: v.optional(v.number()),
+    errorCount: v.optional(v.number()),
     error: v.optional(v.string()),
 
-    // External references
-    artifactId: v.optional(v.string()), // GitHub artifact ID if stored
+    // Workflow integration
+    workflowId: v.optional(v.string()),
   })
     .index("by_jobId", ["jobId"])
+    .index("by_batchId", ["batchId"])
     .index("by_status", ["status"])
     .index("by_createdAt", ["createdAt"]),
 });

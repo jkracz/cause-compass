@@ -25,19 +25,27 @@ crons.daily(
 );
 
 /**
- * Hourly OpenAI batch processing job.
- * Checks for active batch jobs, processes completed ones, and starts new batches.
+ * Daily: Safety net to start batch workflows.
+ * Starts a workflow if none is currently processing.
+ *
+ * Normally, workflows chain themselves after completing (each workflow starts
+ * the next one). This daily cron acts as a safety net to restart processing
+ * if the chain breaks or runs out of work and new orgs become available.
  *
  * Only executes in production when ENABLE_BATCH_CRON=true is set.
  * In dev, use manual testing instead:
- *   npx convex run openAiBatch:manualCreateBatch '{"limit": 5}'
- *   npx convex run openAiBatch:manualCheckStatus '{"jobId": "..."}'
- *   npx convex run openAiBatch:manualProcessResults '{"jobId": "..."}'
+ *   npx convex run openAiBatch:manualStartWorkflow '{"limit": 5}'
+ *
+ * Note: Batch completion is handled by OpenAI webhooks (no polling needed).
+ * Set up webhook at: https://platform.openai.com/settings/project/webhooks
+ * Endpoint URL: https://<your-deployment>.convex.site/openai-webhook
+ * Events: batch.completed, batch.failed
  */
-crons.hourly(
-  "batch-processing",
-  { minuteUTC: 0 },
-  internal.openAiBatch.scheduledBatchProcessing
+crons.daily(
+  "start-batch-workflow",
+  { hourUTC: 1, minuteUTC: 0 },
+  internal.openAiBatch.startBatchWorkflow,
+  {}
 );
 
 export default crons;

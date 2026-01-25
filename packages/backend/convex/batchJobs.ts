@@ -1,6 +1,6 @@
 /**
- * CRUD operations for batch jobs.
- * Handles tracking OpenAI batch processing jobs for AI enrichment.
+ * Batch jobs - audit log for OpenAI batch processing.
+ * Orchestration is handled by the workflow component; this table tracks results.
  */
 
 import { v } from "convex/values";
@@ -10,17 +10,12 @@ import {
   internalMutation,
   internalQuery,
 } from "./_generated/server";
-import type { Doc } from "./_generated/dataModel";
 
-// Validator for batch job status
+// Simplified status validator (workflow handles orchestration)
 const batchJobStatusValidator = v.union(
-  v.literal("pending"),
-  v.literal("generating"),
-  v.literal("uploading"),
   v.literal("processing"),
-  v.literal("downloading"),
   v.literal("completed"),
-  v.literal("failed"),
+  v.literal("failed")
 );
 
 // Batch job document validator (for return types)
@@ -30,17 +25,14 @@ const batchJobValidator = v.object({
   jobId: v.string(),
   status: batchJobStatusValidator,
   createdAt: v.string(),
-  updatedAt: v.string(),
+  completedAt: v.optional(v.string()),
   batchSize: v.number(),
-  totalCount: v.optional(v.number()),
-  fileId: v.optional(v.string()),
   batchId: v.optional(v.string()),
   outputFileId: v.optional(v.string()),
-  inputFile: v.optional(v.string()),
-  outputFile: v.optional(v.string()),
   processedCount: v.optional(v.number()),
+  errorCount: v.optional(v.number()),
   error: v.optional(v.string()),
-  artifactId: v.optional(v.string()),
+  workflowId: v.optional(v.string()),
 });
 
 // ============================================================================
@@ -58,17 +50,6 @@ export const getByJobId = query({
       .query("batchJobs")
       .withIndex("by_jobId", (q) => q.eq("jobId", args.jobId))
       .first();
-  },
-});
-
-/**
- * Get a batch job by its Convex document ID.
- */
-export const getById = query({
-  args: { id: v.id("batchJobs") },
-  returns: v.union(batchJobValidator, v.null()),
-  handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
   },
 });
 
@@ -109,261 +90,152 @@ export const listAll = query({
 });
 
 /**
- * Get active batch jobs (jobs that are currently in progress).
+ * Get active batch jobs (jobs currently processing).
  */
 export const listActive = query({
   args: {},
   returns: v.array(batchJobValidator),
   handler: async (ctx) => {
-    const activeStatuses = [
-      "pending",
-      "generating",
-      "uploading",
-      "processing",
-      "downloading",
-    ] as const;
-
-    // Collect jobs from all active status indexes
-    const results: Doc<"batchJobs">[] = [];
-
-    for (const status of activeStatuses) {
-      const jobs = await ctx.db
-        .query("batchJobs")
-        .withIndex("by_status", (q) => q.eq("status", status))
-        .collect();
-      results.push(...jobs);
-    }
-
-    // Sort by createdAt descending
-    return results.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
+    return await ctx.db
+      .query("batchJobs")
+      .withIndex("by_status", (q) => q.eq("status", "processing"))
+      .collect();
   },
 });
 
 // ============================================================================
-// PUBLIC MUTATIONS
+// INTERNAL QUERIES
 // ============================================================================
 
 /**
- * Create a new batch job.
+ * Get a batch job by jobId.
  */
-export const create = mutation({
+export const internalGetByJobId = internalQuery({
+  args: { jobId: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("batchJobs")
+      .withIndex("by_jobId", (q) => q.eq("jobId", args.jobId))
+      .first();
+  },
+});
+
+/**
+ * Get all processing jobs.
+ */
+export const internalGetProcessingJobs = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("batchJobs")
+      .withIndex("by_status", (q) => q.eq("status", "processing"))
+      .collect();
+  },
+});
+
+/**
+ * Get processing jobs that have an associated workflow.
+ * Used by polling cron to find batches to check on OpenAI.
+ */
+export const internalGetProcessingJobsWithWorkflow = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const jobs = await ctx.db
+      .query("batchJobs")
+      .withIndex("by_status", (q) => q.eq("status", "processing"))
+      .collect();
+
+    return jobs.filter((job) => job.workflowId);
+  },
+});
+
+/**
+ * Get a batch job by OpenAI's batchId.
+ * Used by webhook handler to find the job when OpenAI sends completion event.
+ */
+export const internalGetByBatchId = internalQuery({
+  args: { batchId: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("batchJobs")
+      .withIndex("by_batchId", (q) => q.eq("batchId", args.batchId))
+      .first();
+  },
+});
+
+// ============================================================================
+// INTERNAL MUTATIONS
+// ============================================================================
+
+/**
+ * Create a new batch job in processing status.
+ */
+export const internalCreate = internalMutation({
   args: {
     jobId: v.string(),
     batchSize: v.number(),
-    totalCount: v.optional(v.number()),
+    batchId: v.string(),
   },
-  returns: v.id("batchJobs"),
   handler: async (ctx, args) => {
-    const now = new Date().toISOString();
-
     return await ctx.db.insert("batchJobs", {
       jobId: args.jobId,
-      status: "pending",
-      createdAt: now,
-      updatedAt: now,
+      status: "processing",
+      createdAt: new Date().toISOString(),
       batchSize: args.batchSize,
-      totalCount: args.totalCount,
+      batchId: args.batchId,
     });
   },
 });
 
 /**
- * Update a batch job's status.
+ * Set the workflow ID on a batch job.
  */
-export const updateStatus = mutation({
+export const internalSetWorkflowId = internalMutation({
   args: {
     jobId: v.string(),
-    status: batchJobStatusValidator,
-    error: v.optional(v.string()),
+    workflowId: v.string(),
   },
-  returns: v.union(batchJobValidator, v.null()),
-  handler: async (ctx, args) => {
+  handler: async (ctx, { jobId, workflowId }) => {
     const job = await ctx.db
       .query("batchJobs")
-      .withIndex("by_jobId", (q) => q.eq("jobId", args.jobId))
+      .withIndex("by_jobId", (q) => q.eq("jobId", jobId))
       .first();
 
-    if (!job) {
-      return null;
+    if (job) {
+      await ctx.db.patch(job._id, { workflowId });
     }
-
-    const updates: {
-      status: typeof args.status;
-      updatedAt: string;
-      error?: string;
-    } = {
-      status: args.status,
-      updatedAt: new Date().toISOString(),
-    };
-
-    if (args.error !== undefined) {
-      updates.error = args.error;
-    }
-
-    await ctx.db.patch(job._id, updates);
-
-    return {
-      ...job,
-      ...updates,
-    };
   },
 });
 
 /**
- * Update a batch job with OpenAI file ID (after file upload).
+ * Set the output file ID (called when OpenAI batch completes).
  */
-export const updateFileId = mutation({
-  args: {
-    jobId: v.string(),
-    fileId: v.string(),
-  },
-  returns: v.union(batchJobValidator, v.null()),
-  handler: async (ctx, args) => {
-    const job = await ctx.db
-      .query("batchJobs")
-      .withIndex("by_jobId", (q) => q.eq("jobId", args.jobId))
-      .first();
-
-    if (!job) {
-      return null;
-    }
-
-    const updates = {
-      fileId: args.fileId,
-      updatedAt: new Date().toISOString(),
-    };
-
-    await ctx.db.patch(job._id, updates);
-
-    return {
-      ...job,
-      ...updates,
-    };
-  },
-});
-
-/**
- * Update a batch job with OpenAI batch ID (after batch creation).
- */
-export const updateBatchId = mutation({
-  args: {
-    jobId: v.string(),
-    batchId: v.string(),
-  },
-  returns: v.union(batchJobValidator, v.null()),
-  handler: async (ctx, args) => {
-    const job = await ctx.db
-      .query("batchJobs")
-      .withIndex("by_jobId", (q) => q.eq("jobId", args.jobId))
-      .first();
-
-    if (!job) {
-      return null;
-    }
-
-    const updates = {
-      batchId: args.batchId,
-      updatedAt: new Date().toISOString(),
-    };
-
-    await ctx.db.patch(job._id, updates);
-
-    return {
-      ...job,
-      ...updates,
-    };
-  },
-});
-
-/**
- * Update a batch job with OpenAI output file ID (after batch completion).
- */
-export const updateOutputFileId = mutation({
+export const internalSetOutputFileId = internalMutation({
   args: {
     jobId: v.string(),
     outputFileId: v.string(),
   },
-  returns: v.union(batchJobValidator, v.null()),
-  handler: async (ctx, args) => {
+  handler: async (ctx, { jobId, outputFileId }) => {
     const job = await ctx.db
       .query("batchJobs")
-      .withIndex("by_jobId", (q) => q.eq("jobId", args.jobId))
+      .withIndex("by_jobId", (q) => q.eq("jobId", jobId))
       .first();
 
-    if (!job) {
-      return null;
+    if (job) {
+      await ctx.db.patch(job._id, { outputFileId });
     }
-
-    const updates = {
-      outputFileId: args.outputFileId,
-      updatedAt: new Date().toISOString(),
-    };
-
-    await ctx.db.patch(job._id, updates);
-
-    return {
-      ...job,
-      ...updates,
-    };
-  },
-});
-
-/**
- * Update processing progress for a batch job.
- */
-export const updateProgress = mutation({
-  args: {
-    jobId: v.string(),
-    processedCount: v.number(),
-    totalCount: v.optional(v.number()),
-  },
-  returns: v.union(batchJobValidator, v.null()),
-  handler: async (ctx, args) => {
-    const job = await ctx.db
-      .query("batchJobs")
-      .withIndex("by_jobId", (q) => q.eq("jobId", args.jobId))
-      .first();
-
-    if (!job) {
-      return null;
-    }
-
-    const updates: {
-      processedCount: number;
-      updatedAt: string;
-      totalCount?: number;
-    } = {
-      processedCount: args.processedCount,
-      updatedAt: new Date().toISOString(),
-    };
-
-    if (args.totalCount !== undefined) {
-      updates.totalCount = args.totalCount;
-    }
-
-    await ctx.db.patch(job._id, updates);
-
-    return {
-      ...job,
-      ...updates,
-    };
   },
 });
 
 /**
  * Mark a batch job as completed.
  */
-export const markCompleted = mutation({
+export const internalMarkCompleted = internalMutation({
   args: {
     jobId: v.string(),
-    processedCount: v.optional(v.number()),
-    outputFile: v.optional(v.string()),
-    artifactId: v.optional(v.string()),
+    processedCount: v.number(),
+    errorCount: v.optional(v.number()),
   },
-  returns: v.union(batchJobValidator, v.null()),
   handler: async (ctx, args) => {
     const job = await ctx.db
       .query("batchJobs")
@@ -371,48 +243,26 @@ export const markCompleted = mutation({
       .first();
 
     if (!job) {
-      return null;
+      throw new Error(`Batch job not found: ${args.jobId}`);
     }
 
-    const updates: {
-      status: "completed";
-      updatedAt: string;
-      processedCount?: number;
-      outputFile?: string;
-      artifactId?: string;
-    } = {
+    await ctx.db.patch(job._id, {
       status: "completed",
-      updatedAt: new Date().toISOString(),
-    };
-
-    if (args.processedCount !== undefined) {
-      updates.processedCount = args.processedCount;
-    }
-    if (args.outputFile !== undefined) {
-      updates.outputFile = args.outputFile;
-    }
-    if (args.artifactId !== undefined) {
-      updates.artifactId = args.artifactId;
-    }
-
-    await ctx.db.patch(job._id, updates);
-
-    return {
-      ...job,
-      ...updates,
-    };
+      completedAt: new Date().toISOString(),
+      processedCount: args.processedCount,
+      errorCount: args.errorCount,
+    });
   },
 });
 
 /**
  * Mark a batch job as failed.
  */
-export const markFailed = mutation({
+export const internalMarkFailed = internalMutation({
   args: {
     jobId: v.string(),
     error: v.string(),
   },
-  returns: v.union(batchJobValidator, v.null()),
   handler: async (ctx, args) => {
     const job = await ctx.db
       .query("batchJobs")
@@ -420,23 +270,20 @@ export const markFailed = mutation({
       .first();
 
     if (!job) {
-      return null;
+      throw new Error(`Batch job not found: ${args.jobId}`);
     }
 
-    const updates = {
-      status: "failed" as const,
+    await ctx.db.patch(job._id, {
+      status: "failed",
+      completedAt: new Date().toISOString(),
       error: args.error,
-      updatedAt: new Date().toISOString(),
-    };
-
-    await ctx.db.patch(job._id, updates);
-
-    return {
-      ...job,
-      ...updates,
-    };
+    });
   },
 });
+
+// ============================================================================
+// PUBLIC MUTATIONS (for admin/debugging)
+// ============================================================================
 
 /**
  * Delete a batch job by jobId.
@@ -456,267 +303,5 @@ export const deleteByJobId = mutation({
     }
 
     return false;
-  },
-});
-
-// ============================================================================
-// INTERNAL QUERIES (for use by other Convex functions)
-// ============================================================================
-
-/**
- * Internal query to get a batch job by jobId.
- */
-export const internalGetByJobId = internalQuery({
-  args: { jobId: v.string() },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("batchJobs")
-      .withIndex("by_jobId", (q) => q.eq("jobId", args.jobId))
-      .first();
-  },
-});
-
-/**
- * Internal query to get jobs that are processing (for status checks).
- */
-export const internalGetProcessingJobs = internalQuery({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.db
-      .query("batchJobs")
-      .withIndex("by_status", (q) => q.eq("status", "processing"))
-      .collect();
-  },
-});
-
-/**
- * Internal query to list batch jobs by status.
- */
-export const internalListByStatus = internalQuery({
-  args: {
-    status: batchJobStatusValidator,
-    limit: v.optional(v.number()),
-  },
-  handler: async (ctx, args) => {
-    const limit = args.limit ?? 50;
-    return await ctx.db
-      .query("batchJobs")
-      .withIndex("by_status", (q) => q.eq("status", args.status))
-      .take(limit);
-  },
-});
-
-// ============================================================================
-// INTERNAL MUTATIONS (for use by actions and other internal functions)
-// ============================================================================
-
-/**
- * Internal mutation to create a batch job.
- */
-export const internalCreate = internalMutation({
-  args: {
-    jobId: v.string(),
-    batchSize: v.number(),
-    totalCount: v.optional(v.number()),
-    inputFile: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const now = new Date().toISOString();
-
-    return await ctx.db.insert("batchJobs", {
-      jobId: args.jobId,
-      status: "pending",
-      createdAt: now,
-      updatedAt: now,
-      batchSize: args.batchSize,
-      totalCount: args.totalCount,
-      inputFile: args.inputFile,
-    });
-  },
-});
-
-/**
- * Internal mutation to update batch job status.
- */
-export const internalUpdateStatus = internalMutation({
-  args: {
-    jobId: v.string(),
-    status: batchJobStatusValidator,
-    error: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const job = await ctx.db
-      .query("batchJobs")
-      .withIndex("by_jobId", (q) => q.eq("jobId", args.jobId))
-      .first();
-
-    if (!job) {
-      throw new Error(`Batch job not found: ${args.jobId}`);
-    }
-
-    const updates: {
-      status: typeof args.status;
-      updatedAt: string;
-      error?: string;
-    } = {
-      status: args.status,
-      updatedAt: new Date().toISOString(),
-    };
-
-    if (args.error !== undefined) {
-      updates.error = args.error;
-    }
-
-    await ctx.db.patch(job._id, updates);
-  },
-});
-
-/**
- * Internal mutation to update OpenAI references.
- */
-export const internalUpdateOpenAIRefs = internalMutation({
-  args: {
-    jobId: v.string(),
-    fileId: v.optional(v.string()),
-    batchId: v.optional(v.string()),
-    outputFileId: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const job = await ctx.db
-      .query("batchJobs")
-      .withIndex("by_jobId", (q) => q.eq("jobId", args.jobId))
-      .first();
-
-    if (!job) {
-      throw new Error(`Batch job not found: ${args.jobId}`);
-    }
-
-    const updates: {
-      updatedAt: string;
-      fileId?: string;
-      batchId?: string;
-      outputFileId?: string;
-    } = {
-      updatedAt: new Date().toISOString(),
-    };
-
-    if (args.fileId !== undefined) {
-      updates.fileId = args.fileId;
-    }
-    if (args.batchId !== undefined) {
-      updates.batchId = args.batchId;
-    }
-    if (args.outputFileId !== undefined) {
-      updates.outputFileId = args.outputFileId;
-    }
-
-    await ctx.db.patch(job._id, updates);
-  },
-});
-
-/**
- * Internal mutation to update processing progress.
- */
-export const internalUpdateProgress = internalMutation({
-  args: {
-    jobId: v.string(),
-    processedCount: v.number(),
-    totalCount: v.optional(v.number()),
-  },
-  handler: async (ctx, args) => {
-    const job = await ctx.db
-      .query("batchJobs")
-      .withIndex("by_jobId", (q) => q.eq("jobId", args.jobId))
-      .first();
-
-    if (!job) {
-      throw new Error(`Batch job not found: ${args.jobId}`);
-    }
-
-    const updates: {
-      processedCount: number;
-      updatedAt: string;
-      totalCount?: number;
-    } = {
-      processedCount: args.processedCount,
-      updatedAt: new Date().toISOString(),
-    };
-
-    if (args.totalCount !== undefined) {
-      updates.totalCount = args.totalCount;
-    }
-
-    await ctx.db.patch(job._id, updates);
-  },
-});
-
-/**
- * Internal mutation to mark a batch job as completed.
- */
-export const internalMarkCompleted = internalMutation({
-  args: {
-    jobId: v.string(),
-    processedCount: v.optional(v.number()),
-    outputFile: v.optional(v.string()),
-    artifactId: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const job = await ctx.db
-      .query("batchJobs")
-      .withIndex("by_jobId", (q) => q.eq("jobId", args.jobId))
-      .first();
-
-    if (!job) {
-      throw new Error(`Batch job not found: ${args.jobId}`);
-    }
-
-    const updates: {
-      status: "completed";
-      updatedAt: string;
-      processedCount?: number;
-      outputFile?: string;
-      artifactId?: string;
-    } = {
-      status: "completed",
-      updatedAt: new Date().toISOString(),
-    };
-
-    if (args.processedCount !== undefined) {
-      updates.processedCount = args.processedCount;
-    }
-    if (args.outputFile !== undefined) {
-      updates.outputFile = args.outputFile;
-    }
-    if (args.artifactId !== undefined) {
-      updates.artifactId = args.artifactId;
-    }
-
-    await ctx.db.patch(job._id, updates);
-  },
-});
-
-/**
- * Internal mutation to mark a batch job as failed.
- */
-export const internalMarkFailed = internalMutation({
-  args: {
-    jobId: v.string(),
-    error: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const job = await ctx.db
-      .query("batchJobs")
-      .withIndex("by_jobId", (q) => q.eq("jobId", args.jobId))
-      .first();
-
-    if (!job) {
-      throw new Error(`Batch job not found: ${args.jobId}`);
-    }
-
-    await ctx.db.patch(job._id, {
-      status: "failed",
-      error: args.error,
-      updatedAt: new Date().toISOString(),
-    });
   },
 });
