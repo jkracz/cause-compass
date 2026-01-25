@@ -4,7 +4,11 @@
  */
 
 import { v } from "convex/values";
-import { internalAction, internalMutation, internalQuery } from "./_generated/server";
+import {
+  internalAction,
+  internalMutation,
+  internalQuery,
+} from "./_generated/server";
 import { internal } from "./_generated/api";
 import {
   googleSearch,
@@ -24,7 +28,9 @@ export const internalGetOrgsToSearch = internalQuery({
   handler: async (ctx, { limit }) => {
     const orgs = await ctx.db
       .query("organizations")
-      .withIndex("by_enrichmentStage", (q) => q.eq("enrichmentStage", "created"))
+      .withIndex("by_enrichmentStage", (q) =>
+        q.eq("enrichmentStage", "created"),
+      )
       .take(limit);
 
     return orgs.map((org) => ({
@@ -108,7 +114,10 @@ export const searchOrganizations = internalAction({
   args: {
     limit: v.optional(v.number()),
   },
-  handler: async (ctx, { limit }): Promise<{
+  handler: async (
+    ctx,
+    { limit },
+  ): Promise<{
     success: boolean;
     processed: number;
     errors: number;
@@ -125,9 +134,12 @@ export const searchOrganizations = internalAction({
     const totalLimit = limit ?? defaultLimit;
 
     // Fetch orgs to search
-    const orgs = await ctx.runQuery(internal.searchOrgs.internalGetOrgsToSearch, {
-      limit: totalLimit,
-    });
+    const orgs = await ctx.runQuery(
+      internal.searchOrgs.internalGetOrgsToSearch,
+      {
+        limit: totalLimit,
+      },
+    );
 
     if (orgs.length === 0) {
       console.log("No organizations found with enrichmentStage='created'");
@@ -142,7 +154,8 @@ export const searchOrganizations = internalAction({
     // Process orgs sequentially, rotating through API keys
     for (let i = 0; i < orgs.length; i++) {
       const org = orgs[i]!;
-      const keyIndex = Math.floor(i / SEARCH_LIMIT_PER_KEY) % availableKeys.length;
+      const keyIndex =
+        Math.floor(i / SEARCH_LIMIT_PER_KEY) % availableKeys.length;
       const keyType = availableKeys[keyIndex]!;
 
       const searchQuery = `${org.name} ${org.city} ${org.state}`;
@@ -159,11 +172,16 @@ export const searchOrganizations = internalAction({
         });
 
         processed++;
-        console.log(`[${i + 1}/${orgs.length}] Searched: ${org.name} (${keyType})`);
+        console.log(
+          `[${i + 1}/${orgs.length}] Searched: ${org.name} (${keyType})`,
+        );
       } catch (error) {
         errors++;
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`[${i + 1}/${orgs.length}] Error searching ${org.name}: ${errorMessage}`);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        console.error(
+          `[${i + 1}/${orgs.length}] Error searching ${org.name}: ${errorMessage}`,
+        );
 
         // Mark as searched to prevent infinite retries
         try {
@@ -171,7 +189,10 @@ export const searchOrganizations = internalAction({
             orgId: org._id,
           });
         } catch (patchError) {
-          console.error(`Failed to mark org ${org.ein} as searched:`, patchError);
+          console.error(
+            `Failed to mark org ${org.ein} as searched:`,
+            patchError,
+          );
         }
       }
 
@@ -182,7 +203,7 @@ export const searchOrganizations = internalAction({
     }
 
     console.log(
-      `Search complete. Processed: ${processed}, Errors: ${errors}, Total: ${orgs.length}`
+      `Search complete. Processed: ${processed}, Errors: ${errors}, Total: ${orgs.length}`,
     );
 
     return {
@@ -219,7 +240,9 @@ export const scheduledSearchOrganizations = internalAction({
     const isEnabled = process.env.ENABLE_SEARCH_CRON === "true";
 
     if (!isEnabled) {
-      console.log("Search cron is disabled (ENABLE_SEARCH_CRON !== 'true'). Skipping.");
+      console.log(
+        "Search cron is disabled (ENABLE_SEARCH_CRON !== 'true'). Skipping.",
+      );
       return { skipped: true, reason: "ENABLE_SEARCH_CRON not set to true" };
     }
 

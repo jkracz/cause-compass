@@ -33,8 +33,8 @@ export const getBySlugs = query({
         ctx.db
           .query("organizations")
           .withIndex("by_slug", (q) => q.eq("slug", slug))
-          .first()
-      )
+          .first(),
+      ),
     );
     return orgs.filter(Boolean);
   },
@@ -56,12 +56,10 @@ export const getLikedByUser = query({
         ctx.db
           .query("organizations")
           .withIndex("by_slug", (q) => q.eq("slug", slug))
-          .first()
-      )
+          .first(),
+      ),
     );
     // Filter out nulls with proper type narrowing
-    return orgs.filter(
-      (org): org is NonNullable<typeof org> => org !== null
-    );
+    return orgs.filter((org): org is NonNullable<typeof org> => org !== null);
   },
 });

@@ -1,6 +1,10 @@
 import { z } from "zod";
 import axios from "axios";
-import { TaxExemptOrganization, OllamaChatResponse, OllamaGenerateResponse } from "@cause/types";
+import {
+  TaxExemptOrganization,
+  OllamaChatResponse,
+  OllamaGenerateResponse,
+} from "@cause/types";
 import {
   connectToDatabase,
   disconnectFromDatabase,
@@ -276,12 +280,15 @@ async function processOrganization(org: TaxExemptOrganization) {
     // Combine system and user messages into a single prompt for generate API
     const prompt = `${systemMessage}\n\n${userMessage}`;
 
-    const response = await axios.post<OllamaGenerateResponse>(OLLAMA_API_URL_GENERATE, {
-      model: MODEL_NAME,
-      prompt: prompt,
-      stream: false,
-      format: "json",
-    });
+    const response = await axios.post<OllamaGenerateResponse>(
+      OLLAMA_API_URL_GENERATE,
+      {
+        model: MODEL_NAME,
+        prompt: prompt,
+        stream: false,
+        format: "json",
+      },
+    );
     console.log("response_______________________", response);
 
     // Extract and validate the response

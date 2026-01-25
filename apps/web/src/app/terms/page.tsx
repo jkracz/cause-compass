@@ -118,10 +118,10 @@ export default function TermsPage() {
               <section>
                 <h2 className="mb-3 text-xl font-semibold">7. Disclaimer</h2>
                 <p className="text-muted-foreground">
-                  The information on this website is provided on an &apos;as is&apos;
-                  basis. To the fullest extent permitted by law, this Company
-                  excludes all representations, warranties, conditions and terms
-                  related to our website and the use of this website.
+                  The information on this website is provided on an &apos;as
+                  is&apos; basis. To the fullest extent permitted by law, this
+                  Company excludes all representations, warranties, conditions
+                  and terms related to our website and the use of this website.
                 </p>
               </section>
 

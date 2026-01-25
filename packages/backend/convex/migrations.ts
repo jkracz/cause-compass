@@ -13,8 +13,7 @@ export const migrations = new Migrations<DataModel>(components.migrations);
  */
 export const linkSearchResults = migrations.define({
   table: "searchResults",
-  customRange: (query) =>
-    query.withIndex("by_ein", (q) => q.gt("ein", "")),
+  customRange: (query) => query.withIndex("by_ein", (q) => q.gt("ein", "")),
   migrateOne: async (ctx, searchResult) => {
     if (searchResult.orgId) {
       return; // Already linked
@@ -38,8 +37,7 @@ export const linkSearchResults = migrations.define({
  */
 export const linkCrawlResults = migrations.define({
   table: "crawlResults",
-  customRange: (query) =>
-    query.withIndex("by_ein", (q) => q.gt("ein", "")),
+  customRange: (query) => query.withIndex("by_ein", (q) => q.gt("ein", "")),
   migrateOne: async (ctx, crawlResult) => {
     if (crawlResult.orgId) {
       return; // Already linked
@@ -63,8 +61,7 @@ export const linkCrawlResults = migrations.define({
  */
 export const linkAiConfirmations = migrations.define({
   table: "aiConfirmations",
-  customRange: (query) =>
-    query.withIndex("by_ein", (q) => q.gt("ein", "")),
+  customRange: (query) => query.withIndex("by_ein", (q) => q.gt("ein", "")),
   migrateOne: async (ctx, aiConfirmation) => {
     if (aiConfirmation.orgId) {
       return; // Already linked
@@ -88,8 +85,7 @@ export const linkAiConfirmations = migrations.define({
  */
 export const populateAiConfirmationInputs = migrations.define({
   table: "aiConfirmations",
-  customRange: (query) =>
-    query.withIndex("by_ein", (q) => q.gt("ein", "")),
+  customRange: (query) => query.withIndex("by_ein", (q) => q.gt("ein", "")),
   migrateOne: async (ctx, aiConfirmation) => {
     // Skip if inputs are already populated
     if (
@@ -118,8 +114,10 @@ export const populateAiConfirmationInputs = migrations.define({
     if (searchResultIds.length > 0 || crawlResultIds.length > 0) {
       return {
         inputs: {
-          searchResultIds: searchResultIds.length > 0 ? searchResultIds : undefined,
-          crawlResultIds: crawlResultIds.length > 0 ? crawlResultIds : undefined,
+          searchResultIds:
+            searchResultIds.length > 0 ? searchResultIds : undefined,
+          crawlResultIds:
+            crawlResultIds.length > 0 ? crawlResultIds : undefined,
         },
       };
     }

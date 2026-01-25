@@ -201,7 +201,10 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
 
               {locationPermission === null && (
                 <div className="space-y-3">
-                  <Button onClick={() => void handleLocationRequest()} className="w-full">
+                  <Button
+                    onClick={() => void handleLocationRequest()}
+                    className="w-full"
+                  >
                     Share My Location
                   </Button>
                   <Button

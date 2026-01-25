@@ -1,26 +1,26 @@
 {
-    "0": {
-        "code": "0",
-        "type": "Unknown"
-    },
-    "1": {
-        "code": "1",
-        "type": "Corporation"
-    },
-    "3": {
-        "code": "3",
-        "type": "Co-operative"
-    },
-    "5": {
-        "code": "5",
-        "type": "Association"
-    },
-    "2": {
-        "code": "2",
-        "type": "Trust"
-    },
-    "4": {
-        "code": "4",
-        "type": "Partnership"
-    }
+  "0": {
+    "code": "0",
+    "type": "Unknown"
+  },
+  "1": {
+    "code": "1",
+    "type": "Corporation"
+  },
+  "3": {
+    "code": "3",
+    "type": "Co-operative"
+  },
+  "5": {
+    "code": "5",
+    "type": "Association"
+  },
+  "2": {
+    "code": "2",
+    "type": "Trust"
+  },
+  "4": {
+    "code": "4",
+    "type": "Partnership"
+  }
 }

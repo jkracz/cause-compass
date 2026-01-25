@@ -228,7 +228,11 @@ export function OrganizationModal({
           )}
 
           {!showRemoveButton && (
-            <Button variant="outline" className="w-full" onClick={() => void handleShare()}>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => void handleShare()}
+            >
               <Share2 className="mr-2 h-4 w-4" />
               Share Organization
             </Button>
@@ -244,8 +248,8 @@ export function OrganizationModal({
           <AlertDialogHeader>
             <AlertDialogTitle>Remove Organization?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove &quot;{organization.name}&quot; from your
-              saved organizations? You can always add it back later by
+              Are you sure you want to remove &quot;{organization.name}&quot;
+              from your saved organizations? You can always add it back later by
               discovering it again.
             </AlertDialogDescription>
           </AlertDialogHeader>

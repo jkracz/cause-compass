@@ -24,10 +24,10 @@ pnpm check-types  # Type check
 
 ## Routes
 
-| Path | Description |
-|------|-------------|
-| `/` | Landing page |
-| `/onboarding` | User preference collection |
-| `/discover` | Browse organizations |
-| `/my-causes` | Liked organizations dashboard |
-| `/org/[id]` | Organization detail |
+| Path          | Description                   |
+| ------------- | ----------------------------- |
+| `/`           | Landing page                  |
+| `/onboarding` | User preference collection    |
+| `/discover`   | Browse organizations          |
+| `/my-causes`  | Liked organizations dashboard |
+| `/org/[id]`   | Organization detail           |

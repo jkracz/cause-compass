@@ -16,7 +16,9 @@ export const internalGetOrgsForAiConfirmation = internalQuery({
     // Get organizations in "crawled" stage (have search + crawl results but no AI confirmation)
     const orgs = await ctx.db
       .query("organizations")
-      .withIndex("by_enrichmentStage", (q) => q.eq("enrichmentStage", "crawled"))
+      .withIndex("by_enrichmentStage", (q) =>
+        q.eq("enrichmentStage", "crawled"),
+      )
       .take(limit);
 
     // For each org, fetch the associated crawl results
@@ -41,7 +43,7 @@ export const internalGetOrgsForAiConfirmation = internalQuery({
             textContent: cr.textContent ?? "",
           })),
         };
-      })
+      }),
     );
 
     // Filter out orgs with no crawl data

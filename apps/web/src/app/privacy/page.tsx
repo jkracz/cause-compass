@@ -43,7 +43,9 @@ export default function PrivacyPage() {
                   <li>Match you with relevant nonprofits</li>
                   <li>Improve our matching algorithm</li>
                   <li>Provide customer support</li>
-                  <li>Send you updates about organizations you&apos;ve liked</li>
+                  <li>
+                    Send you updates about organizations you&apos;ve liked
+                  </li>
                   <li>Improve our services and user experience</li>
                 </ul>
               </section>

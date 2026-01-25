@@ -84,7 +84,9 @@ export default function Discover({ preloadedOrganizations }: DiscoverProps) {
         total_liked: likedOrgs.length,
         total_skipped: organizations.length - likedOrgs.length,
         like_rate:
-          organizations.length > 0 ? likedOrgs.length / organizations.length : 0,
+          organizations.length > 0
+            ? likedOrgs.length / organizations.length
+            : 0,
       });
     }
   }, [isFinished, organizations, likedOrgs]);

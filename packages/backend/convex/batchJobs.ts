@@ -15,7 +15,7 @@ import {
 const batchJobStatusValidator = v.union(
   v.literal("processing"),
   v.literal("completed"),
-  v.literal("failed")
+  v.literal("failed"),
 );
 
 // Batch job document validator (for return types)

@@ -5,7 +5,7 @@ import Discover from "@/components/discover";
 export async function DiscoverContent({ userId: _userId }: { userId: string }) {
   const preloadedOrganizations = await preloadQuery(
     api.organizations.getRecommended,
-    { limit: 10 }
+    { limit: 10 },
   );
   return <Discover preloadedOrganizations={preloadedOrganizations} />;
 }

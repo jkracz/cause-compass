@@ -76,8 +76,16 @@ export interface GoogleSearchResponse {
   kind?: string;
   url?: { type: string; template: string };
   queries?: {
-    request?: Array<{ totalResults: string; count: number; startIndex: number }>;
-    nextPage?: Array<{ totalResults: string; count: number; startIndex: number }>;
+    request?: Array<{
+      totalResults: string;
+      count: number;
+      startIndex: number;
+    }>;
+    nextPage?: Array<{
+      totalResults: string;
+      count: number;
+      startIndex: number;
+    }>;
   };
   context?: { title: string };
   searchInformation?: {
@@ -99,12 +107,14 @@ export interface GoogleSearchResponse {
  */
 export async function googleSearch(
   query: string,
-  keyType: SearchKeyType
+  keyType: SearchKeyType,
 ): Promise<GoogleSearchResponse> {
   const config = getKeyConfig(keyType);
 
   if (!config.apiKey) {
-    throw new Error(`Missing GOOGLE_SEARCH_API_KEY_${keyType} environment variable`);
+    throw new Error(
+      `Missing GOOGLE_SEARCH_API_KEY_${keyType} environment variable`,
+    );
   }
   if (!config.searchEngineId) {
     throw new Error(`Missing SEARCH_ENGINE_ID_${keyType} environment variable`);
@@ -123,7 +133,7 @@ export async function googleSearch(
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(
-      `Google Search API error (${response.status}): ${errorText}`
+      `Google Search API error (${response.status}): ${errorText}`,
     );
   }
 

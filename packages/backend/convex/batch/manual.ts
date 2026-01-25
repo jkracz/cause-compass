@@ -19,14 +19,19 @@ export const manualCreateBatch = action({
   args: {
     limit: v.optional(v.number()),
   },
-  handler: async (ctx, { limit }): Promise<{
+  handler: async (
+    ctx,
+    { limit },
+  ): Promise<{
     success: boolean;
     jobId: string | null;
     batchId: string | null;
     totalCount: number;
     error?: string;
   }> => {
-    return await ctx.runAction(internal.batch.actions.createBatchJob, { limit });
+    return await ctx.runAction(internal.batch.actions.createBatchJob, {
+      limit,
+    });
   },
 });
 
@@ -37,13 +42,18 @@ export const manualProcessResults = action({
   args: {
     jobId: v.string(),
   },
-  handler: async (ctx, { jobId }): Promise<{
+  handler: async (
+    ctx,
+    { jobId },
+  ): Promise<{
     success: boolean;
     processedCount: number;
     errorCount: number;
     error?: string;
   }> => {
-    return await ctx.runAction(internal.batch.actions.processResults, { jobId });
+    return await ctx.runAction(internal.batch.actions.processResults, {
+      jobId,
+    });
   },
 });
 
@@ -52,12 +62,18 @@ export const manualProcessResults = action({
  */
 export const manualStartWorkflow = action({
   args: { limit: v.optional(v.number()) },
-  handler: async (ctx, args): Promise<{
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{
     started: boolean;
     reason: string;
     workflowId?: string;
   }> => {
-    return await ctx.runAction(internal.batch.orchestration.startBatchWorkflow, args);
+    return await ctx.runAction(
+      internal.batch.orchestration.startBatchWorkflow,
+      args,
+    );
   },
 });
 
@@ -66,10 +82,15 @@ export const manualStartWorkflow = action({
  */
 export const manualPollBatches = action({
   args: {},
-  handler: async (ctx): Promise<{
+  handler: async (
+    ctx,
+  ): Promise<{
     checked: number;
     notified: number;
   }> => {
-    return await ctx.runAction(internal.batch.orchestration.pollAndNotifyCompletedBatches, {});
+    return await ctx.runAction(
+      internal.batch.orchestration.pollAndNotifyCompletedBatches,
+      {},
+    );
   },
 });

@@ -22,11 +22,11 @@ pnpm run transform-to-convex             # Export to Convex
 
 Located in `src/utils/parseUtils.ts`:
 
-| Signal | Points |
-|--------|--------|
-| Exact org name match | +100 |
-| Acronym match | +50 |
-| Keyword match | +20 each |
-| `.org` domain | +20 |
+| Signal               | Points   |
+| -------------------- | -------- |
+| Exact org name match | +100     |
+| Acronym match        | +50      |
+| Keyword match        | +20 each |
+| `.org` domain        | +20      |
 
 Filters: social media platforms, unwanted subdomains (`blog.*`, `shop.*`, `staging.*`, etc.)

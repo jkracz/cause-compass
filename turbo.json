@@ -33,7 +33,15 @@
     },
     "lint": {
       "dependsOn": [],
-      "inputs": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.mjs", "!dist/**", "eslint.config.*", "tsconfig.json"]
+      "inputs": [
+        "**/*.ts",
+        "**/*.tsx",
+        "**/*.js",
+        "**/*.mjs",
+        "!dist/**",
+        "eslint.config.*",
+        "tsconfig.json"
+      ]
     },
     "check-types": {
       "dependsOn": [],
