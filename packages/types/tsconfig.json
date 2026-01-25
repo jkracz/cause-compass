@@ -1,17 +1,17 @@
 {
-    "extends": "@cause/typescript-config/base.json",
-    "compilerOptions": {
-        "outDir": "./dist",
-        "rootDir": "./src",
-        "declaration": true,
-        "declarationMap": true,
-        "sourceMap": true
-    },
-    "include": ["src/**/*"],
-    "exclude": ["dist", "node_modules"],
-    "scripts": {
-        "dev": "tsc --watch",
-        "build": "tsc",
-        "check-types": "tsc --noEmit"
-    }
+  "extends": "@cause/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["dist", "node_modules"],
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc",
+    "check-types": "tsc --noEmit"
+  }
 }

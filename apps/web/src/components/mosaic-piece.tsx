@@ -9,14 +9,23 @@ interface MosaicPieceProps {
   isActive: boolean;
 }
 
+const colorPalettes = [
+  ["#FF1493", "#8A2BE2", "#4B0082"], // Pink to Purple
+  ["#00BFFF", "#1E90FF", "#4169E1"], // Blue spectrum
+  ["#00FF7F", "#2ECC71", "#1ABC9C"], // Green/Teal
+  ["#FFA500", "#FF4500", "#FF1493"], // Orange to Pink
+  ["#BA55D3", "#9370DB", "#7B68EE"], // Purple spectrum
+  ["#FF69B4", "#FF1493", "#C71585"], // Hot pink spectrum
+];
+
 export function MosaicPiece({ index, total, isActive }: MosaicPieceProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // This is intentional - we need to track when component mounts for SSR hydration
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
-
-  if (!mounted) return null;
 
   // Calculate position based on index and total
   const angle = (index / total) * 2 * Math.PI;
@@ -24,17 +33,12 @@ export function MosaicPiece({ index, total, isActive }: MosaicPieceProps) {
   const x = Math.cos(angle) * radius;
   const y = Math.sin(angle) * radius;
 
-  const colorPalettes = [
-    ["#FF1493", "#8A2BE2", "#4B0082"], // Pink to Purple
-    ["#00BFFF", "#1E90FF", "#4169E1"], // Blue spectrum
-    ["#00FF7F", "#2ECC71", "#1ABC9C"], // Green/Teal
-    ["#FFA500", "#FF4500", "#FF1493"], // Orange to Pink
-    ["#BA55D3", "#9370DB", "#7B68EE"], // Purple spectrum
-    ["#FF69B4", "#FF1493", "#C71585"], // Hot pink spectrum
-  ];
-
   const palette = colorPalettes[index % colorPalettes.length]!;
-  const color = palette[Math.floor(Math.random() * palette.length)]!;
+  // Use index to deterministically select a color (avoiding Math.random during render)
+  const colorIndex = index % palette.length;
+  const color = palette[colorIndex]!;
+
+  if (!mounted) return null;
 
   return (
     <motion.div
@@ -85,7 +89,7 @@ export function MosaicPiece({ index, total, isActive }: MosaicPieceProps) {
               />
               <stop
                 offset="100%"
-                stopColor={isActive ? palette[1]! : "rgba(255, 255, 255, 0.15)"}
+                stopColor={isActive ? palette[1] : "rgba(255, 255, 255, 0.15)"}
                 stopOpacity="0.4"
               />
             </linearGradient>
@@ -113,7 +117,7 @@ export function MosaicPiece({ index, total, isActive }: MosaicPieceProps) {
             <polygon
               points="24,12 36,30 12,30"
               fill="none"
-              stroke={palette[2]!}
+              stroke={palette[2]}
               strokeWidth="0.5"
               opacity="0.6"
             />

@@ -16,7 +16,7 @@ export function getPostHogClient() {
 
 export async function flushPostHog() {
   if (posthogClient) {
-    posthogClient.flush();
+    void posthogClient.flush();
     // Give a small delay to allow the flush to complete
     // Since flush() is synchronous but network requests are async,
     // we wait a bit to ensure events are sent

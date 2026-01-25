@@ -6,7 +6,11 @@ import { v } from "convex/values";
 import { internalAction } from "../_generated/server";
 import { internal } from "../_generated/api";
 import type { WorkflowId } from "@convex-dev/workflow";
-import { getBatch, isBatchCompleted, isBatchFailed } from "../lib/openAiBatch";
+import {
+  getBatch,
+  isBatchCompleted,
+  isBatchFailed,
+} from "../../lib/openAiBatch";
 import { workflow, batchCompletedEvent } from "./workflow";
 
 // Type declaration for environment variables in Convex actions
@@ -20,7 +24,9 @@ declare const process: {
  */
 export const pollAndNotifyCompletedBatches = internalAction({
   args: {},
-  handler: async (ctx): Promise<{
+  handler: async (
+    ctx,
+  ): Promise<{
     checked: number;
     notified: number;
   }> => {
@@ -33,7 +39,7 @@ export const pollAndNotifyCompletedBatches = internalAction({
     // Get all jobs in "processing" status that have a workflowId
     const processingJobs = await ctx.runQuery(
       internal.batchJobs.internalGetProcessingJobsWithWorkflow,
-      {}
+      {},
     );
 
     let notified = 0;
@@ -60,11 +66,14 @@ export const pollAndNotifyCompletedBatches = internalAction({
             value: { outputFileId: batch.output_file_id },
           });
 
-          console.log(`Notified workflow ${job.workflowId} that batch ${job.jobId} completed`);
+          console.log(
+            `Notified workflow ${job.workflowId} that batch ${job.jobId} completed`,
+          );
           notified++;
         } else if (isBatchFailed(batch.status)) {
           // Mark job as failed
-          const errorMsg = batch.errors?.data?.[0]?.message ?? `Batch ${batch.status}`;
+          const errorMsg =
+            batch.errors?.data?.[0]?.message ?? `Batch ${batch.status}`;
           await ctx.runMutation(internal.batchJobs.internalMarkFailed, {
             jobId: job.jobId,
             error: errorMsg,
@@ -72,14 +81,18 @@ export const pollAndNotifyCompletedBatches = internalAction({
 
           // Cancel the workflow
           await workflow.cancel(ctx, job.workflowId as WorkflowId);
-          console.log(`Canceled workflow ${job.workflowId} due to batch failure: ${errorMsg}`);
+          console.log(
+            `Canceled workflow ${job.workflowId} due to batch failure: ${errorMsg}`,
+          );
         }
       } catch (error) {
         console.error(`Error checking batch ${job.batchId}:`, error);
       }
     }
 
-    console.log(`Checked ${processingJobs.length} jobs, notified ${notified} workflows`);
+    console.log(
+      `Checked ${processingJobs.length} jobs, notified ${notified} workflows`,
+    );
     return { checked: processingJobs.length, notified };
   },
 });
@@ -90,7 +103,10 @@ export const pollAndNotifyCompletedBatches = internalAction({
  */
 export const startBatchWorkflow = internalAction({
   args: { limit: v.optional(v.number()) },
-  handler: async (ctx, args): Promise<{
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{
     started: boolean;
     reason: string;
     workflowId?: string;
@@ -104,7 +120,7 @@ export const startBatchWorkflow = internalAction({
     // Check if any jobs are already processing (workflow waiting)
     const processingJobs = await ctx.runQuery(
       internal.batchJobs.internalGetProcessingJobs,
-      {}
+      {},
     );
 
     if (processingJobs.length > 0) {
@@ -116,7 +132,7 @@ export const startBatchWorkflow = internalAction({
     const workflowId = await workflow.start(
       ctx,
       internal.batch.workflow.batchProcessingWorkflow,
-      { limit: args.limit }
+      { limit: args.limit },
     );
 
     console.log("Started batch workflow:", workflowId);
@@ -131,7 +147,10 @@ export const startBatchWorkflow = internalAction({
  */
 export const chainNextWorkflow = internalAction({
   args: { limit: v.optional(v.number()) },
-  handler: async (ctx, args): Promise<{
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{
     started: boolean;
     workflowId?: string;
   }> => {
@@ -139,7 +158,7 @@ export const chainNextWorkflow = internalAction({
     const workflowId = await workflow.start(
       ctx,
       internal.batch.workflow.batchProcessingWorkflow,
-      { limit: args.limit }
+      { limit: args.limit },
     );
 
     console.log("Chained next batch workflow:", workflowId);

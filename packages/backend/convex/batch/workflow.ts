@@ -52,7 +52,7 @@ export const batchProcessingWorkflow = workflow.define({
     } = await step.runAction(
       internal.batch.actions.createBatchJob,
       { limit: args.limit },
-      { retry: true }
+      { retry: true },
     );
 
     if (!createResult.success || !createResult.jobId) {
@@ -74,7 +74,7 @@ export const batchProcessingWorkflow = workflow.define({
 
     // Step 2: Wait for completion event from OpenAI webhook
     // This pauses the workflow until the webhook sends the event
-    const _completionEvent = await step.awaitEvent(batchCompletedEvent);
+    await step.awaitEvent(batchCompletedEvent);
 
     // Step 3: Process results
     const processResult: {
@@ -85,7 +85,7 @@ export const batchProcessingWorkflow = workflow.define({
     } = await step.runAction(
       internal.batch.actions.processResults,
       { jobId },
-      { retry: true }
+      { retry: true },
     );
 
     // Step 4: Chain to next workflow to continue processing
@@ -93,7 +93,7 @@ export const batchProcessingWorkflow = workflow.define({
     await step.runAction(
       internal.batch.orchestration.chainNextWorkflow,
       { limit: args.limit },
-      { retry: true }
+      { retry: true },
     );
 
     return {

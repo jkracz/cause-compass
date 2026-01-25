@@ -12,10 +12,15 @@ import {
   parseJSONL,
   toJSONL,
   createConfirmationRequestLine,
-} from "../lib/openAiBatch";
-import { processCrawlDataForConfirmedWebsite } from "../lib/batchResponseProcessing";
-import { DEFAULT_BATCH_SIZE, DEFAULT_MODEL, WEBSITE_CONFIRMATION_SCHEMA } from "./constants";
+} from "../../lib/openAiBatch";
+import { processCrawlDataForConfirmedWebsite } from "../../lib/batchResponseProcessing";
+import {
+  DEFAULT_BATCH_SIZE,
+  DEFAULT_MODEL,
+  WEBSITE_CONFIRMATION_SCHEMA,
+} from "./constants";
 import type { OrgForAiConfirmation } from "./types";
+import type { AiConfirmationResponse, GeographicFocusType } from "@cause/types";
 
 /**
  * Generate a unique job ID.
@@ -40,7 +45,10 @@ export const createBatchJob = internalAction({
     limit: v.optional(v.number()),
     model: v.optional(v.string()),
   },
-  handler: async (ctx, { limit, model }): Promise<{
+  handler: async (
+    ctx,
+    { limit, model },
+  ): Promise<{
     success: boolean;
     jobId: string | null;
     batchId: string | null;
@@ -52,9 +60,12 @@ export const createBatchJob = internalAction({
 
     try {
       // 1. Fetch organizations ready for AI confirmation
-      const orgs = await ctx.runQuery(internal.batch.queries.internalGetOrgsForAiConfirmation, {
-        limit: batchSize,
-      });
+      const orgs = await ctx.runQuery(
+        internal.batch.queries.internalGetOrgsForAiConfirmation,
+        {
+          limit: batchSize,
+        },
+      );
 
       if (orgs.length === 0) {
         console.log("No organizations found for AI confirmation");
@@ -80,7 +91,7 @@ export const createBatchJob = internalAction({
           websiteData: org.crawlData,
           model: modelName,
           responseSchema: WEBSITE_CONFIRMATION_SCHEMA,
-        })
+        }),
       );
 
       // 3. Convert to JSONL and upload to OpenAI
@@ -89,7 +100,7 @@ export const createBatchJob = internalAction({
 
       const uploadedFile = await uploadBatchFile(
         jsonlContent,
-        `batch_${generateJobId()}.jsonl`
+        `batch_${generateJobId()}.jsonl`,
       );
       console.log(`Uploaded file to OpenAI: ${uploadedFile.id}`);
 
@@ -112,7 +123,8 @@ export const createBatchJob = internalAction({
         totalCount: orgs.length,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       console.error("Error creating batch job:", errorMessage);
 
       return {
@@ -135,7 +147,10 @@ export const processResults = internalAction({
   args: {
     jobId: v.string(),
   },
-  handler: async (ctx, { jobId }): Promise<{
+  handler: async (
+    ctx,
+    { jobId },
+  ): Promise<{
     success: boolean;
     processedCount: number;
     errorCount: number;
@@ -143,14 +158,26 @@ export const processResults = internalAction({
   }> => {
     try {
       // Get job from database
-      const job = await ctx.runQuery(internal.batchJobs.internalGetByJobId, { jobId });
+      const job = await ctx.runQuery(internal.batchJobs.internalGetByJobId, {
+        jobId,
+      });
 
       if (!job) {
-        return { success: false, processedCount: 0, errorCount: 0, error: "Job not found" };
+        return {
+          success: false,
+          processedCount: 0,
+          errorCount: 0,
+          error: "Job not found",
+        };
       }
 
       if (!job.outputFileId) {
-        return { success: false, processedCount: 0, errorCount: 0, error: "No output file ID" };
+        return {
+          success: false,
+          processedCount: 0,
+          errorCount: 0,
+          error: "No output file ID",
+        };
       }
 
       // Download output file from OpenAI
@@ -169,7 +196,9 @@ export const processResults = internalAction({
           // Extract EIN from custom_id (format: "EIN_TIMESTAMP")
           const ein = response.custom_id.split("_")[0];
           if (!ein) {
-            console.warn(`Could not extract EIN from custom_id: ${response.custom_id}`);
+            console.warn(
+              `Could not extract EIN from custom_id: ${response.custom_id}`,
+            );
             errorCount++;
             continue;
           }
@@ -182,7 +211,8 @@ export const processResults = internalAction({
           }
 
           // Get response content
-          const content = response.response?.body?.choices?.[0]?.message?.content;
+          const content =
+            response.response?.body?.choices?.[0]?.message?.content;
           if (!content) {
             console.warn(`No content in response for EIN ${ein}`);
             errorCount++;
@@ -190,10 +220,13 @@ export const processResults = internalAction({
           }
 
           // Parse the response content
-          const parsed = JSON.parse(content);
+          const parsed = JSON.parse(content) as AiConfirmationResponse;
 
           // Get organization from database
-          const org = await ctx.runQuery(internal.batch.queries.internalGetOrgByEin, { ein });
+          const org = await ctx.runQuery(
+            internal.batch.queries.internalGetOrgByEin,
+            { ein },
+          );
           if (!org) {
             console.warn(`Organization not found for EIN ${ein}`);
             errorCount++;
@@ -201,42 +234,54 @@ export const processResults = internalAction({
           }
 
           // Insert AI confirmation record
-          await ctx.runMutation(internal.batch.mutations.internalInsertAiConfirmation, {
-            ein,
-            orgId: org._id,
-            model: response.response?.body?.model ?? DEFAULT_MODEL,
-            outputs: {
-              hasCorrectWebsite: parsed.hasCorrectWebsite,
-              correctWebsiteUrl: parsed.correctWebsiteUrl ?? undefined,
-              mission: parsed.organizationMission ?? undefined,
-              tagline: parsed.organizationTagline ?? undefined,
-              oneSentenceSummary: parsed.organizationOneSentenceSummary ?? undefined,
-              whySupport: parsed.whySupportOrganization ?? undefined,
-              targetAudience: parsed.organizationTargetAudience ?? undefined,
-              geographicFocus: parsed.organizationGeographicFocus ?? undefined,
-              activityTags: parsed.organizationActivities ?? undefined,
-              reasoning: parsed.reasoning ?? undefined,
+          await ctx.runMutation(
+            internal.batch.mutations.internalInsertAiConfirmation,
+            {
+              ein,
+              orgId: org._id,
+              model: response.response?.body?.model ?? DEFAULT_MODEL,
+              outputs: {
+                hasCorrectWebsite: parsed.hasCorrectWebsite,
+                correctWebsiteUrl: parsed.correctWebsiteUrl ?? undefined,
+                mission: parsed.organizationMission ?? undefined,
+                tagline: parsed.organizationTagline ?? undefined,
+                oneSentenceSummary:
+                  parsed.organizationOneSentenceSummary ?? undefined,
+                whySupport: parsed.whySupportOrganization ?? undefined,
+                targetAudience: parsed.organizationTargetAudience ?? undefined,
+                geographicFocus:
+                  parsed.organizationGeographicFocus ?? undefined,
+                activityTags: parsed.organizationActivities ?? undefined,
+                reasoning: parsed.reasoning ?? undefined,
+              },
             },
-          });
+          );
 
           // Update organization if we found the correct website
           if (parsed.hasCorrectWebsite && parsed.correctWebsiteUrl) {
             // Validate geographicFocus is one of the allowed values
-            const validGeographicFocus = ["Global", "National", "Regional", "Local"];
-            const geoFocus = validGeographicFocus.includes(parsed.organizationGeographicFocus)
-              ? parsed.organizationGeographicFocus
-              : undefined;
+            const validGeographicFocus: GeographicFocusType[] = [
+              "Global",
+              "National",
+              "Regional",
+              "Local",
+            ];
+            const geoFocus =
+              parsed.organizationGeographicFocus &&
+              validGeographicFocus.includes(parsed.organizationGeographicFocus)
+                ? parsed.organizationGeographicFocus
+                : undefined;
 
             // Fetch crawl results to extract additional data (social media, logos, donation links)
             const crawlResults = await ctx.runQuery(
               internal.batch.queries.internalGetCrawlResultsByEin,
-              { ein }
+              { ein },
             );
 
             // Process crawl data to extract social media URLs, logo, donation link, and emails
             const crawlExtractedData = processCrawlDataForConfirmedWebsite(
               crawlResults,
-              parsed.correctWebsiteUrl
+              parsed.correctWebsiteUrl,
             );
 
             // Only include non-empty social media URLs object
@@ -245,43 +290,55 @@ export const processResults = internalAction({
                 ? crawlExtractedData.socialMediaUrls
                 : undefined;
 
-            await ctx.runMutation(internal.batch.mutations.internalUpdateOrgWithAiResults, {
-              orgId: org._id,
-              updates: {
-                websiteUrl: parsed.correctWebsiteUrl ?? undefined,
-                mission: parsed.organizationMission ?? undefined,
-                tagline: parsed.organizationTagline ?? undefined,
-                oneSentenceSummary: parsed.organizationOneSentenceSummary ?? undefined,
-                whySupport: parsed.whySupportOrganization ?? undefined,
-                targetAudience: parsed.organizationTargetAudience ?? undefined,
-                geographicFocus: geoFocus,
-                activities: parsed.organizationActivities ?? undefined,
-                keywords: parsed.organizationKeywords ?? undefined,
-                // Crawl-extracted fields
-                socialMediaUrls,
-                donationUrl: crawlExtractedData.donationUrl,
-                logoUrl: crawlExtractedData.logoUrl,
-                emailAddresses:
-                  crawlExtractedData.emailAddresses.length > 0
-                    ? crawlExtractedData.emailAddresses
-                    : undefined,
-                enrichmentStage: "ai_confirmed",
+            await ctx.runMutation(
+              internal.batch.mutations.internalUpdateOrgWithAiResults,
+              {
+                orgId: org._id,
+                updates: {
+                  websiteUrl: parsed.correctWebsiteUrl ?? undefined,
+                  mission: parsed.organizationMission ?? undefined,
+                  tagline: parsed.organizationTagline ?? undefined,
+                  oneSentenceSummary:
+                    parsed.organizationOneSentenceSummary ?? undefined,
+                  whySupport: parsed.whySupportOrganization ?? undefined,
+                  targetAudience:
+                    parsed.organizationTargetAudience ?? undefined,
+                  geographicFocus: geoFocus,
+                  activities: parsed.organizationActivities ?? undefined,
+                  keywords: parsed.organizationKeywords ?? undefined,
+                  // Crawl-extracted fields
+                  socialMediaUrls,
+                  donationUrl: crawlExtractedData.donationUrl,
+                  logoUrl: crawlExtractedData.logoUrl,
+                  emailAddresses:
+                    crawlExtractedData.emailAddresses.length > 0
+                      ? crawlExtractedData.emailAddresses
+                      : undefined,
+                  enrichmentStage: "ai_confirmed",
+                },
               },
-            });
+            );
           } else {
             // Even without website confirmation, update stage
-            await ctx.runMutation(internal.batch.mutations.internalUpdateOrgWithAiResults, {
-              orgId: org._id,
-              updates: {
-                enrichmentStage: "ai_confirmed",
+            await ctx.runMutation(
+              internal.batch.mutations.internalUpdateOrgWithAiResults,
+              {
+                orgId: org._id,
+                updates: {
+                  enrichmentStage: "ai_confirmed",
+                },
               },
-            });
+            );
           }
 
           processedCount++;
           console.log(`Processed EIN ${ein}`);
-        } catch (parseError) {
-          console.error(`Error processing response: ${parseError}`);
+        } catch (parseError: unknown) {
+          const errorMsg =
+            parseError instanceof Error
+              ? parseError.message
+              : String(parseError);
+          console.error(`Error processing response: ${errorMsg}`);
           errorCount++;
         }
       }
@@ -293,7 +350,9 @@ export const processResults = internalAction({
         errorCount,
       });
 
-      console.log(`Completed processing job ${jobId}: ${processedCount} processed, ${errorCount} errors`);
+      console.log(
+        `Completed processing job ${jobId}: ${processedCount} processed, ${errorCount} errors`,
+      );
 
       return {
         success: true,
@@ -301,7 +360,8 @@ export const processResults = internalAction({
         errorCount,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       console.error(`Error processing results for job ${jobId}:`, errorMessage);
 
       await ctx.runMutation(internal.batchJobs.internalMarkFailed, {

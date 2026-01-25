@@ -23,16 +23,16 @@ export const internalUpdateOrgWithAiResults = internalMutation({
           v.literal("Global"),
           v.literal("National"),
           v.literal("Regional"),
-          v.literal("Local")
-        )
+          v.literal("Local"),
+        ),
       ),
       activities: v.optional(
         v.array(
           v.object({
             name: v.string(),
             description: v.string(),
-          })
-        )
+          }),
+        ),
       ),
       keywords: v.optional(v.array(v.string())),
       // Crawl-extracted fields
@@ -45,7 +45,7 @@ export const internalUpdateOrgWithAiResults = internalMutation({
           threads: v.optional(v.string()),
           facebook: v.optional(v.string()),
           twitter: v.optional(v.string()),
-        })
+        }),
       ),
       donationUrl: v.optional(v.string()),
       logoUrl: v.optional(v.string()),
@@ -56,8 +56,8 @@ export const internalUpdateOrgWithAiResults = internalMutation({
           v.literal("searched"),
           v.literal("crawled"),
           v.literal("ai_confirmed"),
-          v.literal("ready")
-        )
+          v.literal("ready"),
+        ),
       ),
     }),
   },
@@ -91,8 +91,8 @@ export const internalInsertAiConfirmation = internalMutation({
           v.object({
             name: v.string(),
             description: v.string(),
-          })
-        )
+          }),
+        ),
       ),
       reasoning: v.optional(v.string()),
     }),

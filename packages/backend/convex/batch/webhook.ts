@@ -23,7 +23,7 @@ async function verifyWebhookSignature(
   webhookId: string,
   webhookTimestamp: string,
   webhookSignature: string,
-  secret: string
+  secret: string,
 ): Promise<boolean> {
   // Check timestamp is recent (within 5 minutes)
   const timestamp = parseInt(webhookTimestamp, 10);
@@ -48,14 +48,14 @@ async function verifyWebhookSignature(
     keyBytes,
     { name: "HMAC", hash: "SHA-256" },
     false,
-    ["sign"]
+    ["sign"],
   );
 
   // Sign the payload
   const signatureBytes = await crypto.subtle.sign(
     "HMAC",
     cryptoKey,
-    new TextEncoder().encode(signedPayload)
+    new TextEncoder().encode(signedPayload),
   );
 
   // Convert to base64
@@ -78,7 +78,10 @@ export const handleWebhook = internalAction({
     webhookTimestamp: v.string(),
     webhookSignature: v.string(),
   },
-  handler: async (ctx, { body, webhookId, webhookTimestamp, webhookSignature }): Promise<{
+  handler: async (
+    ctx,
+    { body, webhookId, webhookTimestamp, webhookSignature },
+  ): Promise<{
     success: boolean;
     error?: string;
   }> => {
@@ -94,7 +97,7 @@ export const handleWebhook = internalAction({
       webhookId,
       webhookTimestamp,
       webhookSignature,
-      webhookSecret
+      webhookSecret,
     );
 
     if (!isValid) {
@@ -105,7 +108,7 @@ export const handleWebhook = internalAction({
     // Parse the event
     let event: OpenAIWebhookEvent;
     try {
-      event = JSON.parse(body);
+      event = JSON.parse(body) as OpenAIWebhookEvent;
     } catch {
       console.error("Failed to parse webhook body");
       return { success: false, error: "Invalid JSON" };
@@ -149,11 +152,14 @@ export const handleWebhook = internalAction({
         value: { outputFileId },
       });
 
-      console.log(`Notified workflow ${job.workflowId} that batch ${job.jobId} completed`);
+      console.log(
+        `Notified workflow ${job.workflowId} that batch ${job.jobId} completed`,
+      );
     } else if (event.type === "batch.failed") {
       // Mark job as failed
       const errorMsg =
-        event.data.errors?.data?.[0]?.message ?? "Batch failed (no error message)";
+        event.data.errors?.data?.[0]?.message ??
+        "Batch failed (no error message)";
 
       await ctx.runMutation(internal.batchJobs.internalMarkFailed, {
         jobId: job.jobId,
@@ -162,7 +168,9 @@ export const handleWebhook = internalAction({
 
       // Cancel the workflow
       await workflow.cancel(ctx, job.workflowId as WorkflowId);
-      console.log(`Canceled workflow ${job.workflowId} due to batch failure: ${errorMsg}`);
+      console.log(
+        `Canceled workflow ${job.workflowId} due to batch failure: ${errorMsg}`,
+      );
     }
 
     return { success: true };

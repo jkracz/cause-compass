@@ -116,7 +116,7 @@ export function MosaicBackground() {
 
       // Set new timeout - wait 400ms after resize stops before redrawing
       resizeTimeout = setTimeout(() => {
-        resizeCanvas();
+        void resizeCanvas();
       }, 400);
     };
 

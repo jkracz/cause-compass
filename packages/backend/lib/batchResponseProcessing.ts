@@ -56,7 +56,7 @@ export function normalizeUrlForComparison(url: string): string {
  */
 export function filterCorrectCrawlItems(
   crawlItems: CrawlItemData[],
-  correctWebsiteUrl: string
+  correctWebsiteUrl: string,
 ): CrawlItemData[] {
   if (!correctWebsiteUrl || !crawlItems?.length) {
     return [];
@@ -93,7 +93,7 @@ export function extractSocialMediaUrls(socials: string[]): SocialMediaUrls {
       !url.includes("intent/tweet") &&
       !url.includes("shareArticle") &&
       !url.includes("share?") &&
-      !url.includes("share.php")
+      !url.includes("share.php"),
   );
 
   if (filteredSocials.length === 0) {
@@ -412,7 +412,7 @@ export function collectEmailAddresses(crawlItems: CrawlItemData[]): string[] {
  */
 export function processCrawlDataForConfirmedWebsite(
   crawlItems: CrawlItemData[],
-  correctWebsiteUrl: string
+  correctWebsiteUrl: string,
 ): {
   socialMediaUrls: SocialMediaUrls;
   logoUrl: string | undefined;
@@ -422,7 +422,7 @@ export function processCrawlDataForConfirmedWebsite(
   // Filter to only crawl items matching the correct website
   const correctCrawlItems = filterCorrectCrawlItems(
     crawlItems,
-    correctWebsiteUrl
+    correctWebsiteUrl,
   );
 
   // If no matching crawl items, use all available crawl data
@@ -431,11 +431,11 @@ export function processCrawlDataForConfirmedWebsite(
 
   // Extract data from the matching crawl items
   const socialMediaUrls = extractSocialMediaUrls(
-    collectSocialMediaUrls(itemsToProcess)
+    collectSocialMediaUrls(itemsToProcess),
   );
   const logoUrl = findMainLogo(collectLogoUrls(itemsToProcess));
   const donationUrl = findBestDonationLink(
-    collectDonationLinks(itemsToProcess)
+    collectDonationLinks(itemsToProcess),
   );
   const emailAddresses = collectEmailAddresses(itemsToProcess);
 

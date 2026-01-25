@@ -21,7 +21,7 @@ const crons = cronJobs();
 crons.daily(
   "search-organizations",
   { hourUTC: 0, minuteUTC: 0 },
-  internal.searchOrgs.scheduledSearchOrganizations
+  internal.searchOrgs.scheduledSearchOrganizations,
 );
 
 /**
@@ -45,7 +45,7 @@ crons.daily(
   "start-batch-workflow",
   { hourUTC: 1, minuteUTC: 0 },
   internal.batch.orchestration.startBatchWorkflow,
-  {}
+  {},
 );
 
 export default crons;

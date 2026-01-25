@@ -10,6 +10,7 @@ import {
   type AssetCode,
   type DeductibilityCode,
   type EOStatusCode,
+  type EoFileRow,
   type FilingRequirementCode,
   type FoundationCode,
   type NteeCode,
@@ -97,31 +98,49 @@ export const parseEoFile = async (
   });
 };
 
-const transformCsvRowToNonprofitProfile = (row: any): TaxExemptOrganization => {
+const transformCsvRowToNonprofitProfile = (
+  row: EoFileRow,
+): TaxExemptOrganization => {
   return {
+    dbId: row.EIN, // Use EIN as initial dbId, will be replaced when stored in database
     ein: row.EIN,
     name: convertToTitleCase(row.NAME),
-    ico: row.ICO.split("% ")[1]
-      ? convertToTitleCase(row.ICO.split("% ")[1])
-      : undefined,
+    ico: (() => {
+      const icoPart = row.ICO.split("% ")[1];
+      return icoPart ? convertToTitleCase(icoPart) : undefined;
+    })(),
     street: convertToTitleCase(row.STREET),
     city: convertToTitleCase(row.CITY),
     state: row.STATE,
     zip: row.ZIP,
     group: row.GROUP,
     subsection: row.SUBSECTION,
-    affiliation: affiliationCodesDict[row.AFFILIATION],
+    affiliation: affiliationCodesDict[row.AFFILIATION] ?? {
+      code: row.AFFILIATION,
+      code_name: "Unknown",
+      description: "Unknown",
+    },
     classification: row.CLASSIFICATION,
     ruling: row.RULING,
     deductibility: deductibilityCodesDict[row.DEDUCTIBILITY],
     foundation: foundationCodesDict[row.FOUNDATION],
     activityCodes: parseActivityCodes(row.ACTIVITY),
     organization: orgTypesDict[row.ORGANIZATION],
-    status: eoStatusCodesDict[row.STATUS],
+    status: eoStatusCodesDict[row.STATUS] ?? {
+      code: row.STATUS,
+      description: "Unknown",
+    },
     taxPeriod: row.TAX_PERIOD,
-    assetCode: assetCodesDict[row.ASSET_CD],
+    assetCode: assetCodesDict[row.ASSET_CD] ?? {
+      code: row.ASSET_CD,
+      lowerLimit: 0,
+    },
     incomeCode: row.INCOME_CD,
-    filingReqCode: filingReqCodesDict[row.FILING_REQ_CD],
+    filingReqCode: filingReqCodesDict[row.FILING_REQ_CD] ?? {
+      code: row.FILING_REQ_CD,
+      description: "Unknown",
+      form_number: "",
+    },
     pfFilingReqCode: pfFilingReqCodesDict[row.PF_FILING_REQ_CD],
     acctPeriod: row.ACCT_PD,
     assetAmt: row.ASSET_AMT ? parseFloat(row.ASSET_AMT) : undefined,

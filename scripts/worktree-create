@@ -1,0 +1,182 @@
+#!/bin/bash
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Get the script's directory and project root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+PROJECT_NAME="$(basename "$PROJECT_ROOT")"
+WORKTREES_DIR="$(dirname "$PROJECT_ROOT")/${PROJECT_NAME}-worktrees"
+
+usage() {
+    echo -e "${BLUE}Usage:${NC} $0 <branch-name> [--base <branch>] [--no-install]"
+    echo ""
+    echo "Creates a new git worktree with environment files copied over."
+    echo ""
+    echo "Arguments:"
+    echo "  branch-name       Name of the branch for the worktree (required)"
+    echo "  --base <branch>   Base branch when creating NEW branches (default: current HEAD)"
+    echo "  --no-install      Skip running pnpm install"
+    echo ""
+    echo "Examples:"
+    echo "  $0 feature/my-new-feature             # New branch from current HEAD"
+    echo "  $0 feature/my-new-feature --base main # New branch from main"
+    echo "  $0 existing-branch                    # Existing branch (--base ignored)"
+    echo "  $0 fix/bug-123 --no-install"
+    exit 1
+}
+
+# Parse arguments
+BRANCH_NAME=""
+BASE_BRANCH=""
+SKIP_INSTALL=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --no-install)
+            SKIP_INSTALL=true
+            shift
+            ;;
+        --base)
+            if [[ -z "$2" || "$2" == --* ]]; then
+                echo -e "${RED}Error:${NC} --base requires a branch name"
+                exit 1
+            fi
+            BASE_BRANCH="$2"
+            shift 2
+            ;;
+        -h|--help)
+            usage
+            ;;
+        *)
+            if [[ -z "$BRANCH_NAME" ]]; then
+                BRANCH_NAME="$1"
+            else
+                echo -e "${RED}Error:${NC} Unexpected argument: $1"
+                usage
+            fi
+            shift
+            ;;
+    esac
+done
+
+if [[ -z "$BRANCH_NAME" ]]; then
+    echo -e "${RED}Error:${NC} Branch name is required"
+    usage
+fi
+
+# Sanitize branch name for directory (replace / with -)
+WORKTREE_DIR_NAME="${BRANCH_NAME//\//-}"
+WORKTREE_PATH="$WORKTREES_DIR/$WORKTREE_DIR_NAME"
+
+echo -e "${BLUE}Creating worktree for branch:${NC} $BRANCH_NAME"
+echo -e "${BLUE}Worktree location:${NC} $WORKTREE_PATH"
+echo ""
+
+# Create worktrees directory if it doesn't exist
+mkdir -p "$WORKTREES_DIR"
+
+# Check if worktree already exists
+if [[ -d "$WORKTREE_PATH" ]]; then
+    echo -e "${RED}Error:${NC} Worktree already exists at $WORKTREE_PATH"
+    echo "To remove it, run: git worktree remove $WORKTREE_PATH"
+    exit 1
+fi
+
+# Check if branch exists locally or remotely
+cd "$PROJECT_ROOT"
+if git show-ref --verify --quiet "refs/heads/$BRANCH_NAME"; then
+    if [[ -n "$BASE_BRANCH" ]]; then
+        echo -e "${YELLOW}Warning:${NC} --base ignored because branch '$BRANCH_NAME' already exists locally"
+    fi
+    echo -e "${GREEN}Branch exists locally${NC}"
+    git worktree add "$WORKTREE_PATH" "$BRANCH_NAME"
+elif git show-ref --verify --quiet "refs/remotes/origin/$BRANCH_NAME"; then
+    if [[ -n "$BASE_BRANCH" ]]; then
+        echo -e "${YELLOW}Warning:${NC} --base ignored because branch '$BRANCH_NAME' exists on remote"
+    fi
+    echo -e "${YELLOW}Branch exists on remote, creating local tracking branch${NC}"
+    git worktree add "$WORKTREE_PATH" -b "$BRANCH_NAME" "origin/$BRANCH_NAME"
+else
+    # Creating a new branch
+    if [[ -n "$BASE_BRANCH" ]]; then
+        # Validate base branch exists
+        if git show-ref --verify --quiet "refs/heads/$BASE_BRANCH"; then
+            echo -e "${YELLOW}Creating new branch from local '$BASE_BRANCH'${NC}"
+            git worktree add -b "$BRANCH_NAME" "$WORKTREE_PATH" "$BASE_BRANCH"
+        elif git show-ref --verify --quiet "refs/remotes/origin/$BASE_BRANCH"; then
+            echo -e "${YELLOW}Creating new branch from 'origin/$BASE_BRANCH'${NC}"
+            git worktree add -b "$BRANCH_NAME" "$WORKTREE_PATH" "origin/$BASE_BRANCH"
+        else
+            echo -e "${RED}Error:${NC} Base branch '$BASE_BRANCH' not found locally or on remote"
+            exit 1
+        fi
+    else
+        echo -e "${YELLOW}Creating new branch from current HEAD${NC}"
+        git worktree add -b "$BRANCH_NAME" "$WORKTREE_PATH"
+    fi
+fi
+
+echo ""
+echo -e "${GREEN}✓${NC} Worktree created"
+
+# Copy environment files
+echo ""
+echo -e "${BLUE}Copying environment files...${NC}"
+
+# Define env files to copy (source path relative to project root)
+ENV_FILES=(
+    "apps/parsley/.env"
+    "apps/web/.env"
+    "packages/backend/.env.local"
+)
+
+copied_count=0
+for env_file in "${ENV_FILES[@]}"; do
+    src="$PROJECT_ROOT/$env_file"
+    dest="$WORKTREE_PATH/$env_file"
+
+    if [[ -f "$src" ]]; then
+        # Ensure destination directory exists
+        mkdir -p "$(dirname "$dest")"
+        cp "$src" "$dest"
+        echo -e "  ${GREEN}✓${NC} Copied $env_file"
+        ((copied_count++)) || true
+    else
+        echo -e "  ${YELLOW}⊘${NC} Skipped $env_file (not found in source)"
+    fi
+done
+
+echo ""
+echo -e "${GREEN}✓${NC} Copied $copied_count environment file(s)"
+
+# Run pnpm install
+if [[ "$SKIP_INSTALL" = false ]]; then
+    echo ""
+    echo -e "${BLUE}Running pnpm install...${NC}"
+    cd "$WORKTREE_PATH"
+    pnpm install
+    echo ""
+    echo -e "${GREEN}✓${NC} Dependencies installed"
+fi
+
+# Summary
+echo ""
+echo -e "${GREEN}========================================${NC}"
+echo -e "${GREEN}Worktree setup complete!${NC}"
+echo -e "${GREEN}========================================${NC}"
+echo ""
+echo -e "Location: ${BLUE}$WORKTREE_PATH${NC}"
+echo -e "Branch:   ${BLUE}$BRANCH_NAME${NC}"
+echo ""
+echo "To remove this worktree later:"
+echo -e "  ${YELLOW}git worktree remove $WORKTREE_PATH${NC}"
+echo ""
+echo "To start working:"
+echo -e "  ${YELLOW}cd $WORKTREE_PATH${NC}"

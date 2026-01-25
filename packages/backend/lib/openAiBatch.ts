@@ -158,7 +158,7 @@ export function getOpenAIApiKey(): string {
  */
 async function openAIRequest<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<T> {
   const apiKey = getOpenAIApiKey();
   const baseUrl = "https://api.openai.com/v1";
@@ -192,7 +192,7 @@ async function openAIRequest<T>(
  */
 export async function uploadBatchFile(
   content: string,
-  filename: string = "batch_input.jsonl"
+  filename: string = "batch_input.jsonl",
 ): Promise<OpenAIFile> {
   const apiKey = getOpenAIApiKey();
   const baseUrl = "https://api.openai.com/v1";
@@ -215,7 +215,9 @@ export async function uploadBatchFile(
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`OpenAI file upload error (${response.status}): ${errorText}`);
+    throw new Error(
+      `OpenAI file upload error (${response.status}): ${errorText}`,
+    );
   }
 
   return response.json() as Promise<OpenAIFile>;
@@ -239,7 +241,9 @@ export async function downloadFileContent(fileId: string): Promise<string> {
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`OpenAI file download error (${response.status}): ${errorText}`);
+    throw new Error(
+      `OpenAI file download error (${response.status}): ${errorText}`,
+    );
   }
 
   return response.text();
@@ -268,7 +272,7 @@ export async function getFile(fileId: string): Promise<OpenAIFile> {
  */
 export async function createBatch(
   inputFileId: string,
-  metadata?: Record<string, string>
+  metadata?: Record<string, string>,
 ): Promise<OpenAIBatch> {
   return openAIRequest<OpenAIBatch>("/batches", {
     method: "POST",
@@ -315,7 +319,7 @@ export async function cancelBatch(batchId: string): Promise<OpenAIBatch> {
  */
 export async function listBatches(
   limit: number = 20,
-  after?: string
+  after?: string,
 ): Promise<{
   object: "list";
   data: OpenAIBatch[];
@@ -405,7 +409,7 @@ webpage url: ${item.url},
 webpage title: ${item.title},
 webpage text: ${item.textContent},
 }
-`
+`,
   )
   .join(" ")}
 `;
@@ -479,7 +483,7 @@ export function isBatchFailed(status: OpenAIBatchStatus): boolean {
  * Map OpenAI batch status to internal batch job status.
  */
 export function mapOpenAIStatusToJobStatus(
-  status: OpenAIBatchStatus
+  status: OpenAIBatchStatus,
 ): "processing" | "downloading" | "failed" {
   if (isBatchCompleted(status)) {
     return "downloading";

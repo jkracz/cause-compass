@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint .",
+    "check-types": "tsc --noEmit",
     "chat": "tsx src/scripts/chat.ts",
     "create-profiles": "tsx src/scripts/createOrgsByState.ts",
     "search-orgs": "tsx src/scripts/googleSearchOrgs.ts",

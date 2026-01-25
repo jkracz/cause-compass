@@ -30,9 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${archivo.variable} ${bitter.variable} antialiased`}
-      >
+      <body className={`${archivo.variable} ${bitter.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

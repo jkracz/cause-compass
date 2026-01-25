@@ -14,7 +14,8 @@ export const WEBSITE_CONFIRMATION_SCHEMA = {
   properties: {
     hasCorrectWebsite: {
       type: "boolean",
-      description: "Whether the model determined the provided URL is the correct website",
+      description:
+        "Whether the model determined the provided URL is the correct website",
     },
     correctWebsiteUrl: {
       type: ["string", "null"],
@@ -22,7 +23,8 @@ export const WEBSITE_CONFIRMATION_SCHEMA = {
     },
     reasoning: {
       type: "string",
-      description: "Explanation of how the correct website was identified or why none matched",
+      description:
+        "Explanation of how the correct website was identified or why none matched",
     },
     organizationOneSentenceSummary: {
       type: ["string", "null"],
@@ -69,7 +71,8 @@ export const WEBSITE_CONFIRMATION_SCHEMA = {
     organizationKeywords: {
       type: ["array", "null"],
       items: { type: "string" },
-      description: "Key words or labels that give quick insight into what the organization does",
+      description:
+        "Key words or labels that give quick insight into what the organization does",
     },
   },
   required: [

@@ -26,7 +26,10 @@ export function truncateTextContent(
 ): string | undefined {
   if (!text) return text;
   if (text.length <= MAX_TEXT_CONTENT_LENGTH) return text;
-  return text.slice(0, MAX_TEXT_CONTENT_LENGTH) + "\n\n[Content truncated for storage]";
+  return (
+    text.slice(0, MAX_TEXT_CONTENT_LENGTH) +
+    "\n\n[Content truncated for storage]"
+  );
 }
 
 /**

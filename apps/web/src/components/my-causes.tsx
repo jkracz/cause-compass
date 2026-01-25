@@ -51,7 +51,7 @@ export function MyCauses({ preloadedLikedOrgs }: MyCausesProps) {
     const orgToRemove = organizations.find((org) => org.slug === orgSlug);
     const updatedUser = await removeLikedOrganization(orgSlug);
     const updatedOrgs = organizations.filter((org) =>
-      updatedUser?.likedOrganizations.includes(org.slug)
+      updatedUser?.likedOrganizations.includes(org.slug),
     );
     setOrganizations(updatedOrgs);
 
@@ -111,7 +111,7 @@ export function MyCauses({ preloadedLikedOrgs }: MyCausesProps) {
           organization={selectedOrg}
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          onRemove={() => handleRemoveOrganization(selectedOrg.slug)}
+          onRemove={() => void handleRemoveOrganization(selectedOrg.slug)}
           showRemoveButton={true}
         />
       )}

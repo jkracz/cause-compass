@@ -43,7 +43,9 @@ export default function PrivacyPage() {
                   <li>Match you with relevant nonprofits</li>
                   <li>Improve our matching algorithm</li>
                   <li>Provide customer support</li>
-                  <li>Send you updates about organizations you've liked</li>
+                  <li>
+                    Send you updates about organizations you&apos;ve liked
+                  </li>
                   <li>Improve our services and user experience</li>
                 </ul>
               </section>
@@ -126,7 +128,7 @@ export default function PrivacyPage() {
                 <p className="text-muted-foreground">
                   We may update this privacy policy from time to time. We will
                   notify you of any changes by posting the new policy on this
-                  page and updating the "Last updated" date.
+                  page and updating the &quot;Last updated&quot; date.
                 </p>
               </section>
 

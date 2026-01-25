@@ -1,18 +1,18 @@
 {
-    "01": {
-        "code": "01",
-        "description": "Unconditional Exemption"
-    },
-    "02": {
-        "code": "02",
-        "description": "Conditional Exemption"
-    },
-    "12": {
-        "code": "12",
-        "description": "Trust described in section 4947(a)(2) of the Internal Revenue Code"
-    },
-    "25": {
-        "code": "25",
-        "description": "Organization terminating its private foundation status under section 507(b)(1)(B) of the Code"
-    }
+  "01": {
+    "code": "01",
+    "description": "Unconditional Exemption"
+  },
+  "02": {
+    "code": "02",
+    "description": "Conditional Exemption"
+  },
+  "12": {
+    "code": "12",
+    "description": "Trust described in section 4947(a)(2) of the Internal Revenue Code"
+  },
+  "25": {
+    "code": "25",
+    "description": "Organization terminating its private foundation status under section 507(b)(1)(B) of the Code"
+  }
 }

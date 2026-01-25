@@ -97,36 +97,37 @@ npx convex run batch/manual:manualPollBatches
 
 ### Files
 
-| File | Description |
-|------|-------------|
-| `batch/workflow.ts` | WorkflowManager, batchCompletedEvent, batchProcessingWorkflow |
-| `batch/actions.ts` | Core actions (createBatchJob, processResults) |
-| `batch/orchestration.ts` | Workflow orchestration (startBatchWorkflow, chainNextWorkflow, pollAndNotifyCompletedBatches) |
-| `batch/webhook.ts` | OpenAI webhook handler with signature verification |
-| `batch/queries.ts` | Internal queries for fetching org and crawl data |
-| `batch/mutations.ts` | Internal mutations for updating orgs with AI results |
-| `batch/manual.ts` | Public actions for manual testing |
-| `batch/types.ts` | Type definitions |
-| `batch/constants.ts` | Constants and JSON schema |
-| `batchJobs.ts` | CRUD operations for the `batchJobs` table |
-| `http.ts` | HTTP endpoint for OpenAI webhooks |
-| `crons.ts` | Daily cron job (safety net) |
-| `lib/openAiBatch.ts` | OpenAI API helpers (upload, create batch, download results) |
-| `lib/batchResponseProcessing.ts` | Process AI responses, extract data from crawl results |
+| File                             | Description                                                                                   |
+| -------------------------------- | --------------------------------------------------------------------------------------------- |
+| `batch/workflow.ts`              | WorkflowManager, batchCompletedEvent, batchProcessingWorkflow                                 |
+| `batch/actions.ts`               | Core actions (createBatchJob, processResults)                                                 |
+| `batch/orchestration.ts`         | Workflow orchestration (startBatchWorkflow, chainNextWorkflow, pollAndNotifyCompletedBatches) |
+| `batch/webhook.ts`               | OpenAI webhook handler with signature verification                                            |
+| `batch/queries.ts`               | Internal queries for fetching org and crawl data                                              |
+| `batch/mutations.ts`             | Internal mutations for updating orgs with AI results                                          |
+| `batch/manual.ts`                | Public actions for manual testing                                                             |
+| `batch/types.ts`                 | Type definitions                                                                              |
+| `batch/constants.ts`             | Constants and JSON schema                                                                     |
+| `batchJobs.ts`                   | CRUD operations for the `batchJobs` table                                                     |
+| `http.ts`                        | HTTP endpoint for OpenAI webhooks                                                             |
+| `crons.ts`                       | Daily cron job (safety net)                                                                   |
+| `lib/openAiBatch.ts`             | OpenAI API helpers (upload, create batch, download results)                                   |
+| `lib/batchResponseProcessing.ts` | Process AI responses, extract data from crawl results                                         |
 
 ### Batch Job States
 
-| Status | Description |
-|--------|-------------|
+| Status       | Description                                             |
+| ------------ | ------------------------------------------------------- |
 | `processing` | Batch submitted to OpenAI, workflow waiting for webhook |
-| `completed` | Batch finished successfully, results processed |
-| `failed` | Batch failed (OpenAI error or processing error) |
+| `completed`  | Batch finished successfully, results processed          |
+| `failed`     | Batch failed (OpenAI error or processing error)         |
 
 ### Why batchJobs Table Exists
 
 The `@convex-dev/workflow` component handles durable execution, retries, and event waiting. So why do we also need a `batchJobs` table?
 
 **Webhook Routing**: When OpenAI sends a webhook, it only includes its own batch ID:
+
 ```json
 { "type": "batch.completed", "data": { "id": "batch_abc123" } }
 ```
@@ -139,35 +140,39 @@ OpenAI batchId  →  workflowId  →  send event to resume workflow
 
 **Division of Responsibility**:
 
-| Concern | Workflow Component | batchJobs Table |
-|---------|-------------------|-----------------|
-| Durable execution & retries | Yes | - |
-| Event waiting (awaitEvent) | Yes | - |
-| batchId → workflowId mapping | No | Yes |
-| Prevent duplicate workflows | No | Yes (check `status: processing`) |
-| Success/error counts | No | Yes |
-| Historical audit log | No (cleaned up) | Yes |
+| Concern                      | Workflow Component | batchJobs Table                  |
+| ---------------------------- | ------------------ | -------------------------------- |
+| Durable execution & retries  | Yes                | -                                |
+| Event waiting (awaitEvent)   | Yes                | -                                |
+| batchId → workflowId mapping | No                 | Yes                              |
+| Prevent duplicate workflows  | No                 | Yes (check `status: processing`) |
+| Success/error counts         | No                 | Yes                              |
+| Historical audit log         | No (cleaned up)    | Yes                              |
 
-In short: the workflow handles *orchestration*, batchJobs handles *routing and observability*.
+In short: the workflow handles _orchestration_, batchJobs handles _routing and observability_.
 
 ### Troubleshooting
 
 **Workflow not starting:**
+
 - Check `ENABLE_BATCH_CRON=true` is set
 - Check if a batch is already processing: `npx convex run batchJobs:listActive`
 - Manually start: `npx convex run batch/manual:manualStartWorkflow`
 
 **Webhook not working:**
+
 - Verify `OPENAI_WEBHOOK_SECRET` is set correctly
 - Check webhook URL matches your deployment
 - Test webhook from OpenAI dashboard (Settings → Webhooks → Send test event)
 - Check Convex logs for webhook errors
 
 **Batch stuck in processing:**
+
 - OpenAI batches can take up to 24 hours
 - Check OpenAI dashboard for batch status
 - If webhook failed, manually trigger: `npx convex run batch/manual:manualPollBatches`
 
 **Chain stopped unexpectedly:**
+
 - Daily cron will restart it automatically
 - Or manually start: `npx convex run batch/manual:manualStartWorkflow`

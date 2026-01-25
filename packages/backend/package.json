@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "convex dev",
-    "typecheck": "tsc --noEmit -p convex",
+    "check-types": "tsc --noEmit -p convex",
     "lint": "eslint ."
   },
   "author": "",
@@ -19,6 +19,7 @@
   "devDependencies": {
     "@cause/eslint-config": "workspace:*",
     "@cause/typescript-config": "workspace:*",
+    "eslint": "^9.39.2",
     "typescript": "latest"
   }
 }

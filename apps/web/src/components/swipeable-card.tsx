@@ -36,9 +36,7 @@ export function SwipeableCard({
       ? `${organization.city}, ${organization.state}`
       : undefined;
   const displayTagline =
-    organization.tagline ||
-    organization.mission ||
-    organization.whySupport;
+    organization.tagline || organization.mission || organization.whySupport;
 
   const handleDragEnd = (
     _event: MouseEvent | TouchEvent | PointerEvent,

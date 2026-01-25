@@ -5,7 +5,11 @@ import slugify from "slugify";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { logger } from "@/utils/logger";
-import { truncateTextContent, MAX_TEXT_CONTENT_LENGTH, limitArrayBySize } from "@/utils/textUtils";
+import {
+  truncateTextContent,
+  MAX_TEXT_CONTENT_LENGTH,
+  limitArrayBySize,
+} from "@/utils/textUtils";
 import type { TaxExemptOrganization, WebsiteConfirmation } from "@cause/types";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
 
@@ -263,7 +267,9 @@ function transformDocument(doc: TaxExemptOrganization): TransformResult {
         textContent: truncateTextContent(item.textContent),
         aboutLinks: limitArrayBySize(cleanStringArray(item.aboutLinks)),
         donationLinks: limitArrayBySize(cleanStringArray(item.donationLinks)),
-        socialMediaUrls: limitArrayBySize(cleanStringArray(item.socialMediaUrls)),
+        socialMediaUrls: limitArrayBySize(
+          cleanStringArray(item.socialMediaUrls),
+        ),
         logoLinks: limitArrayBySize(cleanStringArray(item.logoLinks)),
         hasNewsletterSignup: item.hasNewsletterSignup,
         emailAddresses: limitArrayBySize(cleanStringArray(item.emailAddresses)),
@@ -298,7 +304,13 @@ function transformDocument(doc: TaxExemptOrganization): TransformResult {
     }
   }
 
-  return { organization, searchResult, crawlResults, aiConfirmation, truncatedCrawlResults };
+  return {
+    organization,
+    searchResult,
+    crawlResults,
+    aiConfirmation,
+    truncatedCrawlResults,
+  };
 }
 
 // Utility to remove undefined values (Convex doesn't like undefined)
@@ -445,7 +457,9 @@ async function main() {
   logger.info(`  Crawl Results: ${crawlCount}`);
   logger.info(`  AI Confirmations: ${aiCount}`);
   if (truncatedCount > 0) {
-    logger.info(`  Crawl Results Truncated: ${truncatedCount} (textContent exceeded ${MAX_TEXT_CONTENT_LENGTH} chars)`);
+    logger.info(
+      `  Crawl Results Truncated: ${truncatedCount} (textContent exceeded ${MAX_TEXT_CONTENT_LENGTH} chars)`,
+    );
   }
   logger.info("");
   logger.info("Enrichment stage distribution:");

@@ -1,52 +1,52 @@
 {
-    "0": {
-        "code": "0",
-        "lowerLimit": 0,
-        "upperLimit": 0
-    },
-    "1": {
-        "code": "1",
-        "lowerLimit": 1,
-        "upperLimit": 9999
-    },
-    "2": {
-        "code": "2",
-        "lowerLimit": 10000,
-        "upperLimit": 24999
-    },
-    "3": {
-        "code": "3",
-        "lowerLimit": 25000,
-        "upperLimit": 99999
-    },
-    "4": {
-        "code": "4",
-        "lowerLimit": 100000,
-        "upperLimit": 499999
-    },
-    "5": {
-        "code": "5",
-        "lowerLimit": 500000,
-        "upperLimit": 999999
-    },
-    "6": {
-        "code": "6",
-        "lowerLimit": 1000000,
-        "upperLimit": 4999999
-    },
-    "7": {
-        "code": "7",
-        "lowerLimit": 5000000,
-        "upperLimit": 9999999
-    },
-    "8": {
-        "code": "8",
-        "lowerLimit": 10000000,
-        "upperLimit": 49999999
-    },
-    "9": {
-        "code": "9",
-        "lowerLimit": 50000000,
-        "upperLimit": null
-    }
+  "0": {
+    "code": "0",
+    "lowerLimit": 0,
+    "upperLimit": 0
+  },
+  "1": {
+    "code": "1",
+    "lowerLimit": 1,
+    "upperLimit": 9999
+  },
+  "2": {
+    "code": "2",
+    "lowerLimit": 10000,
+    "upperLimit": 24999
+  },
+  "3": {
+    "code": "3",
+    "lowerLimit": 25000,
+    "upperLimit": 99999
+  },
+  "4": {
+    "code": "4",
+    "lowerLimit": 100000,
+    "upperLimit": 499999
+  },
+  "5": {
+    "code": "5",
+    "lowerLimit": 500000,
+    "upperLimit": 999999
+  },
+  "6": {
+    "code": "6",
+    "lowerLimit": 1000000,
+    "upperLimit": 4999999
+  },
+  "7": {
+    "code": "7",
+    "lowerLimit": 5000000,
+    "upperLimit": 9999999
+  },
+  "8": {
+    "code": "8",
+    "lowerLimit": 10000000,
+    "upperLimit": 49999999
+  },
+  "9": {
+    "code": "9",
+    "lowerLimit": 50000000,
+    "upperLimit": null
+  }
 }

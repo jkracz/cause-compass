@@ -159,7 +159,7 @@ export function ReflectionCard({
                 background: `linear-gradient(90deg, ${uniqueCategories
                   .slice(0, 3)
                   .map(
-                    (_, index) => `hsla(${(index * 120) % 360}, 70%, 60%, 0.8)`
+                    (_, index) => `hsla(${(index * 120) % 360}, 70%, 60%, 0.8)`,
                   )
                   .join(", ")})`,
               }}

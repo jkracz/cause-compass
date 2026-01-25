@@ -5,7 +5,7 @@
 import type { Id } from "../_generated/dataModel";
 
 // Re-export types from lib files for convenience
-export type { CrawlItemData } from "../lib/batchResponseProcessing";
+export type { CrawlItemData } from "../../lib/batchResponseProcessing";
 
 /**
  * Organization data ready for AI confirmation
