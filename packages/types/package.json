@@ -14,13 +14,17 @@
     "scripts": {
         "build": "tsc",
         "dev": "tsc --watch",
-        "clean": "rm -rf dist"
+        "clean": "rm -rf dist",
+        "lint": "eslint .",
+        "check-types": "tsc --noEmit"
     },
     "dependencies": {
         "zod": "^4.3.6"
     },
     "devDependencies": {
+        "@cause/eslint-config": "workspace:*",
         "@cause/typescript-config": "workspace:*",
+        "eslint": "^9.39.2",
         "typescript": "latest"
     }
 }

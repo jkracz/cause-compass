@@ -29,10 +29,12 @@
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": [],
+      "inputs": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.mjs", "eslint.config.*", "tsconfig.json"]
     },
     "check-types": {
-      "dependsOn": ["^check-types"]
+      "dependsOn": [],
+      "inputs": ["**/*.ts", "**/*.tsx", "tsconfig.json"]
     },
     "dev": {
       "cache": false,

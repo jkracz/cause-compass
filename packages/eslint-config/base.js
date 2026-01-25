@@ -11,11 +11,20 @@ import tseslint from "typescript-eslint"
  * */
 export const config = [
   {
-    ignores: ["dist/**", "**/generated/**", "**/node_modules/**"],
+    ignores: ["dist/**", "**/generated/**", "**/_generated/**", "**/node_modules/**"],
   },
   js.configs.recommended,
   eslintConfigPrettier,
-  ...tseslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  {
+    languageOptions: {
+      parserOptions: {
+        projectService: {
+          allowDefaultProject: ["*.config.mjs", "*.config.js"],
+        },
+      },
+    },
+  },
   {
     plugins: {
       turbo: turboPlugin,
