@@ -17,6 +17,6 @@
     "declaration": false,
     "declarationMap": false
   },
-  "include": ["./**/*"],
+  "include": ["./**/*", "../lib"],
   "exclude": ["node_modules", "./_generated"]
 }

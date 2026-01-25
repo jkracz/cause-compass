@@ -6,7 +6,11 @@ import { v } from "convex/values";
 import { internalAction } from "../_generated/server";
 import { internal } from "../_generated/api";
 import type { WorkflowId } from "@convex-dev/workflow";
-import { getBatch, isBatchCompleted, isBatchFailed } from "../lib/openAiBatch";
+import {
+  getBatch,
+  isBatchCompleted,
+  isBatchFailed,
+} from "../../lib/openAiBatch";
 import { workflow, batchCompletedEvent } from "./workflow";
 
 // Type declaration for environment variables in Convex actions

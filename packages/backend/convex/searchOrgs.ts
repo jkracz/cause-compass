@@ -14,7 +14,7 @@ import {
   googleSearch,
   getAvailableKeys,
   type GoogleSearchResult,
-} from "./lib/googleSearch";
+} from "../lib/googleSearch";
 
 const SEARCH_LIMIT_PER_KEY = 100;
 const DELAY_BETWEEN_REQUESTS_MS = 100;

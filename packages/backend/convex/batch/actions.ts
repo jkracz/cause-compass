@@ -12,8 +12,8 @@ import {
   parseJSONL,
   toJSONL,
   createConfirmationRequestLine,
-} from "../lib/openAiBatch";
-import { processCrawlDataForConfirmedWebsite } from "../lib/batchResponseProcessing";
+} from "../../lib/openAiBatch";
+import { processCrawlDataForConfirmedWebsite } from "../../lib/batchResponseProcessing";
 import {
   DEFAULT_BATCH_SIZE,
   DEFAULT_MODEL,
