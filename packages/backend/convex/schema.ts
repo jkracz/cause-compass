@@ -180,4 +180,41 @@ export default defineSchema({
   })
     .index("by_ein", ["ein"])
     .index("by_orgId", ["orgId"]),
+
+  // Batch jobs table - audit log for OpenAI batch processing
+  // Orchestration is handled by the workflow component; this table tracks results
+  batchJobs: defineTable({
+    // Job identifier
+    jobId: v.string(),
+
+    // Simplified status (workflow handles orchestration)
+    status: v.union(
+      v.literal("processing"), // Submitted to OpenAI, workflow waiting
+      v.literal("completed"), // Successfully processed
+      v.literal("failed"), // Failed
+    ),
+
+    // Timestamps
+    createdAt: v.string(),
+    completedAt: v.optional(v.string()),
+
+    // Batch info
+    batchSize: v.number(),
+
+    // OpenAI references
+    batchId: v.optional(v.string()), // OpenAI batch job ID
+    outputFileId: v.optional(v.string()), // OpenAI output file ID
+
+    // Results
+    processedCount: v.optional(v.number()),
+    errorCount: v.optional(v.number()),
+    error: v.optional(v.string()),
+
+    // Workflow integration
+    workflowId: v.optional(v.string()),
+  })
+    .index("by_jobId", ["jobId"])
+    .index("by_batchId", ["batchId"])
+    .index("by_status", ["status"])
+    .index("by_createdAt", ["createdAt"]),
 });

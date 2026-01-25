@@ -265,6 +265,9 @@ importers:
       '@convex-dev/migrations':
         specifier: ^0.3.1
         version: 0.3.1(convex@1.31.5(react@19.2.3))
+      '@convex-dev/workflow':
+        specifier: ^0.3.3
+        version: 0.3.3(@convex-dev/workpool@0.3.1(convex-helpers@0.1.111(convex@1.31.5(react@19.2.3))(react@19.2.3)(typescript@5.9.3)(zod@4.3.5))(convex@1.31.5(react@19.2.3)))(convex-helpers@0.1.111(convex@1.31.5(react@19.2.3))(react@19.2.3)(typescript@5.9.3)(zod@4.3.5))(convex@1.31.5(react@19.2.3))
       convex:
         specifier: ^1.31.5
         version: 1.31.5(react@19.2.3)
@@ -446,6 +449,19 @@ packages:
     resolution: {integrity: sha512-dGiN82vWMN415/AGMcVooDOJk8iTousZahBBs27uA03pL74Uo3ksucUW3CiCfPx75rv+x9UnenEakimQYYNIrA==}
     peerDependencies:
       convex: ^1.24.8
+
+  '@convex-dev/workflow@0.3.3':
+    resolution: {integrity: sha512-wmW5Sr2GIMUZEQ+bUQ0A3b2y8Rkt+hS8gw2KPs3WhRV2ZxgMz1ftfcnDm3i4VykSCACxjvL7wFV4NHwv8V+H4w==}
+    peerDependencies:
+      '@convex-dev/workpool': ^0.3.0
+      convex: ^1.24.8
+      convex-helpers: ^0.1.99
+
+  '@convex-dev/workpool@0.3.1':
+    resolution: {integrity: sha512-uw4Mi+irhhoYA/KwaMo5wXyYJ7BbxqeaLcCZbst3t1SxPN5488rpnR0OwBcPDCmwcdQjBVHOx+q8S4GUjq0Csg==}
+    peerDependencies:
+      convex: ^1.24.8
+      convex-helpers: ^0.1.94
 
   '@crawlee/basic@3.15.3':
     resolution: {integrity: sha512-+j0rhP16Gx84eFFXnG2t0YxmwkIwz5cWFnJ6CFyj1F7ElQ5JmVkzxyIWoyKBWCmLpPlafySht1tKq7L/4EZ1AQ==}
@@ -2109,6 +2125,9 @@ packages:
   ast-types-flow@0.0.8:
     resolution: {integrity: sha512-OH/2E5Fg20h2aPrbe+QL8JZQFko0YZaF+j4mnQ7BGhfavO7OpSLa8a0y9sBwomHdSbkhTS8TQNayBfnW5DwbvQ==}
 
+  async-channel@0.2.0:
+    resolution: {integrity: sha512-BJyjI/sfKlyijaBt2hbOSxT28xGNtLR0QLzAKO1Hlnv5BULY7sAoYoTPW3lfr1ZIC7y+FxabxO9T8GXpyoofGg==}
+
   async-function@1.0.0:
     resolution: {integrity: sha512-hsU18Ae8CDTR6Kgu9DYf0EbCr/a5iGL0rytQDobUcdpYOKokk8LEjVphnXkDkgpi0wYVsqrXuP0bZxJaTqdgoA==}
     engines: {node: '>= 0.4'}
@@ -2315,6 +2334,28 @@ packages:
 
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
+
+  convex-helpers@0.1.111:
+    resolution: {integrity: sha512-0O59Ohi8HVc3+KULxSC6JHsw8cQJyc8gZ7OAfNRVX7T5Wy6LhPx3l8veYN9avKg7UiPlO7m1eBiQMHKclIyXyQ==}
+    hasBin: true
+    peerDependencies:
+      '@standard-schema/spec': ^1.0.0
+      convex: ^1.25.4
+      hono: ^4.0.5
+      react: ^17.0.2 || ^18.0.0 || ^19.0.0
+      typescript: ^5.5
+      zod: ^3.25.0 || ^4.0.0
+    peerDependenciesMeta:
+      '@standard-schema/spec':
+        optional: true
+      hono:
+        optional: true
+      react:
+        optional: true
+      typescript:
+        optional: true
+      zod:
+        optional: true
 
   convex@1.31.5:
     resolution: {integrity: sha512-E1IuJKFwMCHDToNGukBPs6c7RFaarR3t8chLF9n98TM5/Tgmj8lM6l7sKM1aJ3VwqGaB4wbeUAPY8osbCOXBhQ==}
@@ -4863,6 +4904,18 @@ snapshots:
     dependencies:
       convex: 1.31.5(react@19.2.3)
 
+  '@convex-dev/workflow@0.3.3(@convex-dev/workpool@0.3.1(convex-helpers@0.1.111(convex@1.31.5(react@19.2.3))(react@19.2.3)(typescript@5.9.3)(zod@4.3.5))(convex@1.31.5(react@19.2.3)))(convex-helpers@0.1.111(convex@1.31.5(react@19.2.3))(react@19.2.3)(typescript@5.9.3)(zod@4.3.5))(convex@1.31.5(react@19.2.3))':
+    dependencies:
+      '@convex-dev/workpool': 0.3.1(convex-helpers@0.1.111(convex@1.31.5(react@19.2.3))(react@19.2.3)(typescript@5.9.3)(zod@4.3.5))(convex@1.31.5(react@19.2.3))
+      async-channel: 0.2.0
+      convex: 1.31.5(react@19.2.3)
+      convex-helpers: 0.1.111(convex@1.31.5(react@19.2.3))(react@19.2.3)(typescript@5.9.3)(zod@4.3.5)
+
+  '@convex-dev/workpool@0.3.1(convex-helpers@0.1.111(convex@1.31.5(react@19.2.3))(react@19.2.3)(typescript@5.9.3)(zod@4.3.5))(convex@1.31.5(react@19.2.3))':
+    dependencies:
+      convex: 1.31.5(react@19.2.3)
+      convex-helpers: 0.1.111(convex@1.31.5(react@19.2.3))(react@19.2.3)(typescript@5.9.3)(zod@4.3.5)
+
   '@crawlee/basic@3.15.3':
     dependencies:
       '@apify/log': 2.5.23
@@ -6425,6 +6478,8 @@ snapshots:
 
   ast-types-flow@0.0.8: {}
 
+  async-channel@0.2.0: {}
+
   async-function@1.0.0: {}
 
   async@3.2.6: {}
@@ -6637,6 +6692,14 @@ snapshots:
   content-type@1.0.5: {}
 
   convert-source-map@2.0.0: {}
+
+  convex-helpers@0.1.111(convex@1.31.5(react@19.2.3))(react@19.2.3)(typescript@5.9.3)(zod@4.3.5):
+    dependencies:
+      convex: 1.31.5(react@19.2.3)
+    optionalDependencies:
+      react: 19.2.3
+      typescript: 5.9.3
+      zod: 4.3.5
 
   convex@1.31.5(react@19.2.3):
     dependencies:
