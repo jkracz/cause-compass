@@ -25,7 +25,7 @@ export function MirrorQuestion({
   isFirstQuestion = false,
 }: MirrorQuestionProps) {
   const [inputMode, setInputMode] = useState<"text" | "voice">("text");
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [, setAudioBlob] = useState<Blob | null>(null);
 
   const handleVoiceTranscription = (transcription: string) => {
     onAnswer(transcription);

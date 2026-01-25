@@ -65,7 +65,7 @@ export function VoiceRecorder({
         stream.getTracks().forEach((track) => track.stop());
 
         // Start transcription
-        transcribeAudio(blob);
+        void transcribeAudio(blob);
       };
 
       mediaRecorder.start();
@@ -99,7 +99,7 @@ export function VoiceRecorder({
 
   const playRecording = () => {
     if (audioUrl && audioRef.current) {
-      audioRef.current.play();
+      void audioRef.current.play();
       setIsPlaying(true);
     }
   };
@@ -122,7 +122,7 @@ export function VoiceRecorder({
     onTranscription("");
   };
 
-  const transcribeAudio = async (blob: Blob) => {
+  const transcribeAudio = (_blob: Blob) => {
     setIsTranscribing(true);
     try {
       // TODO: Implement transcription
@@ -152,7 +152,7 @@ export function VoiceRecorder({
       <div className="flex items-center justify-center space-x-4">
         {!isRecording && !audioBlob && (
           <Button
-            onClick={startRecording}
+            onClick={() => void startRecording()}
             size="lg"
             className="h-16 w-16 rounded-full bg-red-600 hover:bg-red-700"
           >

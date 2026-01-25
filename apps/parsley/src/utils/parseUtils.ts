@@ -12,7 +12,7 @@ const MAX_URLS_TO_CRAWL = 5;
 export const createAcronym = (str: string) => {
   return str
     .split(/\s+/)
-    .map((word) => word[0].toUpperCase())
+    .map((word) => word[0]?.toUpperCase() ?? "")
     .join("");
 };
 
@@ -376,7 +376,8 @@ export const findMainLogo = (logoUrls: string[]): string | undefined => {
 
   // Sort by score (highest first) and return the best match
   scoredLogos.sort((a, b) => b.score - a.score);
-  return scoredLogos[0]?.score > -999 ? scoredLogos[0]?.url : undefined;
+  const bestLogo = scoredLogos[0];
+  return bestLogo && bestLogo.score > -999 ? bestLogo.url : undefined;
 };
 
 export const findBestDonationLink = (links: string[]): string | undefined => {
@@ -435,8 +436,9 @@ export const findBestDonationLink = (links: string[]): string | undefined => {
   scoredLinks.sort((a, b) => b.score - a.score);
 
   // Return best match if it has a score > 0, otherwise return first valid link
-  if (scoredLinks[0]?.score > 0) {
-    return scoredLinks[0].link;
+  const bestLink = scoredLinks[0];
+  if (bestLink && bestLink.score > 0) {
+    return bestLink.link;
   } else {
     // Find the first valid string link
     const firstValidLink = links.find((link) => typeof link === "string");

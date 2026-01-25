@@ -46,7 +46,7 @@ export function StartOverButton() {
         <AlertDialogHeader>
           <AlertDialogTitle>Reset Your Journey?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will clear all your saved organizations and preferences. You'll
+            This will clear all your saved organizations and preferences. You&apos;ll
             be able to answer the mirror questions again and start fresh. This
             action cannot be undone.
           </AlertDialogDescription>

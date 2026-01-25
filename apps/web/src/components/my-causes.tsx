@@ -111,7 +111,7 @@ export function MyCauses({ preloadedLikedOrgs }: MyCausesProps) {
           organization={selectedOrg}
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          onRemove={() => handleRemoveOrganization(selectedOrg.slug)}
+          onRemove={() => void handleRemoveOrganization(selectedOrg.slug)}
           showRemoveButton={true}
         />
       )}

@@ -163,7 +163,7 @@ export default function Discover({ preloadedOrganizations }: DiscoverProps) {
               <Button
                 size="lg"
                 className="h-14 w-14 rounded-full bg-pink-600 p-0 hover:bg-pink-700"
-                onClick={handleLike}
+                onClick={() => void handleLike()}
               >
                 <Heart className="h-6 w-6" />
                 <span className="sr-only">Like</span>

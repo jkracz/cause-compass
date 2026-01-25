@@ -16,6 +16,7 @@ import {
 import { processCrawlDataForConfirmedWebsite } from "../lib/batchResponseProcessing";
 import { DEFAULT_BATCH_SIZE, DEFAULT_MODEL, WEBSITE_CONFIRMATION_SCHEMA } from "./constants";
 import type { OrgForAiConfirmation } from "./types";
+import type { AiConfirmationResponse, GeographicFocusType } from "@cause/types";
 
 /**
  * Generate a unique job ID.
@@ -190,7 +191,7 @@ export const processResults = internalAction({
           }
 
           // Parse the response content
-          const parsed = JSON.parse(content);
+          const parsed = JSON.parse(content) as AiConfirmationResponse;
 
           // Get organization from database
           const org = await ctx.runQuery(internal.batch.queries.internalGetOrgByEin, { ein });
@@ -222,8 +223,8 @@ export const processResults = internalAction({
           // Update organization if we found the correct website
           if (parsed.hasCorrectWebsite && parsed.correctWebsiteUrl) {
             // Validate geographicFocus is one of the allowed values
-            const validGeographicFocus = ["Global", "National", "Regional", "Local"];
-            const geoFocus = validGeographicFocus.includes(parsed.organizationGeographicFocus)
+            const validGeographicFocus: GeographicFocusType[] = ["Global", "National", "Regional", "Local"];
+            const geoFocus = parsed.organizationGeographicFocus && validGeographicFocus.includes(parsed.organizationGeographicFocus)
               ? parsed.organizationGeographicFocus
               : undefined;
 
@@ -280,8 +281,9 @@ export const processResults = internalAction({
 
           processedCount++;
           console.log(`Processed EIN ${ein}`);
-        } catch (parseError) {
-          console.error(`Error processing response: ${parseError}`);
+        } catch (parseError: unknown) {
+          const errorMsg = parseError instanceof Error ? parseError.message : String(parseError);
+          console.error(`Error processing response: ${errorMsg}`);
           errorCount++;
         }
       }

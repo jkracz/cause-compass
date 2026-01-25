@@ -118,7 +118,7 @@ export default function TermsPage() {
               <section>
                 <h2 className="mb-3 text-xl font-semibold">7. Disclaimer</h2>
                 <p className="text-muted-foreground">
-                  The information on this website is provided on an 'as is'
+                  The information on this website is provided on an &apos;as is&apos;
                   basis. To the fullest extent permitted by law, this Company
                   excludes all representations, warranties, conditions and terms
                   related to our website and the use of this website.
@@ -132,7 +132,7 @@ export default function TermsPage() {
                   any damages (including, without limitation, damages for loss
                   of data or profit, or due to business interruption) arising
                   out of the use or inability to use the materials on Cause
-                  Compass's website.
+                  Compass&apos;s website.
                 </p>
               </section>
 

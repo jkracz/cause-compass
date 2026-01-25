@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import posthog from "posthog-js";
 
@@ -18,7 +17,6 @@ interface OnboardingFlowProps {
 }
 
 export function OnboardingFlow({ questions }: OnboardingFlowProps) {
-  const router = useRouter();
   const hasTrackedOnboardingStartRef = useRef(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
@@ -138,7 +136,7 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
         } else if (Array.isArray(value)) {
           value.forEach((v) => formData.append(key, v));
         } else {
-          formData.append(key, value as string);
+          formData.append(key, value);
         }
       });
 
@@ -203,7 +201,7 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
 
               {locationPermission === null && (
                 <div className="space-y-3">
-                  <Button onClick={handleLocationRequest} className="w-full">
+                  <Button onClick={() => void handleLocationRequest()} className="w-full">
                     Share My Location
                   </Button>
                   <Button
@@ -284,7 +282,7 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
               Back
             </Button>
 
-            <Button onClick={handleNext} disabled={!isAnswered}>
+            <Button onClick={() => void handleNext()} disabled={!isAnswered}>
               {isLastQuestion ? "Discover Nonprofits" : "Next"}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>

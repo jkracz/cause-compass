@@ -105,7 +105,7 @@ export const handleWebhook = internalAction({
     // Parse the event
     let event: OpenAIWebhookEvent;
     try {
-      event = JSON.parse(body);
+      event = JSON.parse(body) as OpenAIWebhookEvent;
     } catch {
       console.error("Failed to parse webhook body");
       return { success: false, error: "Invalid JSON" };

@@ -20,7 +20,10 @@
     "SEARCH_ENGINE_ID_SF",
     "GOOGLE_SEARCH_API_KEY_SF",
     "SEARCH_ENGINE_ID_JK",
-    "GOOGLE_SEARCH_API_KEY_JK"
+    "GOOGLE_SEARCH_API_KEY_JK",
+    "ENABLE_BATCH_CRON",
+    "ENABLE_SEARCH_CRON",
+    "OPENAI_WEBHOOK_SECRET"
   ],
   "tasks": {
     "build": {
@@ -30,11 +33,11 @@
     },
     "lint": {
       "dependsOn": [],
-      "inputs": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.mjs", "eslint.config.*", "tsconfig.json"]
+      "inputs": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.mjs", "!dist/**", "eslint.config.*", "tsconfig.json"]
     },
     "check-types": {
       "dependsOn": [],
-      "inputs": ["**/*.ts", "**/*.tsx", "tsconfig.json"]
+      "inputs": ["**/*.ts", "**/*.tsx", "!dist/**", "tsconfig.json"]
     },
     "dev": {
       "cache": false,

@@ -74,7 +74,7 @@ export const batchProcessingWorkflow = workflow.define({
 
     // Step 2: Wait for completion event from OpenAI webhook
     // This pauses the workflow until the webhook sends the event
-    const _completionEvent = await step.awaitEvent(batchCompletedEvent);
+    await step.awaitEvent(batchCompletedEvent);
 
     // Step 3: Process results
     const processResult: {
