@@ -8,6 +8,16 @@
  * @module
  */
 
+import type * as batch_actions from "../batch/actions.js";
+import type * as batch_constants from "../batch/constants.js";
+import type * as batch_index from "../batch/index.js";
+import type * as batch_manual from "../batch/manual.js";
+import type * as batch_mutations from "../batch/mutations.js";
+import type * as batch_orchestration from "../batch/orchestration.js";
+import type * as batch_queries from "../batch/queries.js";
+import type * as batch_types from "../batch/types.js";
+import type * as batch_webhook from "../batch/webhook.js";
+import type * as batch_workflow from "../batch/workflow.js";
 import type * as batchJobs from "../batchJobs.js";
 import type * as crons from "../crons.js";
 import type * as http from "../http.js";
@@ -15,7 +25,6 @@ import type * as lib_batchResponseProcessing from "../lib/batchResponseProcessin
 import type * as lib_googleSearch from "../lib/googleSearch.js";
 import type * as lib_openAiBatch from "../lib/openAiBatch.js";
 import type * as migrations from "../migrations.js";
-import type * as openAiBatch from "../openAiBatch.js";
 import type * as organizations from "../organizations.js";
 import type * as searchOrgs from "../searchOrgs.js";
 import type * as users from "../users.js";
@@ -27,6 +36,16 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "batch/actions": typeof batch_actions;
+  "batch/constants": typeof batch_constants;
+  "batch/index": typeof batch_index;
+  "batch/manual": typeof batch_manual;
+  "batch/mutations": typeof batch_mutations;
+  "batch/orchestration": typeof batch_orchestration;
+  "batch/queries": typeof batch_queries;
+  "batch/types": typeof batch_types;
+  "batch/webhook": typeof batch_webhook;
+  "batch/workflow": typeof batch_workflow;
   batchJobs: typeof batchJobs;
   crons: typeof crons;
   http: typeof http;
@@ -34,7 +53,6 @@ declare const fullApi: ApiFromModules<{
   "lib/googleSearch": typeof lib_googleSearch;
   "lib/openAiBatch": typeof lib_openAiBatch;
   migrations: typeof migrations;
-  openAiBatch: typeof openAiBatch;
   organizations: typeof organizations;
   searchOrgs: typeof searchOrgs;
   users: typeof users;

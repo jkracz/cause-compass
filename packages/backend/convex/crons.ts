@@ -34,7 +34,7 @@ crons.daily(
  *
  * Only executes in production when ENABLE_BATCH_CRON=true is set.
  * In dev, use manual testing instead:
- *   npx convex run openAiBatch:manualStartWorkflow '{"limit": 5}'
+ *   npx convex run batch/manual:manualStartWorkflow '{"limit": 5}'
  *
  * Note: Batch completion is handled by OpenAI webhooks (no polling needed).
  * Set up webhook at: https://platform.openai.com/settings/project/webhooks
@@ -44,7 +44,7 @@ crons.daily(
 crons.daily(
   "start-batch-workflow",
   { hourUTC: 1, minuteUTC: 0 },
-  internal.openAiBatch.startBatchWorkflow,
+  internal.batch.orchestration.startBatchWorkflow,
   {}
 );
 

@@ -27,7 +27,7 @@ http.route({
       const body = await request.text();
 
       // Process the webhook (includes signature verification)
-      const result = await ctx.runAction(internal.openAiBatch.handleWebhook, {
+      const result = await ctx.runAction(internal.batch.webhook.handleWebhook, {
         body,
         webhookId: request.headers.get("webhook-id") ?? "",
         webhookTimestamp: request.headers.get("webhook-timestamp") ?? "",
