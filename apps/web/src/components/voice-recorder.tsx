@@ -282,7 +282,7 @@ export function VoiceRecorder({
         <motion.div
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-center"
+          className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-center"
         >
           <p className="text-sm text-amber-200">
             We couldn&apos;t catch that — try speaking a bit louder or closer to

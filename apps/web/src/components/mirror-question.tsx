@@ -84,9 +84,9 @@ export function MirrorQuestion({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
                       transition={{ duration: 0.2 }}
-                      className="mt-4 rounded-lg bg-white/5 border border-white/10 p-4"
+                      className="mt-4 rounded-lg border border-white/10 bg-white/5 p-4"
                     >
-                      <p className="text-sm italic text-white/90 leading-relaxed">
+                      <p className="text-sm leading-relaxed text-white/90 italic">
                         &ldquo;{value as string}&rdquo;
                       </p>
                     </motion.div>
