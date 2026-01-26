@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 function WaveformAnimation() {
   const bars = [0, 1, 2, 3, 4];
   return (
-    <div className="flex items-center justify-center gap-1">
+    <div className="flex h-7 items-end justify-center gap-1">
       {bars.map((i) => (
         <motion.div
           key={i}
@@ -274,7 +274,7 @@ export function VoiceRecorder({
           className="flex flex-col items-center gap-3"
         >
           <WaveformAnimation />
-          <span className="text-muted-foreground text-sm">Listening...</span>
+          <span className="text-muted-foreground text-sm">Transcribing...</span>
         </motion.div>
       )}
 
