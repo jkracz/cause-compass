@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Mic, PenTool } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -76,12 +77,21 @@ export function MirrorQuestion({
                   onTranscription={handleVoiceTranscription}
                   onAudioData={handleAudioData}
                 />
-                {value && (
-                  <div className="mt-4 rounded-lg bg-white/10 p-3">
-                    <p className="mb-2 text-sm font-medium">Your response:</p>
-                    <p className="text-sm">{value as string}</p>
-                  </div>
-                )}
+                <AnimatePresence>
+                  {value && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.2 }}
+                      className="mt-4 rounded-lg bg-white/5 border border-white/10 p-4"
+                    >
+                      <p className="text-sm italic text-white/90 leading-relaxed">
+                        &ldquo;{value as string}&rdquo;
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             )}
           </div>

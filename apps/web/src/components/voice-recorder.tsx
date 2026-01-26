@@ -1,10 +1,32 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Mic, MicOff, Play, Pause, RotateCcw } from "lucide-react";
+import { Mic, Square, Play, Pause, RotateCcw } from "lucide-react";
+import { motion } from "motion/react";
 import posthog from "posthog-js";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+function WaveformAnimation() {
+  const bars = [0, 1, 2, 3, 4];
+  return (
+    <div className="flex items-center justify-center gap-1">
+      {bars.map((i) => (
+        <motion.div
+          key={i}
+          className="w-1 rounded-full bg-gradient-to-t from-pink-500 to-purple-500"
+          animate={{ height: [12, 28, 12] }}
+          transition={{
+            duration: 0.5,
+            repeat: Infinity,
+            delay: i * 0.1,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 interface VoiceRecorderProps {
   onTranscription: (text: string) => void;
@@ -23,6 +45,7 @@ export function VoiceRecorder({
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [recordingTime, setRecordingTime] = useState(0);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [transcriptionError, setTranscriptionError] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -119,11 +142,13 @@ export function VoiceRecorder({
     setAudioUrl(null);
     setRecordingTime(0);
     setIsPlaying(false);
+    setTranscriptionError(false);
     onTranscription("");
   };
 
   const transcribeAudio = async (blob: Blob) => {
     setIsTranscribing(true);
+    setTranscriptionError(false);
     try {
       const formData = new FormData();
       formData.append("audio", blob, "recording.webm");
@@ -152,9 +177,8 @@ export function VoiceRecorder({
     } catch (error) {
       console.error("Transcription error:", error);
       posthog.captureException(error);
-      onTranscription(
-        "Voice recording captured (transcription failed - please try again)",
-      );
+      setTranscriptionError(true);
+      onTranscription("");
     } finally {
       setIsTranscribing(false);
     }
@@ -185,9 +209,9 @@ export function VoiceRecorder({
           <Button
             onClick={stopRecording}
             size="lg"
-            className="h-16 w-16 animate-pulse rounded-full bg-red-600 hover:bg-red-700"
+            className="h-16 w-16 rounded-full bg-red-600 shadow-[0_0_20px_rgba(239,68,68,0.5)] hover:bg-red-700"
           >
-            <MicOff className="h-6 w-6" />
+            <Square className="h-5 w-5 fill-current" />
             <span className="sr-only">Stop recording</span>
           </Button>
         )}
@@ -244,12 +268,27 @@ export function VoiceRecorder({
       )}
 
       {isTranscribing && (
-        <div className="text-center">
-          <div className="flex items-center justify-center space-x-2">
-            <div className="border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
-            <span className="text-sm">Transcribing your response...</span>
-          </div>
-        </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center gap-3"
+        >
+          <WaveformAnimation />
+          <span className="text-muted-foreground text-sm">Listening...</span>
+        </motion.div>
+      )}
+
+      {transcriptionError && !isTranscribing && (
+        <motion.div
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-center"
+        >
+          <p className="text-sm text-amber-200">
+            We couldn&apos;t catch that — try speaking a bit louder or closer to
+            your mic
+          </p>
+        </motion.div>
       )}
 
       {/* Hidden audio element for playback */}
