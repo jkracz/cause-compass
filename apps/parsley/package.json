@@ -8,6 +8,7 @@
     "check-types": "tsc --noEmit",
     "chat": "tsx src/scripts/chat.ts",
     "create-profiles": "tsx src/scripts/createOrgsByState.ts",
+    "create-profiles-convex": "tsx src/scripts/createOrgsByStateConvex.ts",
     "search-orgs": "tsx src/scripts/googleSearchOrgs.ts",
     "crawl-sites": "tsx src/scripts/parseSearchResults.ts",
     "generate-batch-confirmation-file": "tsx src/scripts/generateBatchConfirmationFile.ts",
