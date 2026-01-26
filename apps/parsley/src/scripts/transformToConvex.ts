@@ -15,14 +15,23 @@ import {
   extractActivityCodes,
   cleanUndefined,
   type EnrichmentStage,
-  type GeographicFocus,
   type SocialMediaUrls,
-  type ConvexOrganization,
-  type ConvexSearchResult,
-  type ConvexCrawlResult,
-  type ConvexAiConfirmation,
 } from "@/utils/convexUtils";
-import type { TaxExemptOrganization, WebsiteConfirmation } from "@cause/types";
+import type {
+  TaxExemptOrganization,
+  WebsiteConfirmation,
+  GeographicFocusType,
+} from "@cause/types";
+import type { Doc } from "@cause/backend/convex/_generated/dataModel";
+
+// Inline Convex document types - omit system fields for creation
+type ConvexOrganization = Omit<Doc<"organizations">, "_id" | "_creationTime">;
+type ConvexSearchResult = Omit<Doc<"searchResults">, "_id" | "_creationTime">;
+type ConvexCrawlResult = Omit<Doc<"crawlResults">, "_id" | "_creationTime">;
+type ConvexAiConfirmation = Omit<
+  Doc<"aiConfirmations">,
+  "_id" | "_creationTime"
+>;
 
 function getEnrichmentStage(doc: TaxExemptOrganization): EnrichmentStage {
   // Check for AI fields populated (indicates ready state)
@@ -43,7 +52,7 @@ function getEnrichmentStage(doc: TaxExemptOrganization): EnrichmentStage {
 
 function parseGeographicFocus(
   value: string | null | undefined,
-): GeographicFocus | undefined {
+): GeographicFocusType | undefined {
   if (!value) return undefined;
   const normalized = value.toLowerCase();
   if (normalized === "global") return "Global";

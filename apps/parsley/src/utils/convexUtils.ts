@@ -1,6 +1,5 @@
 import slugify from "slugify";
 import type { TaxExemptOrganization } from "@cause/types";
-import type { Doc } from "@cause/backend/convex/_generated/dataModel";
 
 // Convex amount bucket types (annual USD)
 export type AmountBucket =
@@ -18,8 +17,6 @@ export type EnrichmentStage =
   | "ai_confirmed"
   | "ready";
 
-export type GeographicFocus = "Global" | "National" | "Regional" | "Local";
-
 export type SocialMediaUrls = {
   linkedin?: string;
   youtube?: string;
@@ -29,27 +26,6 @@ export type SocialMediaUrls = {
   facebook?: string;
   twitter?: string;
 };
-
-// Omit system fields (_id, _creationTime) for document creation
-export type ConvexOrganization = Omit<
-  Doc<"organizations">,
-  "_id" | "_creationTime"
->;
-
-export type ConvexSearchResult = Omit<
-  Doc<"searchResults">,
-  "_id" | "_creationTime"
->;
-
-export type ConvexCrawlResult = Omit<
-  Doc<"crawlResults">,
-  "_id" | "_creationTime"
->;
-
-export type ConvexAiConfirmation = Omit<
-  Doc<"aiConfirmations">,
-  "_id" | "_creationTime"
->;
 
 /**
  * Converts an amount to a bucket category for Convex.

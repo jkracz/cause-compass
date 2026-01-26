@@ -9,9 +9,12 @@ import {
   generateSlug,
   extractActivityCodes,
   cleanUndefined,
-  type ConvexOrganization,
 } from "@/utils/convexUtils";
 import type { TaxExemptOrganization } from "@cause/types";
+import type { Doc } from "@cause/backend/convex/_generated/dataModel";
+
+// Inline Convex document type - omit system fields for creation
+type ConvexOrganization = Omit<Doc<"organizations">, "_id" | "_creationTime">;
 
 // Configuration constants
 const DATA_DIR = "data";
