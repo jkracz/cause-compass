@@ -1,10 +1,32 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Mic, MicOff, Play, Pause, RotateCcw } from "lucide-react";
+import { Mic, Square, Play, Pause, RotateCcw } from "lucide-react";
+import { motion } from "motion/react";
 import posthog from "posthog-js";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+function WaveformAnimation() {
+  const bars = [0, 1, 2, 3, 4];
+  return (
+    <div className="flex h-7 items-end justify-center gap-1">
+      {bars.map((i) => (
+        <motion.div
+          key={i}
+          className="w-1 rounded-full bg-gradient-to-t from-pink-500 to-purple-500"
+          animate={{ height: [12, 28, 12] }}
+          transition={{
+            duration: 0.5,
+            repeat: Infinity,
+            delay: i * 0.1,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 interface VoiceRecorderProps {
   onTranscription: (text: string) => void;
@@ -23,6 +45,7 @@ export function VoiceRecorder({
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [recordingTime, setRecordingTime] = useState(0);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [transcriptionError, setTranscriptionError] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -119,23 +142,44 @@ export function VoiceRecorder({
     setAudioUrl(null);
     setRecordingTime(0);
     setIsPlaying(false);
+    setTranscriptionError(false);
     onTranscription("");
   };
 
-  const transcribeAudio = (_blob: Blob) => {
+  const transcribeAudio = async (blob: Blob) => {
     setIsTranscribing(true);
+    setTranscriptionError(false);
     try {
-      // TODO: Implement transcription
-      // For demo purposes, we'll just set a placeholder
-      setTimeout(() => {
-        onTranscription(
-          "Voice recording captured (transcription would appear here in a real implementation)",
-        );
-        setIsTranscribing(false);
-      }, 2000);
+      const formData = new FormData();
+      formData.append("audio", blob, "recording.webm");
+
+      const response = await fetch("/api/transcribe", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = (await response.json()) as { error?: string };
+        throw new Error(errorData.error ?? "Transcription failed");
+      }
+
+      const data = (await response.json()) as {
+        text: string;
+        language?: string;
+        durationInSeconds?: number;
+      };
+      onTranscription(data.text);
+
+      posthog.capture("voice_transcription_completed", {
+        duration_seconds: data.durationInSeconds,
+        language: data.language,
+      });
     } catch (error) {
       console.error("Transcription error:", error);
-      onTranscription("Voice recording captured (transcription failed)");
+      posthog.captureException(error);
+      setTranscriptionError(true);
+      onTranscription("");
+    } finally {
       setIsTranscribing(false);
     }
   };
@@ -165,9 +209,9 @@ export function VoiceRecorder({
           <Button
             onClick={stopRecording}
             size="lg"
-            className="h-16 w-16 animate-pulse rounded-full bg-red-600 hover:bg-red-700"
+            className="h-16 w-16 rounded-full bg-red-600 shadow-[0_0_20px_rgba(239,68,68,0.5)] hover:bg-red-700"
           >
-            <MicOff className="h-6 w-6" />
+            <Square className="h-5 w-5 fill-current" />
             <span className="sr-only">Stop recording</span>
           </Button>
         )}
@@ -203,33 +247,57 @@ export function VoiceRecorder({
         )}
       </div>
 
-      {/* Recording Status */}
-      {isRecording && (
+      {/* Recording Status - always visible to prevent layout shift */}
+      {!audioBlob && !isTranscribing && !transcriptionError && (
         <div className="text-center">
           <div className="flex items-center justify-center space-x-2">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-            <span className="text-sm font-medium">
-              Recording: {formatTime(recordingTime)}
+            {isRecording ? (
+              <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+            ) : (
+              <div className="h-2 w-2 rounded-full bg-white/20" />
+            )}
+            <span
+              className={cn(
+                "text-sm font-medium",
+                !isRecording && "text-white/40",
+              )}
+            >
+              {formatTime(recordingTime)}
             </span>
           </div>
         </div>
       )}
 
-      {audioBlob && !isRecording && (
+      {audioBlob && !isRecording && !isTranscribing && (
         <div className="text-center">
           <p className="text-muted-foreground text-sm">
-            Recording complete: {formatTime(recordingTime)}
+            {formatTime(recordingTime)}
           </p>
         </div>
       )}
 
       {isTranscribing && (
-        <div className="text-center">
-          <div className="flex items-center justify-center space-x-2">
-            <div className="border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
-            <span className="text-sm">Transcribing your response...</span>
-          </div>
-        </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center gap-3"
+        >
+          <WaveformAnimation />
+          <span className="text-muted-foreground text-sm">Transcribing...</span>
+        </motion.div>
+      )}
+
+      {transcriptionError && !isTranscribing && (
+        <motion.div
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-center"
+        >
+          <p className="text-sm text-amber-200">
+            We couldn&apos;t catch that — try speaking a bit louder or closer to
+            your mic
+          </p>
+        </motion.div>
       )}
 
       {/* Hidden audio element for playback */}
