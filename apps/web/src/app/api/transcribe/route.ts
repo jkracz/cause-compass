@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
 
     const arrayBuffer = await audioFile.arrayBuffer();
     const audioData = new Uint8Array(arrayBuffer);
+    console.log("audioData", audioData);
 
     const result = await transcribe({
       model: openai.transcription("whisper-1"),
