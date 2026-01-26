@@ -160,11 +160,17 @@ const createOrgsByStateConvex = async (state: string) => {
     let totalExcluded = 0;
 
     // Create output directory if it doesn't exist
-    const outputDir = path.resolve(__dirname, `../../${DATA_DIR}/convex-import`);
+    const outputDir = path.resolve(
+      __dirname,
+      `../../${DATA_DIR}/convex-import`,
+    );
     await fs.promises.mkdir(outputDir, { recursive: true });
 
     // Output file path
-    const outputFile = path.join(outputDir, `organizations_${stateLower}.jsonl`);
+    const outputFile = path.join(
+      outputDir,
+      `organizations_${stateLower}.jsonl`,
+    );
     const writeStream = fs.createWriteStream(outputFile);
 
     // Process each organization
