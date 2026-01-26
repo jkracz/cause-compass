@@ -122,20 +122,40 @@ export function VoiceRecorder({
     onTranscription("");
   };
 
-  const transcribeAudio = (_blob: Blob) => {
+  const transcribeAudio = async (blob: Blob) => {
     setIsTranscribing(true);
     try {
-      // TODO: Implement transcription
-      // For demo purposes, we'll just set a placeholder
-      setTimeout(() => {
-        onTranscription(
-          "Voice recording captured (transcription would appear here in a real implementation)",
-        );
-        setIsTranscribing(false);
-      }, 2000);
+      const formData = new FormData();
+      formData.append("audio", blob, "recording.webm");
+
+      const response = await fetch("/api/transcribe", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = (await response.json()) as { error?: string };
+        throw new Error(errorData.error ?? "Transcription failed");
+      }
+
+      const data = (await response.json()) as {
+        text: string;
+        language?: string;
+        durationInSeconds?: number;
+      };
+      onTranscription(data.text);
+
+      posthog.capture("voice_transcription_completed", {
+        duration_seconds: data.durationInSeconds,
+        language: data.language,
+      });
     } catch (error) {
       console.error("Transcription error:", error);
-      onTranscription("Voice recording captured (transcription failed)");
+      posthog.captureException(error);
+      onTranscription(
+        "Voice recording captured (transcription failed - please try again)",
+      );
+    } finally {
       setIsTranscribing(false);
     }
   };
