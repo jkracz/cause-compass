@@ -1,29 +1,20 @@
 import { parseEoFile } from "../services/parseEoFile";
 import * as fs from "fs";
 import * as path from "path";
-import slugify from "slugify";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { logger } from "@/utils/logger";
+import {
+  getAmountBucket,
+  generateSlug,
+  extractActivityCodes,
+  cleanUndefined,
+  type ConvexOrganization,
+} from "@/utils/convexUtils";
 import type { TaxExemptOrganization } from "@cause/types";
-import type { Doc } from "@cause/backend/convex/_generated/dataModel";
 
 // Configuration constants
 const DATA_DIR = "data";
-
-// Convex types
-type AmountBucket =
-  | "micro" // < $50K
-  | "small" // $50K - $250K
-  | "mid" // $250K - $1M
-  | "large" // $1M - $10M
-  | "mega" // > $10M
-  | "unknown"; // null / missing
-
-type EnrichmentStage = "created";
-
-// Omit system fields (_id, _creationTime) for document creation
-type ConvexOrganization = Omit<Doc<"organizations">, "_id" | "_creationTime">;
 
 /**
  * Determines if a tax-exempt organization meets the criteria for insertion into the database.
@@ -74,37 +65,6 @@ const meetsCriteria = (eo: TaxExemptOrganization): boolean => {
 };
 
 /**
- * Converts an amount to a bucket category for Convex.
- */
-function getAmountBucket(amount: number | null | undefined): AmountBucket {
-  if (amount === null || amount === undefined) return "unknown";
-  if (amount < 50_000) return "micro";
-  if (amount < 250_000) return "small";
-  if (amount < 1_000_000) return "mid";
-  if (amount < 10_000_000) return "large";
-  return "mega";
-}
-
-/**
- * Generates a URL-friendly slug from organization name and EIN.
- */
-function generateSlug(name: string, ein: string): string {
-  const slugified = slugify(name, { lower: true, strict: true });
-  const lastFour = ein.slice(-4);
-  return `${slugified}-${lastFour}`;
-}
-
-/**
- * Extracts activity code strings from the activity code objects.
- */
-function extractActivityCodes(
-  doc: TaxExemptOrganization,
-): string[] | undefined {
-  if (!doc.activityCodes || doc.activityCodes.length === 0) return undefined;
-  return doc.activityCodes.map((ac) => ac.code);
-}
-
-/**
  * Transforms a TaxExemptOrganization to Convex organization format.
  * Only includes base organization data - no search results, crawl items, or AI confirmations.
  */
@@ -148,7 +108,7 @@ function transformToConvexOrg(doc: TaxExemptOrganization): ConvexOrganization {
     incomeBucket: getAmountBucket(doc.incomeAmt),
 
     // Workflow status - new orgs start at "created"
-    enrichmentStage: "created" as EnrichmentStage,
+    enrichmentStage: "created",
 
     // AI-enriched fields are undefined for new imports
     websiteUrl: undefined,
@@ -165,15 +125,6 @@ function transformToConvexOrg(doc: TaxExemptOrganization): ConvexOrganization {
     logoUrl: undefined,
     emailAddresses: undefined,
   };
-}
-
-/**
- * Removes undefined values from an object (Convex doesn't accept undefined).
- */
-function cleanUndefined<T extends Record<string, unknown>>(obj: T): T {
-  return Object.fromEntries(
-    Object.entries(obj).filter(([, v]) => v !== undefined),
-  ) as T;
 }
 
 /**

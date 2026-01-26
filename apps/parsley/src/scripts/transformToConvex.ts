@@ -1,7 +1,6 @@
 import * as fs from "fs";
 import * as readline from "readline";
 import * as path from "path";
-import slugify from "slugify";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { logger } from "@/utils/logger";
@@ -10,58 +9,20 @@ import {
   MAX_TEXT_CONTENT_LENGTH,
   limitArrayBySize,
 } from "@/utils/textUtils";
+import {
+  getAmountBucket,
+  generateSlug,
+  extractActivityCodes,
+  cleanUndefined,
+  type EnrichmentStage,
+  type GeographicFocus,
+  type SocialMediaUrls,
+  type ConvexOrganization,
+  type ConvexSearchResult,
+  type ConvexCrawlResult,
+  type ConvexAiConfirmation,
+} from "@/utils/convexUtils";
 import type { TaxExemptOrganization, WebsiteConfirmation } from "@cause/types";
-import { Doc } from "@cause/backend/convex/_generated/dataModel";
-
-// Convex output types (only what's specific to Convex schema)
-type AmountBucket =
-  | "micro" // < $50K
-  | "small" // $50K - $250K
-  | "mid" // $250K - $1M
-  | "large" // $1M - $10M
-  | "mega" // > $10M
-  | "unknown"; // null / missing
-
-type EnrichmentStage =
-  | "created"
-  | "searched"
-  | "crawled"
-  | "ai_confirmed"
-  | "ready";
-
-type GeographicFocus = "Global" | "National" | "Regional" | "Local";
-
-type SocialMediaUrls = {
-  linkedin?: string;
-  youtube?: string;
-  x?: string;
-  instagram?: string;
-  threads?: string;
-  facebook?: string;
-  twitter?: string;
-};
-
-// Omit system fields (_id, _creationTime) for document creation
-type ConvexOrganization = Omit<Doc<"organizations">, "_id" | "_creationTime">;
-
-type ConvexSearchResult = Omit<Doc<"searchResults">, "_id" | "_creationTime">;
-
-type ConvexCrawlResult = Omit<Doc<"crawlResults">, "_id" | "_creationTime">;
-
-type ConvexAiConfirmation = Omit<
-  Doc<"aiConfirmations">,
-  "_id" | "_creationTime"
->;
-
-// Transformation functions
-function getAmountBucket(amount: number | null | undefined): AmountBucket {
-  if (amount === null || amount === undefined) return "unknown";
-  if (amount < 50_000) return "micro";
-  if (amount < 250_000) return "small";
-  if (amount < 1_000_000) return "mid";
-  if (amount < 10_000_000) return "large";
-  return "mega";
-}
 
 function getEnrichmentStage(doc: TaxExemptOrganization): EnrichmentStage {
   // Check for AI fields populated (indicates ready state)
@@ -121,19 +82,6 @@ function extractModel(
   response: TaxExemptOrganization["aiConfirmationResponse"],
 ): string {
   return response?.body?.model ?? "unknown";
-}
-
-function generateSlug(name: string, ein: string): string {
-  const slugified = slugify(name, { lower: true, strict: true });
-  const lastFour = ein.slice(-4);
-  return `${slugified}-${lastFour}`;
-}
-
-function extractActivityCodes(
-  doc: TaxExemptOrganization,
-): string[] | undefined {
-  if (!doc.activityCodes || doc.activityCodes.length === 0) return undefined;
-  return doc.activityCodes.map((ac) => ac.code);
 }
 
 function extractSocialMediaUrls(
@@ -311,13 +259,6 @@ function transformDocument(doc: TaxExemptOrganization): TransformResult {
     aiConfirmation,
     truncatedCrawlResults,
   };
-}
-
-// Utility to remove undefined values (Convex doesn't like undefined)
-function cleanUndefined<T extends Record<string, unknown>>(obj: T): T {
-  return Object.fromEntries(
-    Object.entries(obj).filter(([, v]) => v !== undefined),
-  ) as T;
 }
 
 async function parseLimit(): Promise<number | undefined> {
