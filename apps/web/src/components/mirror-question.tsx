@@ -72,24 +72,22 @@ export function MirrorQuestion({
                 onChange={(e) => onAnswer(e.target.value)}
               />
             ) : (
-              <div className="rounded-lg border border-white/20 bg-white/5 p-6">
+              <div className="space-y-4">
                 <VoiceRecorder
                   onTranscription={handleVoiceTranscription}
                   onAudioData={handleAudioData}
                 />
                 <AnimatePresence>
                   {value && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="mt-4 rounded-lg border border-white/10 bg-white/5 p-4"
+                      className="text-center text-sm leading-relaxed text-white/80 italic"
                     >
-                      <p className="text-sm leading-relaxed text-white/90 italic">
-                        &ldquo;{value as string}&rdquo;
-                      </p>
-                    </motion.div>
+                      &ldquo;{value as string}&rdquo;
+                    </motion.p>
                   )}
                 </AnimatePresence>
               </div>
