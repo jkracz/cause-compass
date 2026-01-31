@@ -120,7 +120,12 @@ export default defineSchema({
     .index("by_slug", ["slug"])
     .index("by_state", ["state"])
     .index("by_nteeMajor", ["nteeMajor"])
-    .index("by_enrichmentStage", ["enrichmentStage"]),
+    .index("by_enrichmentStage", ["enrichmentStage"])
+    .index("by_geographicFocus", ["geographicFocus"])
+    .searchIndex("search_name", {
+      searchField: "name",
+      filterFields: ["enrichmentStage"],
+    }),
 
   searchResults: defineTable({
     ein: v.string(), // For linking to organizations
