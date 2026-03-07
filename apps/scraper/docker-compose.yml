@@ -1,0 +1,46 @@
+services:
+  html-worker:
+    build:
+      context: ../../
+      dockerfile: apps/scraper/Dockerfile
+    command: ["node", "dist/html-worker.js"]
+    env_file: .env
+    environment:
+      WORKER_ID: html-worker-1
+      CONCURRENCY: "20"
+      WORKER_HEALTH_FILE: /tmp/html-worker.health.json
+      HEALTH_MAX_AGE_MS: "120000"
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2G
+    healthcheck:
+      test: ["CMD", "node", "dist/healthcheck.js"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  browser-worker:
+    build:
+      context: ../../
+      dockerfile: apps/scraper/Dockerfile.browser
+    command: ["node", "dist/browser-worker.js"]
+    env_file: .env
+    environment:
+      WORKER_ID: browser-worker-1
+      CONCURRENCY: "2"
+      WORKER_HEALTH_FILE: /tmp/browser-worker.health.json
+      HEALTH_MAX_AGE_MS: "120000"
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 8G
+    healthcheck:
+      test: ["CMD", "node", "dist/healthcheck.js"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

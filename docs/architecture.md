@@ -2,9 +2,9 @@
 
 ## Data Flow
 
-1. **IRS Import** (parsley): CSV files → filtered organizations → MongoDB (staging)
-2. **Web Discovery** (parsley): Google Search API finds organization websites
-3. **Crawling** (parsley): Playwright extracts website content
+1. **IRS Import** (parsley): CSV files → filtered organizations → Convex (`npx convex import`)
+2. **Web Discovery** (backend): Convex cron + Google Search API finds organization websites
+3. **Crawling** (scraper): Docker workers (HTML-first + Playwright fallback) extract website content via Convex crawl queue
 4. **AI Enrichment** (backend): OpenAI batch processing generates mission statements
 5. **Frontend** (web): Users browse and filter enriched organization profiles
 

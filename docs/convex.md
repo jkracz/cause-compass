@@ -11,7 +11,7 @@ When writing Convex functions:
 
 ## Key Tables
 
-`organizations`, `users`, `searchResults`, `crawlResults`, `aiConfirmations`, `batchJobs`
+`organizations`, `users`, `searchResults`, `crawlResults`, `crawlQueue`, `aiConfirmations`, `batchJobs`
 
 ## Operational Docs
 

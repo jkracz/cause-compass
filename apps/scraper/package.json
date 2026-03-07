@@ -1,0 +1,28 @@
+{
+  "name": "@cause/scraper",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Docker crawl workers for the Cause Compass scraping pipeline",
+  "type": "module",
+  "scripts": {
+    "html-worker": "tsx src/html-worker.ts",
+    "browser-worker": "tsx src/browser-worker.ts",
+    "build": "tsc",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "playwright": "^1.58.2"
+  },
+  "devDependencies": {
+    "@cause/eslint-config": "workspace:*",
+    "@cause/typescript-config": "workspace:*",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.5.0",
+    "eslint": "^10.1.0",
+    "globals": "^17.4.0",
+    "tsx": "^4.21.0",
+    "typescript-eslint": "^8.57.1"
+  }
+}

@@ -66,6 +66,42 @@ export const saveSearchResult = internalMutation({
       enrichmentStage: "searched",
       updatedAt: Date.now(),
     });
+
+    // Enqueue HTML crawl job with the top search result URL
+    try {
+      const results = JSON.parse(resultsJson);
+      if (Array.isArray(results) && results.length > 0 && results[0].link) {
+        // Check for existing active crawl job (idempotent)
+        const existingJob = await ctx.db
+          .query("crawlQueue")
+          .withIndex("by_ein_and_queueType", (q) =>
+            q.eq("ein", ein).eq("queueType", "html"),
+          )
+          .filter((q) =>
+            q.or(
+              q.eq(q.field("status"), "pending"),
+              q.eq(q.field("status"), "processing"),
+            ),
+          )
+          .first();
+
+        if (!existingJob) {
+          await ctx.db.insert("crawlQueue", {
+            queueType: "html",
+            orgId,
+            ein,
+            url: results[0].link,
+            status: "pending",
+            attemptCount: 0,
+            maxAttempts: 4,
+            createdAt: Date.now(),
+          });
+        }
+      }
+    } catch {
+      // If URL extraction fails, backfill cron will catch it
+      console.warn(`Failed to enqueue crawl job for org ${ein}`);
+    }
   },
 });
 

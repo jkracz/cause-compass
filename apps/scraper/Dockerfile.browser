@@ -1,0 +1,25 @@
+FROM mcr.microsoft.com/playwright:v1.58.0-jammy
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@10.28.1 --activate
+
+WORKDIR /app
+
+# Copy workspace root files
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# Copy only scraper package and shared ts config
+COPY apps/scraper/package.json apps/scraper/
+COPY packages/typescript-config/ packages/typescript-config/
+
+# Install scraper dependencies
+RUN pnpm install --filter @cause/scraper... --frozen-lockfile
+
+# Copy scraper source and build
+COPY apps/scraper/ apps/scraper/
+RUN pnpm --filter @cause/scraper run build
+
+WORKDIR /app/apps/scraper
+
+CMD ["node", "dist/browser-worker.js"]
+

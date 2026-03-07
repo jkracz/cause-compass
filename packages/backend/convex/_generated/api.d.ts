@@ -20,6 +20,8 @@ import type * as batch_types from "../batch/types.js";
 import type * as batch_webhook from "../batch/webhook.js";
 import type * as batch_workflow from "../batch/workflow.js";
 import type * as batchJobs from "../batchJobs.js";
+import type * as crawlQueue from "../crawlQueue.js";
+import type * as crawlQueueCron from "../crawlQueueCron.js";
 import type * as crons from "../crons.js";
 import type * as http from "../http.js";
 import type * as lib_viewer from "../lib/viewer.js";
@@ -48,6 +50,8 @@ declare const fullApi: ApiFromModules<{
   "batch/webhook": typeof batch_webhook;
   "batch/workflow": typeof batch_workflow;
   batchJobs: typeof batchJobs;
+  crawlQueue: typeof crawlQueue;
+  crawlQueueCron: typeof crawlQueueCron;
   crons: typeof crons;
   http: typeof http;
   "lib/viewer": typeof lib_viewer;
