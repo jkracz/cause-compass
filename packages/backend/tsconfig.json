@@ -1,0 +1,5 @@
+{
+  "extends": "./convex/tsconfig.json",
+  "include": ["./convex/**/*", "./lib/**/*"],
+  "exclude": ["node_modules", "./convex/_generated"]
+}

@@ -24,7 +24,7 @@
   "devDependencies": {
     "@cause/eslint-config": "workspace:*",
     "@cause/typescript-config": "workspace:*",
-    "eslint": "^9.39.2",
+    "eslint": "^10.0.3",
     "typescript": "latest"
   }
 }

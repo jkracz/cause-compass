@@ -73,7 +73,7 @@ export async function saveUserPreferences(formData: FormData) {
     }
   } catch (error) {
     console.error("Error saving user preferences:", error);
-    throw new Error("Failed to save user preferences");
+    throw new Error("Failed to save user preferences", { cause: error });
   }
 
   redirect("/discover");
@@ -96,7 +96,7 @@ export async function addLikedOrganization(organizationId: string) {
     return { success: true };
   } catch (error) {
     console.error("Error adding liked organization:", error);
-    throw new Error("Failed to add liked organization");
+    throw new Error("Failed to add liked organization", { cause: error });
   }
 }
 
@@ -117,7 +117,7 @@ export async function removeLikedOrganization(organizationId: string) {
     return result;
   } catch (error) {
     console.error("Error removing liked organization:", error);
-    throw new Error("Failed to remove liked organization");
+    throw new Error("Failed to remove liked organization", { cause: error });
   }
 }
 

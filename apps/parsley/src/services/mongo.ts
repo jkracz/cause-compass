@@ -114,7 +114,7 @@ export const findTaxExemptOrgs = async (
     return profiles;
   } catch (error) {
     logger.error("Failed to retrieve orgs from DB:", error);
-    throw new Error("Failed to retrieve orgs from DB");
+    throw new Error("Failed to retrieve orgs from DB", { cause: error });
   }
 };
 
@@ -179,7 +179,7 @@ export const updateOrg = async (org: TaxExemptOrganization): Promise<void> => {
     }
   } catch (error) {
     logger.error(error);
-    throw new Error("Failed to update org in DB");
+    throw new Error("Failed to update org in DB", { cause: error });
   }
 };
 

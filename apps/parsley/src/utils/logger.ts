@@ -1,10 +1,11 @@
+import fs from "node:fs";
+import path from "node:path";
 import winston from "winston";
-import path from "path";
 
 // Create logs directory if it doesn't exist
 const logsDir = path.join(process.cwd(), "logs");
-if (!require("fs").existsSync(logsDir)) {
-  require("fs").mkdirSync(logsDir);
+if (!fs.existsSync(logsDir)) {
+  fs.mkdirSync(logsDir);
 }
 
 export const logger = winston.createLogger({

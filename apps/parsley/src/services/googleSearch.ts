@@ -1,4 +1,4 @@
-import { google } from "googleapis";
+import { customsearch_v1, google } from "googleapis";
 import { GoogleSearchApiKey, type GoogleSearchApiKeyType } from "@cause/types";
 import "dotenv/config";
 
@@ -43,7 +43,7 @@ const keySets: Record<
 export const googleSearch = async (
   query: string,
   keyFrom: GoogleSearchApiKeyType,
-): Promise<any> => {
+): Promise<customsearch_v1.Schema$Search> => {
   const { searchEngineId, searchApiKey } = keySets[keyFrom];
   if (!searchEngineId) {
     throw new Error("Missing SEARCH_ENGINE_ID environment variable");

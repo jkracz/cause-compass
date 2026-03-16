@@ -111,24 +111,22 @@ export const createCrawler = async (options?: CrawlOptions) => {
                   /give/i,
                   /fund/i,
                 ];
-                const links: any[] = [];
+                const links: string[] = [];
                 document.querySelectorAll("a, button").forEach((element) => {
+                  const href =
+                    (element as HTMLAnchorElement).href ||
+                    element.closest("a")?.href;
                   if (
                     donationPatterns.some((pattern) =>
                       pattern.test((element as HTMLElement).innerText),
                     ) &&
-                    !links.includes(
-                      (element as HTMLAnchorElement).href ||
-                        element.closest("a")?.href,
-                    )
+                    href &&
+                    !links.includes(href)
                   ) {
-                    links.push(
-                      (element as HTMLAnchorElement).href ||
-                        element.closest("a")?.href,
-                    );
+                    links.push(href);
                   }
                 });
-                return links.filter((link) => link); // Filter out undefined links
+                return links;
               }),
               page.evaluate(() => {
                 // Regex to match email addresses

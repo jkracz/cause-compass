@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { createCrawler, getCrawlDataAsArray } from "../services/crawler";
 import { createAcronym, findBestUrls } from "../utils/parseUtils";
 import { CrawlItem } from "@cause/types";
@@ -50,8 +52,6 @@ const shutdown = async (reason: string) => {
     logger.info(`Processing org: ${org.name}`);
 
     // Clean up any existing storage for this worker to prevent stale data
-    const fs = require("fs");
-    const path = require("path");
     const storageDir = path.resolve(
       __dirname,
       `../../storage/worker-${org.name}`,
