@@ -12,3 +12,8 @@ When writing Convex functions:
 ## Key Tables
 
 `organizations`, `users`, `searchResults`, `crawlResults`, `aiConfirmations`, `batchJobs`
+
+## Operational Docs
+
+- Pipeline health query usage and field reference:
+  - `/Users/joekracz/Documents/projects/cause-compass/cause-compass/docs/pipeline-health.md`
