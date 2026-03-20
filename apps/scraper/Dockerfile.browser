@@ -10,6 +10,7 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 
 # Copy only scraper package and shared ts config
 COPY apps/scraper/package.json apps/scraper/
+COPY packages/eslint-config/ packages/eslint-config/
 COPY packages/typescript-config/ packages/typescript-config/
 
 # Install scraper dependencies
@@ -20,6 +21,8 @@ COPY apps/scraper/ apps/scraper/
 RUN pnpm --filter @cause/scraper run build
 
 WORKDIR /app/apps/scraper
+LABEL org.opencontainers.image.source="https://github.com/jkracz/cause-compass"
+LABEL org.opencontainers.image.title="cause-scraper-browser"
+LABEL org.opencontainers.image.description="Cause Compass Browser scraper"
 
 CMD ["node", "dist/browser-worker.js"]
-

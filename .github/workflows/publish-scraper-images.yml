@@ -1,0 +1,154 @@
+name: Publish Scraper Images
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .dockerignore
+      - .github/workflows/publish-scraper-images.yml
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - apps/scraper/Dockerfile
+      - apps/scraper/Dockerfile.browser
+      - apps/scraper/package.json
+      - apps/scraper/src/**
+      - apps/scraper/tsconfig.json
+      - packages/eslint-config/**
+      - packages/typescript-config/**
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  changes:
+    name: Detect Changed Images
+    runs-on: ubuntu-latest
+    outputs:
+      html: ${{ steps.filter.outputs.html }}
+      browser: ${{ steps.filter.outputs.browser }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed files
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            html:
+              - '.dockerignore'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'packages/eslint-config/**'
+              - 'packages/typescript-config/**'
+              - 'apps/scraper/package.json'
+              - 'apps/scraper/src/**'
+              - 'apps/scraper/tsconfig.json'
+              - 'apps/scraper/Dockerfile'
+            browser:
+              - '.dockerignore'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'packages/eslint-config/**'
+              - 'packages/typescript-config/**'
+              - 'apps/scraper/package.json'
+              - 'apps/scraper/src/**'
+              - 'apps/scraper/tsconfig.json'
+              - 'apps/scraper/Dockerfile.browser'
+
+  publish-html:
+    name: Publish HTML Worker Image
+    needs: changes
+    if: needs.changes.outputs.html == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ github.event.repository.name }}-scraper-html
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+
+      - name: Build and push HTML worker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/scraper/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=scraper-html
+          cache-to: type=gha,mode=max,scope=scraper-html
+
+  publish-browser:
+    name: Publish Browser Worker Image
+    needs: changes
+    if: needs.changes.outputs.browser == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ github.event.repository.name }}-scraper-browser
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+
+      - name: Build and push browser worker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/scraper/Dockerfile.browser
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=scraper-browser
+          cache-to: type=gha,mode=max,scope=scraper-browser
