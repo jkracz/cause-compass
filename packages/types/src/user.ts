@@ -14,9 +14,17 @@ export const UserPreferencesSchema = z.object({
 });
 
 export const UserSchema = z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
+  guestId: z.string().optional(),
   preferences: UserPreferencesSchema,
   likedOrganizations: z.array(z.string()),
+  profile: z
+    .object({
+      email: z.string().optional(),
+      name: z.string().optional(),
+      picture: z.string().optional(),
+    })
+    .optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });

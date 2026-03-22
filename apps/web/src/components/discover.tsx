@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import { Heart, X } from "lucide-react";
 import { motion } from "motion/react";
 import posthog from "posthog-js";
-import { Preloaded, usePreloadedQuery } from "convex/react";
+import { Preloaded, useMutation, usePreloadedQuery } from "convex/react";
 
 import { SwipeableCard } from "@/components/swipeable-card";
 import { Button } from "@/components/ui/button";
 import { api } from "@cause/backend/convex/_generated/api";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
-import { addLikedOrganization } from "@/lib/actions";
+import { useAppSession } from "@/components/app-session-provider";
 
 type Organization = Doc<"organizations">;
 
@@ -21,6 +21,8 @@ interface DiscoverProps {
 
 export default function Discover({ preloadedOrganizations }: DiscoverProps) {
   const organizations = usePreloadedQuery(preloadedOrganizations);
+  const { guestId } = useAppSession();
+  const likeOrganization = useMutation(api.users.likeOrganization);
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likedOrgs, setLikedOrgs] = useState<Organization[]>([]);
@@ -32,7 +34,10 @@ export default function Discover({ preloadedOrganizations }: DiscoverProps) {
       if (!org) {
         return;
       }
-      await addLikedOrganization(org.slug);
+      await likeOrganization({
+        guestId,
+        organizationId: org.slug,
+      });
       const updatedLikedOrgs = [...likedOrgs, org];
       setLikedOrgs(updatedLikedOrgs);
 

@@ -44,7 +44,8 @@ const socialMediaUrlsValidator = v.object({
 export default defineSchema({
   // Existing users table
   users: defineTable({
-    userId: v.string(),
+    userId: v.optional(v.string()),
+    guestId: v.optional(v.string()),
     preferences: v.object({
       causes: v.optional(v.array(v.string())),
       helpMethod: v.optional(v.array(v.string())),
@@ -58,8 +59,16 @@ export default defineSchema({
       ),
     }),
     likedOrganizations: v.array(v.string()),
+    profile: v.optional(
+      v.object({
+        email: v.optional(v.string()),
+        name: v.optional(v.string()),
+        picture: v.optional(v.string()),
+      }),
+    ),
   })
     .index("by_userId", ["userId"])
+    .index("by_guestId", ["guestId"])
     .index("by_likedOrganizations", ["likedOrganizations"]),
 
   organizations: defineTable({

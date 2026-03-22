@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import posthog from "posthog-js";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -15,18 +13,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { RotateCcw } from "lucide-react";
+import { useResetPreferences } from "@/hooks/use-reset-preferences";
 
 export function StartOverButton() {
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
+  const { isAuthenticated, isPending, resetPreferences } =
+    useResetPreferences();
 
-  const handleStartOver = () => {
-    // Track journey reset (potential churn indicator)
-    posthog.capture("journey_reset");
-
-    // Reset PostHog user identity
-    posthog.reset();
-
-    console.log("start over");
+  const handleStartOver = async () => {
+    await resetPreferences();
     setIsResetDialogOpen(false);
   };
 
@@ -46,19 +41,21 @@ export function StartOverButton() {
         <AlertDialogHeader>
           <AlertDialogTitle>Reset Your Journey?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will clear all your saved organizations and preferences.
-            You&apos;ll be able to answer the mirror questions again and start
-            fresh. This action cannot be undone.
+            {isAuthenticated
+              ? "This will clear your saved reflection and preferences from your account. Your liked organizations will stay."
+              : "This will clear your saved reflection and preferences in this browser. Your liked organizations will stay."}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleStartOver}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          <Button
+            type="button"
+            onClick={() => void handleStartOver()}
+            variant="destructive"
+            disabled={isPending}
           >
-            Reset Everything
-          </AlertDialogAction>
+            {isPending ? "Clearing..." : "Clear Preferences"}
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

@@ -4,20 +4,19 @@ import { Edit3, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
 import { useRouter } from "next/navigation";
-import { Preloaded, usePreloadedQuery } from "convex/react";
-import { api } from "@cause/backend/convex/_generated/api";
+import { Doc } from "@cause/backend/convex/_generated/dataModel";
 
-interface ReflectionCardProps {
-  preloadedUser: Preloaded<typeof api.users.getOne>;
-  preloadedLikedOrgs: Preloaded<typeof api.organizations.getLikedByUser>;
-}
+type Viewer = Doc<"users"> | null;
+type Organization = Doc<"organizations">;
 
 export function ReflectionCard({
-  preloadedUser,
-  preloadedLikedOrgs,
-}: ReflectionCardProps) {
-  const user = usePreloadedQuery(preloadedUser);
-  const likedOrgs = usePreloadedQuery(preloadedLikedOrgs);
+  viewer,
+  likedOrgs,
+}: {
+  viewer: Viewer;
+  likedOrgs: Organization[];
+}) {
+  const user = viewer;
   const preferences = user?.preferences;
   const router = useRouter();
   const handleEditReflection = () => {

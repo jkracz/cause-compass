@@ -1,32 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 import posthog from "posthog-js";
-import { Preloaded, usePreloadedQuery } from "convex/react";
+import { useMutation } from "convex/react";
 
 import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
 import { OrganizationCard } from "@/components/organization-card";
 import { OrganizationModal } from "@/components/organization-modal";
-import { api } from "@cause/backend/convex/_generated/api";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
-import { removeLikedOrganization } from "@/lib/actions";
+import { api } from "@cause/backend/convex/_generated/api";
+import { useAppSession } from "@/components/app-session-provider";
 
 type Organization = Doc<"organizations">;
 
-interface MyCausesProps {
-  preloadedLikedOrgs: Preloaded<typeof api.organizations.getLikedByUser>;
-}
-
-export function MyCauses({ preloadedLikedOrgs }: MyCausesProps) {
-  const likedOrgsFromQuery = usePreloadedQuery(preloadedLikedOrgs);
+export function MyCauses({ likedOrgs }: { likedOrgs: Organization[] }) {
   const router = useRouter();
-  const [organizations, setOrganizations] =
-    useState<Organization[]>(likedOrgsFromQuery);
+  const { guestId } = useAppSession();
+  const unlikeOrganization = useMutation(api.users.unlikeOrganization);
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const organizations = useMemo(() => likedOrgs, [likedOrgs]);
 
   const handleOpenModal = (org: Organization) => {
     setSelectedOrg(org);
@@ -49,18 +45,18 @@ export function MyCauses({ preloadedLikedOrgs }: MyCausesProps) {
 
   const handleRemoveOrganization = async (orgSlug: string) => {
     const orgToRemove = organizations.find((org) => org.slug === orgSlug);
-    const updatedUser = await removeLikedOrganization(orgSlug);
-    const updatedOrgs = organizations.filter((org) =>
-      updatedUser?.likedOrganizations.includes(org.slug),
-    );
-    setOrganizations(updatedOrgs);
+    await unlikeOrganization({
+      guestId,
+      organizationId: orgSlug,
+    });
+    setIsModalOpen(false);
 
     // Track organization removed
     posthog.capture("organization_removed", {
       organization_id: orgSlug,
       organization_name: orgToRemove?.name,
       organization_ein: orgToRemove?.ein,
-      remaining_liked_count: updatedOrgs.length,
+      remaining_liked_count: Math.max(organizations.length - 1, 0),
     });
   };
 
