@@ -4,6 +4,7 @@
 
 import { v } from "convex/values";
 import { internalMutation } from "../_generated/server";
+import { patchOrganization } from "../aggregates";
 
 /**
  * Update organization with AI confirmation results.
@@ -62,7 +63,7 @@ export const internalUpdateOrgWithAiResults = internalMutation({
     }),
   },
   handler: async (ctx, { orgId, updates }) => {
-    await ctx.db.patch(orgId, {
+    await patchOrganization(ctx, orgId, {
       ...updates,
       updatedAt: Date.now(),
     });

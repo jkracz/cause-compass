@@ -5,18 +5,39 @@ This document describes the Convex pipeline health query used to inspect ingesti
 ## Query
 
 - Function: `pipelineHealth:getSummary`
-- File: `/Users/joekracz/Documents/projects/cause-compass/cause-compass/packages/backend/convex/pipelineHealth.ts`
+- File: `packages/backend/convex/pipelineHealth.ts`
 
 ## Purpose
 
-`getSummary` provides a single snapshot of:
+`getSummary` provides a real-time view of:
 
 - organization counts by enrichment stage
 - stale/missing `updatedAt` records by stage
 - batch job status totals and last success/failure timestamps
 - active processing jobs and backlog notes
 
-This is intended as a manual operational check while pipeline automation is being stabilized.
+Counts are backed by the `@convex-dev/aggregate` component, which maintains an O(log n) B-tree index of organizations partitioned by `enrichmentStage` and sorted by `updatedAt`. This avoids the read-limit issues that come with scanning the full organizations table.
+
+## Setup
+
+### Aggregate backfill
+
+After the initial deploy (or after any bulk `npx convex import`), run the backfill to populate the aggregate from existing organizations:
+
+```bash
+npx convex run pipelineHealth:backfillAggregate '{"cursor": null}'
+```
+
+This self-schedules through all organizations in pages of 100. Once complete, `getSummary` returns accurate counts.
+
+### Keeping the aggregate in sync
+
+All mutations that modify the organizations table must go through the `patchOrganization` helper in `packages/backend/convex/aggregates.ts`. This function patches the document and syncs the aggregate atomically. The three current call sites are:
+
+- `searchOrgs.ts` — `saveSearchResult`, `markOrgSearched`
+- `batch/mutations.ts` — `internalUpdateOrgWithAiResults`
+
+Bulk imports via `npx convex import` bypass mutations, so the backfill must be rerun after any import.
 
 ## Run Commands
 
@@ -48,7 +69,7 @@ npx convex run --prod pipelineHealth:getSummary
 
 Top-level fields:
 
-- `generatedAtIso`: ISO timestamp when the snapshot was generated.
+- `generatedAtIso`: ISO timestamp when the query was run.
 - `staleHours`: normalized stale threshold used by the query.
 - `cutoffTimestamp`: Unix ms cutoff for stale record checks.
 - `organizationTotals`: aggregate totals across all enrichment stages.
@@ -105,4 +126,3 @@ Common signals:
    - `batchJobs.processing/completed/failed`
 3. Confirm backlog trends improve over time.
 4. Investigate notes and active processing jobs when counts stall.
-
