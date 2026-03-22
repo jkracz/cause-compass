@@ -2,6 +2,7 @@ import {
   TaxExemptOrganization,
   GoogleSearchApiKey,
   type GoogleSearchApiKeyType,
+  type SearchResult,
 } from "@cause/types";
 import { ObjectId } from "mongodb";
 import { bulkUpdateOrgs, findTaxExemptOrgs } from "../services/mongo";
@@ -25,6 +26,25 @@ const coerceObjectId = (
       : undefined;
   }
   return undefined;
+};
+
+const isSearchResult = (result: unknown): result is SearchResult => {
+  if (!result || typeof result !== "object") {
+    return false;
+  }
+
+  const candidate = result as Partial<SearchResult>;
+  return [
+    candidate.kind,
+    candidate.title,
+    candidate.htmlTitle,
+    candidate.link,
+    candidate.displayLink,
+    candidate.snippet,
+    candidate.htmlSnippet,
+    candidate.formattedUrl,
+    candidate.htmlFormattedUrl,
+  ].every((value) => typeof value === "string");
 };
 
 // Define multiple keys
@@ -77,7 +97,7 @@ const googleSearchOrgs = async () => {
         .map(async (org) => {
           const searchQuery = `${org.name} ${org.city} ${org.state}`;
           const searchResults = await googleSearch(searchQuery, keyType);
-          org.searchResults = searchResults?.items || searchResults;
+          org.searchResults = searchResults.items?.filter(isSearchResult);
           org.searchKey = keyType;
           org.searchedAt = new Date().toISOString();
         });
