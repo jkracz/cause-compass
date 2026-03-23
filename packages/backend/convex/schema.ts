@@ -141,7 +141,7 @@ export default defineSchema({
     orgId: v.optional(v.id("organizations")), // Set by post-import migration
     query: v.string(), // Search query used
     runAt: v.string(), // ISO timestamp
-    resultsJson: v.string(), // JSON-stringified search results (raw objects have invalid field names like "theme-color")
+    resultsJson: v.string(), // JSON-stringified reduced search results
   })
     .index("by_ein", ["ein"])
     .index("by_orgId", ["orgId"]),

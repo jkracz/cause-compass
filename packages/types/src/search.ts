@@ -16,6 +16,96 @@ export const SearchResultSchema = z.object({
   pagemap: z.record(z.string(), z.any()).optional(),
 });
 
+export const StoredSearchResultItemSchema = z.object({
+  rank: z.number().int().positive(),
+  link: z.string(),
+  title: z.string().optional(),
+  snippet: z.string().optional(),
+  displayLink: z.string().optional(),
+});
+
+export const StoredSearchResultsSchema = z.array(StoredSearchResultItemSchema);
+
+export type StoredSearchResultNormalizationIssue =
+  | "invalid_shape"
+  | "all_items_filtered";
+
+export interface NormalizeStoredSearchResultsResult {
+  results: StoredSearchResults;
+  issue?: StoredSearchResultNormalizationIssue;
+}
+
+function getSearchResultsArray(input: unknown): unknown[] | null {
+  if (Array.isArray(input)) {
+    return input;
+  }
+
+  if (
+    typeof input === "object" &&
+    input !== null &&
+    "results" in input &&
+    Array.isArray(input.results)
+  ) {
+    return input.results;
+  }
+
+  return null;
+}
+
+function getOptionalString(value: unknown): string | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+export function normalizeStoredSearchResults(
+  input: unknown,
+): NormalizeStoredSearchResultsResult {
+  const rawResults = getSearchResultsArray(input);
+  if (!rawResults) {
+    return { results: [], issue: "invalid_shape" };
+  }
+
+  const normalizedResults = rawResults.reduce<StoredSearchResults>(
+    (acc, item) => {
+      if (typeof item !== "object" || item === null) {
+        return acc;
+      }
+
+      const candidate = item as Record<string, unknown>;
+      const link = getOptionalString(candidate.link);
+      if (!link) {
+        return acc;
+      }
+
+      acc.push({
+        rank: acc.length + 1,
+        link,
+        title: getOptionalString(candidate.title),
+        snippet: getOptionalString(candidate.snippet),
+        displayLink: getOptionalString(candidate.displayLink),
+      });
+
+      return acc;
+    },
+    [],
+  );
+
+  const parsedResults = StoredSearchResultsSchema.safeParse(normalizedResults);
+  if (!parsedResults.success) {
+    return { results: [], issue: "invalid_shape" };
+  }
+
+  if (rawResults.length > 0 && parsedResults.data.length === 0) {
+    return { results: parsedResults.data, issue: "all_items_filtered" };
+  }
+
+  return { results: parsedResults.data };
+}
+
 // Social Media URLs Schema
 export const SocialMediaUrlsSchema = z.object({
   linkedin: z.string().optional(),
@@ -134,6 +224,8 @@ export interface OpenAIResponse {
 
 // Export types
 export type SearchResult = z.infer<typeof SearchResultSchema>;
+export type StoredSearchResultItem = z.infer<typeof StoredSearchResultItemSchema>;
+export type StoredSearchResults = z.infer<typeof StoredSearchResultsSchema>;
 export type SocialMediaUrls = z.infer<typeof SocialMediaUrlsSchema>;
 export type CrawlItem = z.infer<typeof CrawlItemSchema>;
 export type BatchJob = z.infer<typeof BatchJobSchema>;
