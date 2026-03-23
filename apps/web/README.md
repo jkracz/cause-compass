@@ -18,6 +18,23 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Auth Setup
+
+Cause Compass uses guest sessions plus optional Shoo Google sign-in.
+
+- Anonymous visitors get a browser-scoped `guestId` cookie automatically.
+- Signed-in users authenticate with Shoo and Convex verifies the Shoo JWT.
+- The web app reads `NEXT_PUBLIC_SHOO_BASE_URL` and defaults to `https://shoo.dev`.
+
+For local development make sure:
+
+```bash
+NEXT_PUBLIC_CONVEX_URL=...
+NEXT_PUBLIC_SHOO_BASE_URL=https://shoo.dev
+```
+
+The local web origin must match the Convex `APP_ORIGIN` environment variable. For normal local development that should be `http://localhost:3000`.
+
 ## Type System & Schema Management
 
 This project uses a **type-first approach** with Zod v4 for validation and Mongoose for database operations. The type system ensures consistency between validation, database schemas, and TypeScript types.

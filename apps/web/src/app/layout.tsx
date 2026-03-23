@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Archivo, Bitter } from "next/font/google";
+import { cookies } from "next/headers";
 import "./globals.css";
 import { MosaicBackground } from "@/components/mosaic-background";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -23,11 +24,14 @@ export const metadata: Metadata = {
   description: "Discover nonprofits that align with your values",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const guestId = cookieStore.get("guestId")?.value;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${archivo.variable} ${bitter.variable} antialiased`}>
@@ -37,7 +41,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ConvexClientProvider>
+          <ConvexClientProvider guestId={guestId}>
             <MosaicBackground />
             <div className="relative z-10 flex min-h-screen flex-col">
               <TopNav />

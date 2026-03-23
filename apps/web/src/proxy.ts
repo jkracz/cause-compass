@@ -2,19 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { nanoid } from "nanoid";
 
 export function proxy(request: NextRequest) {
-  // Check if user already has a userId cookie
-  const userId = request.cookies.get("userId")?.value;
+  // Check if user already has a guestId cookie
+  const guestId = request.cookies.get("guestId")?.value;
 
-  // If no userId exists, create one
-  if (!userId) {
+  // If no guestId exists, create one
+  if (!guestId) {
     // Create the response (continue to the requested page)
     const response = NextResponse.next();
 
     // Generate a new user ID
-    const newUserId = nanoid();
+    const newGuestId = nanoid();
 
-    // Set the userId cookie on the response
-    response.cookies.set("userId", newUserId, {
+    // Set the guestId cookie on the response
+    response.cookies.set("guestId", newGuestId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
@@ -25,7 +25,7 @@ export function proxy(request: NextRequest) {
     return response;
   }
 
-  // User already has userId, continue normally
+  // User already has guestId, continue normally
   return NextResponse.next();
 }
 

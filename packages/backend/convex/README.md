@@ -2,6 +2,18 @@
 
 This directory contains the Convex backend functions for Cause Compass.
 
+## Auth Setup
+
+Convex trusts Shoo as a custom JWT provider via `convex/auth.config.ts`.
+
+Set this environment variable in the Convex dashboard before running `convex dev` or deploying:
+
+```bash
+APP_ORIGIN=http://localhost:3000
+```
+
+`APP_ORIGIN` must exactly match the browser origin used by the web app because Shoo tokens use an audience of `origin:{your_origin}`.
+
 ## Batch Processing Workflow
 
 The batch processing system uses OpenAI's Batch API to enrich organization data with AI-generated content. It's built on the `@convex-dev/workflow` component for durable, event-driven orchestration.

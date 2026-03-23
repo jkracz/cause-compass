@@ -21,6 +21,7 @@ import type * as batch_workflow from "../batch/workflow.js";
 import type * as batchJobs from "../batchJobs.js";
 import type * as crons from "../crons.js";
 import type * as http from "../http.js";
+import type * as lib_viewer from "../lib/viewer.js";
 import type * as migrations from "../migrations.js";
 import type * as organizations from "../organizations.js";
 import type * as pipelineHealth from "../pipelineHealth.js";
@@ -47,6 +48,7 @@ declare const fullApi: ApiFromModules<{
   batchJobs: typeof batchJobs;
   crons: typeof crons;
   http: typeof http;
+  "lib/viewer": typeof lib_viewer;
   migrations: typeof migrations;
   organizations: typeof organizations;
   pipelineHealth: typeof pipelineHealth;

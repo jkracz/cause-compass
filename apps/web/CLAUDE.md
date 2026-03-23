@@ -1,6 +1,6 @@
 # Web App
 
-Next.js 16 with App Router, Convex backend, Tailwind CSS 4 + Radix UI.
+Next.js 16 with App Router, Convex backend, Tailwind CSS 4, and shadcn/ui components.
 
 ## Commands
 
@@ -12,15 +12,16 @@ pnpm check-types  # Type check
 
 ## Convex Integration
 
-- **Client-side**: `ConvexReactClient` in `src/app/ConvexClientProvider.tsx`
-- **Server actions**: `fetchMutation` from `convex/nextjs` in `src/lib/actions/`
+- **Client-side root**: `src/app/ConvexClientProvider.tsx` passes the server-read `guestId` into `src/components/app-session-provider.tsx`
+- **Auth/session**: `src/components/app-session-provider.tsx` owns the Shoo session, `ConvexProviderWithAuth`, and guest-to-account linking
+- **Mutations/queries**: actor-specific writes and reads use direct `useMutation`/`useQuery` hooks from client components
 - **Schema**: `packages/backend/convex/schema.ts`
 
 ## User Management
 
-- Automatic user ID assignment via proxy middleware (`src/proxy.ts`)
-- Cookie-based tracking using nanoid-generated IDs
-- User data stored in Convex `users` table
+- Anonymous users get a `guestId` cookie from `src/proxy.ts`
+- Authenticated users are identified in Convex via Shoo JWT claims
+- User data lives in the Convex `users` table and can be linked from guest to authenticated state
 
 ## Routes
 

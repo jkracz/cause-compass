@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useMutation } from "convex/react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import posthog from "posthog-js";
 
@@ -9,14 +11,18 @@ import { GlassmorphicCard } from "@/components/glassmorphic-card";
 import { MirrorQuestion } from "@/components/mirror-question";
 import { MosaicPiece } from "@/components/mosaic-piece";
 import type { Question } from "@/lib/questions";
-import { saveUserPreferences } from "@/lib/actions";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { api } from "@cause/backend/convex/_generated/api";
+import { useAppSession } from "@/components/app-session-provider";
+import type { UserPreferences } from "@cause/types";
 
 interface OnboardingFlowProps {
   questions: Question[];
 }
 
 export function OnboardingFlow({ questions }: OnboardingFlowProps) {
+  const router = useRouter();
+  const { guestId } = useAppSession();
+  const saveViewerPreferences = useMutation(api.users.saveViewerPreferences);
   const hasTrackedOnboardingStartRef = useRef(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
@@ -122,23 +128,26 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
 
   const handleNext = async () => {
     if (isLastQuestion) {
-      const formData = new FormData();
-
-      // Add each answer to the form data
-      Object.entries(answers).forEach(([key, value]) => {
-        if (key === "openEnded") {
-          // For openEnded questions, we need to send both question and answer
-          const currentQuestion = questions.find((q) => q.id === "openEnded");
-          if (currentQuestion) {
-            formData.append("openEnded", currentQuestion.question);
-            formData.append("openEndedAnswer", value as string);
-          }
-        } else if (Array.isArray(value)) {
-          value.forEach((v) => formData.append(key, v));
-        } else {
-          formData.append(key, value);
-        }
-      });
+      const openEndedQuestion = questions.find((q) => q.id === "openEnded");
+      const preferences: UserPreferences = {
+        causes: Array.isArray(answers.causes) ? answers.causes : undefined,
+        location:
+          typeof answers.location === "string" ? answers.location : undefined,
+        helpMethod: Array.isArray(answers.helpMethod)
+          ? answers.helpMethod
+          : undefined,
+        changeScope:
+          typeof answers.changeScope === "string"
+            ? answers.changeScope
+            : undefined,
+        openEnded:
+          typeof answers.openEnded === "string" && openEndedQuestion
+            ? {
+                question: openEndedQuestion.question,
+                answer: answers.openEnded,
+              }
+            : undefined,
+      };
 
       posthog.capture("onboarding_completed", {
         total_questions: questions.length,
@@ -147,13 +156,12 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
       });
 
       try {
-        await saveUserPreferences(formData);
-        // Navigation will be handled by the server action (redirect throws internally)
+        await saveViewerPreferences({
+          guestId,
+          preferences,
+        });
+        router.push("/discover");
       } catch (error) {
-        // Don't track redirect errors - they're expected behavior
-        if (isRedirectError(error)) {
-          throw error;
-        }
         console.error("Error saving preferences:", error);
         posthog.captureException(error);
       }

@@ -1,6 +1,7 @@
 import { query } from "./_generated/server";
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
+import { getViewerRecord } from "./lib/viewer";
 
 // Get single org by slug (for detail page)
 export const getBySlug = query({
@@ -79,14 +80,19 @@ export const getBySlugs = query({
   },
 });
 
-// Get liked organizations for a user (combined query to avoid waterfall)
-export const getLikedByUser = query({
-  args: { userId: v.string() },
-  handler: async (ctx, { userId }) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
+// Get liked organizations for the current viewer (combined query to avoid waterfall)
+export const getLikedByViewer = query({
+  args: { guestId: v.optional(v.string()) },
+  handler: async (ctx, { guestId }) => {
+    const viewer = await getViewerRecord(ctx, guestId);
+    const user =
+      viewer.user ||
+      (viewer.kind === "authenticated" && guestId
+        ? await ctx.db
+            .query("users")
+            .withIndex("by_guestId", (q) => q.eq("guestId", guestId))
+            .first()
+        : null);
 
     if (!user || user.likedOrganizations.length === 0) return [];
 
