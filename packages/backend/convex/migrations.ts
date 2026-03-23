@@ -1,4 +1,5 @@
 import { Migrations } from "@convex-dev/migrations";
+import { normalizeStoredSearchResults } from "@cause/types";
 import { components } from "./_generated/api.js";
 import { DataModel } from "./_generated/dataModel.js";
 import { internal } from "./_generated/api.js";
@@ -125,6 +126,63 @@ export const populateAiConfirmationInputs = migrations.define({
 });
 
 /**
+ * Migration: Shrink stored search result payloads
+ *
+ * Rewrites raw Google results into the reduced stored array shape.
+ */
+export const shrinkSearchResultsPayloads = migrations.define({
+  table: "searchResults",
+  customRange: (query) => query.withIndex("by_ein", (q) => q.gt("ein", "")),
+  migrateOne: async (_ctx, searchResult) => {
+    let parsedResults: unknown;
+
+    try {
+      parsedResults = JSON.parse(searchResult.resultsJson);
+    } catch {
+      console.warn("Search result migration warning", {
+        source: "migrations.shrinkSearchResultsPayloads",
+        _id: searchResult._id,
+        ein: searchResult.ein,
+        orgId: searchResult.orgId,
+        reason: "invalid_json",
+      });
+      return;
+    }
+
+    const normalizedResults = normalizeStoredSearchResults(parsedResults);
+    if (normalizedResults.issue === "invalid_shape") {
+      console.warn("Search result migration warning", {
+        source: "migrations.shrinkSearchResultsPayloads",
+        _id: searchResult._id,
+        ein: searchResult.ein,
+        orgId: searchResult.orgId,
+        reason: normalizedResults.issue,
+      });
+      return;
+    }
+
+    if (normalizedResults.issue) {
+      console.warn("Search result migration warning", {
+        source: "migrations.shrinkSearchResultsPayloads",
+        _id: searchResult._id,
+        ein: searchResult.ein,
+        orgId: searchResult.orgId,
+        reason: normalizedResults.issue,
+      });
+    }
+
+    const nextResultsJson = JSON.stringify(normalizedResults.results);
+    if (nextResultsJson === searchResult.resultsJson) {
+      return;
+    }
+
+    return {
+      resultsJson: nextResultsJson,
+    };
+  },
+});
+
+/**
  * Run all linking migrations in order
  *
  * Usage: npx convex run migrations:runAllLinking
@@ -135,3 +193,12 @@ export const runAllLinking = migrations.runner([
   internal.migrations.linkAiConfirmations,
   internal.migrations.populateAiConfirmationInputs,
 ]);
+
+/**
+ * Run the search result payload shrink migration
+ *
+ * Usage: npx convex run migrations:runSearchResultStorageShrink
+ */
+export const runSearchResultStorageShrink = migrations.runner(
+  internal.migrations.shrinkSearchResultsPayloads,
+);

@@ -22,6 +22,7 @@ import type {
   WebsiteConfirmation,
   GeographicFocusType,
 } from "@cause/types";
+import { normalizeStoredSearchResults } from "@cause/types";
 import type { Doc } from "@cause/backend/convex/_generated/dataModel";
 
 // Inline Convex document types - omit system fields for creation
@@ -186,11 +187,22 @@ function transformDocument(doc: TaxExemptOrganization): TransformResult {
   // 2. Transform search results (if present)
   let searchResult: ConvexSearchResult | null = null;
   if (doc.searchResults && doc.searchResults.length > 0) {
+    const normalizedResults = normalizeStoredSearchResults(doc.searchResults);
+    if (normalizedResults.issue) {
+      logger.warn(
+        JSON.stringify({
+          source: "transformToConvex.searchResults",
+          ein: doc.ein,
+          reason: normalizedResults.issue,
+        }),
+      );
+    }
+
     searchResult = {
       ein: doc.ein,
       query: `${doc.name} ${doc.city} ${doc.state} nonprofit`,
       runAt: doc.searchedAt ?? doc.createdAt ?? now,
-      resultsJson: JSON.stringify(doc.searchResults), // Stringify to avoid invalid field names like "theme-color"
+      resultsJson: JSON.stringify(normalizedResults.results),
     };
   }
 

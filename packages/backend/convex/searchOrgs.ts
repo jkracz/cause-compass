@@ -3,6 +3,7 @@
  * This module is called by the daily cron job defined in crons.ts.
  */
 
+import { normalizeStoredSearchResults } from "@cause/types";
 import { v } from "convex/values";
 import {
   internalAction,
@@ -11,11 +12,7 @@ import {
 } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { patchOrganization } from "./aggregates";
-import {
-  googleSearch,
-  getAvailableKeys,
-  type GoogleSearchResult,
-} from "../lib/googleSearch";
+import { googleSearch, getAvailableKeys } from "../lib/googleSearch";
 
 const SEARCH_LIMIT_PER_KEY = 100;
 const DELAY_BETWEEN_REQUESTS_MS = 100;
@@ -52,7 +49,7 @@ export const saveSearchResult = internalMutation({
     orgId: v.id("organizations"),
     ein: v.string(),
     query: v.string(),
-    resultsJson: v.string(), // JSON-stringified results (raw objects have invalid field names)
+    resultsJson: v.string(), // JSON-stringified reduced search results
   },
   handler: async (ctx, { orgId, ein, query, resultsJson }) => {
     // Insert search result record
@@ -163,13 +160,24 @@ export const searchOrganizations = internalAction({
 
       try {
         const response = await googleSearch(searchQuery, keyType);
-        const results: GoogleSearchResult[] = response.items || [];
+        const normalizedResults = normalizeStoredSearchResults(
+          response.items ?? [],
+        );
+
+        if (normalizedResults.issue) {
+          console.warn("Search result normalization warning", {
+            source: "searchOrgs.saveSearchResult",
+            ein: org.ein,
+            orgId: org._id,
+            reason: normalizedResults.issue,
+          });
+        }
 
         await ctx.runMutation(internal.searchOrgs.saveSearchResult, {
           orgId: org._id,
           ein: org.ein,
           query: searchQuery,
-          resultsJson: JSON.stringify(results),
+          resultsJson: JSON.stringify(normalizedResults.results),
         });
 
         processed++;
