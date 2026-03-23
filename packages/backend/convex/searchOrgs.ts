@@ -10,6 +10,7 @@ import {
   internalQuery,
 } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { patchOrganization } from "./aggregates";
 import {
   googleSearch,
   getAvailableKeys,
@@ -64,7 +65,7 @@ export const saveSearchResult = internalMutation({
     });
 
     // Update organization's enrichment stage
-    await ctx.db.patch(orgId, {
+    await patchOrganization(ctx, orgId, {
       enrichmentStage: "searched",
       updatedAt: Date.now(),
     });
@@ -80,7 +81,7 @@ export const markOrgSearched = internalMutation({
     orgId: v.id("organizations"),
   },
   handler: async (ctx, { orgId }) => {
-    await ctx.db.patch(orgId, {
+    await patchOrganization(ctx, orgId, {
       enrichmentStage: "searched",
       updatedAt: Date.now(),
     });

@@ -1,4 +1,6 @@
-import { query } from "./_generated/server";
+import { query, internalMutation } from "./_generated/server";
+import { internal } from "./_generated/api";
+import { orgStageAggregate } from "./aggregates";
 import { v } from "convex/values";
 
 const ENRICHMENT_STAGES = [
@@ -10,6 +12,10 @@ const ENRICHMENT_STAGES = [
 ] as const;
 
 type EnrichmentStage = (typeof ENRICHMENT_STAGES)[number];
+
+// ---------------------------------------------------------------------------
+// Validators
+// ---------------------------------------------------------------------------
 
 const stageHealthValidator = v.object({
   total: v.number(),
@@ -60,6 +66,10 @@ const summaryValidator = v.object({
   notes: v.array(v.string()),
 });
 
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
 function latestBatchTimestamp(
   jobs: Array<{ createdAt: string; completedAt?: string }>,
 ): string | null {
@@ -73,6 +83,10 @@ function latestBatchTimestamp(
   return latest;
 }
 
+// ---------------------------------------------------------------------------
+// Public query: live pipeline health using aggregate counts (O(log n) each)
+// ---------------------------------------------------------------------------
+
 export const getSummary = query({
   args: {
     staleHours: v.optional(v.number()),
@@ -83,75 +97,71 @@ export const getSummary = query({
     const cutoffTimestamp =
       Date.now() - normalizedStaleHours * 60 * 60 * 1000;
 
-    const stageEntries = await Promise.all(
-      ENRICHMENT_STAGES.map(async (stage) => {
-        const orgs = await ctx.db
-          .query("organizations")
-          .withIndex("by_enrichmentStage", (q) => q.eq("enrichmentStage", stage))
-          .collect();
+    // Batch all 15 counts in a single call:
+    //   [0..4]   total per stage
+    //   [5..9]   missing updatedAt per stage (sortKey <= 0, the sentinel)
+    //   [10..14] stale-or-missing per stage  (sortKey < cutoff)
+    const counts = await orgStageAggregate.countBatch(ctx, [
+      ...ENRICHMENT_STAGES.map((stage) => ({ namespace: stage as string })),
+      ...ENRICHMENT_STAGES.map((stage) => ({
+        namespace: stage as string,
+        bounds: { upper: { key: 0, inclusive: true } } as const,
+      })),
+      ...ENRICHMENT_STAGES.map((stage) => ({
+        namespace: stage as string,
+        bounds: { upper: { key: cutoffTimestamp, inclusive: false } } as const,
+      })),
+    ]);
 
-        let stale = 0;
-        let missingUpdatedAt = 0;
-        for (const org of orgs) {
-          if (org.updatedAt === undefined) {
-            missingUpdatedAt++;
-          } else if (org.updatedAt < cutoffTimestamp) {
-            stale++;
-          }
-        }
+    const byStage = {} as Record<
+      EnrichmentStage,
+      {
+        total: number;
+        stale: number;
+        missingUpdatedAt: number;
+        staleOrMissing: number;
+        fresh: number;
+        stalePercent: number;
+      }
+    >;
 
-        const total = orgs.length;
-        const staleOrMissing = stale + missingUpdatedAt;
-        const fresh = Math.max(0, total - staleOrMissing);
-        const stalePercent =
-          total === 0
-            ? 0
-            : Math.round((staleOrMissing / total) * 1000) / 10;
-
-        return [
-          stage,
-          {
-            total,
-            stale,
-            missingUpdatedAt,
-            staleOrMissing,
-            fresh,
-            stalePercent,
-          },
-        ] as const;
-      }),
-    );
-
-    const stageMap = new Map<EnrichmentStage, (typeof stageEntries)[number][1]>(
-      stageEntries,
-    );
-
-    const byStage = {
-      created: stageMap.get("created")!,
-      searched: stageMap.get("searched")!,
-      crawled: stageMap.get("crawled")!,
-      ai_confirmed: stageMap.get("ai_confirmed")!,
-      ready: stageMap.get("ready")!,
+    const organizationTotals = {
+      total: 0,
+      stale: 0,
+      missingUpdatedAt: 0,
+      staleOrMissing: 0,
+      fresh: 0,
     };
 
-    const organizationTotals = stageEntries.reduce(
-      (acc, [, stage]) => {
-        acc.total += stage.total;
-        acc.stale += stage.stale;
-        acc.missingUpdatedAt += stage.missingUpdatedAt;
-        acc.staleOrMissing += stage.staleOrMissing;
-        acc.fresh += stage.fresh;
-        return acc;
-      },
-      {
-        total: 0,
-        stale: 0,
-        missingUpdatedAt: 0,
-        staleOrMissing: 0,
-        fresh: 0,
-      },
-    );
+    for (let i = 0; i < ENRICHMENT_STAGES.length; i++) {
+      const stage = ENRICHMENT_STAGES[i]!;
+      const total = counts[i]!;
+      const missingUpdatedAt = counts[i + 5]!;
+      const staleOrMissing = counts[i + 10]!;
+      const stale = staleOrMissing - missingUpdatedAt;
+      const fresh = Math.max(0, total - staleOrMissing);
+      const stalePercent =
+        total === 0
+          ? 0
+          : Math.round((staleOrMissing / total) * 1000) / 10;
 
+      byStage[stage] = {
+        total,
+        stale,
+        missingUpdatedAt,
+        staleOrMissing,
+        fresh,
+        stalePercent,
+      };
+
+      organizationTotals.total += total;
+      organizationTotals.stale += stale;
+      organizationTotals.missingUpdatedAt += missingUpdatedAt;
+      organizationTotals.staleOrMissing += staleOrMissing;
+      organizationTotals.fresh += fresh;
+    }
+
+    // Batch jobs — table is small enough for direct queries
     const [processingJobs, completedJobs, failedJobs] = await Promise.all([
       ctx.db
         .query("batchJobs")
@@ -210,5 +220,38 @@ export const getSummary = query({
       })),
       notes,
     };
+  },
+});
+
+// ---------------------------------------------------------------------------
+// Backfill: populate aggregate from existing organizations.
+// Run after initial deploy or after any bulk import (npx convex import).
+// Self-schedules to process all organizations in pages of 100.
+//
+// Trigger from the Convex dashboard or CLI:
+//   npx convex run pipelineHealth:backfillAggregate '{"cursor": null}'
+// ---------------------------------------------------------------------------
+
+export const backfillAggregate = internalMutation({
+  args: { cursor: v.union(v.string(), v.null()) },
+  returns: v.null(),
+  handler: async (ctx, { cursor }) => {
+    const result = await ctx.db
+      .query("organizations")
+      .paginate({ numItems: 100, cursor: cursor ?? null });
+
+    for (const doc of result.page) {
+      await orgStageAggregate.insertIfDoesNotExist(ctx, doc);
+    }
+
+    if (!result.isDone) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.pipelineHealth.backfillAggregate,
+        { cursor: result.continueCursor },
+      );
+    }
+
+    return null;
   },
 });
