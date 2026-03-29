@@ -257,7 +257,7 @@ export const processResults = internalAction({
             },
           );
 
-          // Update organization if we found the correct website
+          // Promote to ready only when the website was confirmed by AI.
           if (parsed.hasCorrectWebsite && parsed.correctWebsiteUrl) {
             // Validate geographicFocus is one of the allowed values
             const validGeographicFocus: GeographicFocusType[] = [
@@ -314,7 +314,7 @@ export const processResults = internalAction({
                     crawlExtractedData.emailAddresses.length > 0
                       ? crawlExtractedData.emailAddresses
                       : undefined,
-                  enrichmentStage: "ai_confirmed",
+                  enrichmentStage: "ready",
                 },
               },
             );
