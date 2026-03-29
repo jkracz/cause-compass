@@ -365,7 +365,7 @@ export function createConfirmationRequestLine(args: {
     state,
     codeDescription,
     websiteData,
-    model = "gpt-4o-mini",
+    model = "gpt-5.4-nano",
     responseSchema,
   } = args;
 

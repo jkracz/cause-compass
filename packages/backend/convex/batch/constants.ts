@@ -3,7 +3,7 @@
  */
 
 export const DEFAULT_BATCH_SIZE = 20;
-export const DEFAULT_MODEL = "gpt-4o-mini";
+export const DEFAULT_MODEL = "gpt-5.4-nano";
 
 /**
  * JSON Schema for WebsiteConfirmation response format.

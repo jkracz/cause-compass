@@ -7,7 +7,7 @@ Workers:
 - `html-worker`: low-cost HTTP fetch + Cheerio extraction
 - `browser-worker`: Playwright render + the same extraction pipeline
 
-Queue state and orchestration are in Convex. Browser crawling runs in Docker workers, not in Convex.
+Queue state and orchestration are in Convex. The workers run outside Convex: directly on your machine for development, or in Docker for always-on deployment.
 
 ## What It Does
 
@@ -36,7 +36,7 @@ Convex worker routes:
 
 - Queue semantics are owned in Convex, not in crawler framework internals.
 - Fallback decisions are explicit and easy to audit.
-- Docker deployment on TrueNAS is simpler (two long-lived worker processes).
+- Local machine debugging is simple, and Docker deployment on TrueNAS stays straightforward (two long-lived worker processes).
 
 ## Extractors
 
@@ -96,6 +96,7 @@ Search cron remains separately gated by:
 - Convex deployment with `/worker/*` HTTP routes deployed
 - Convex env `WORKER_TOKEN` set
 - `CONVEX_SITE_URL` must be the `.convex.site` URL (including `.site`)
+- Node + pnpm installed locally for machine-native runs
 - Docker runtime for production workers (recommended)
 
 ## Environment Variables
@@ -123,9 +124,46 @@ Browser:
 - `BROWSER_NAV_TIMEOUT_MS`
 - `BROWSER_WAIT_AFTER_LOAD_MS`
 
-## Run Locally With Docker Compose (Build From Source)
+## Run On Your Machine (Recommended For Development)
 
-Use this for local development or quick validation when you have the repo checked out.
+This is the default local workflow. It avoids Docker while you are iterating and keeps startup simple.
+
+From repo root:
+
+```bash
+cp apps/scraper/.env.example apps/scraper/.env
+# edit apps/scraper/.env with CONVEX_SITE_URL + WORKER_TOKEN
+
+pnpm install
+pnpm --filter @cause/scraper run check-types
+pnpm --filter @cause/scraper run build
+
+# one-time Playwright browser install for the browser worker
+pnpm --filter @cause/scraper exec playwright install chromium
+```
+
+Start the HTML worker:
+
+```bash
+node --env-file=apps/scraper/.env apps/scraper/dist/html-worker.js
+```
+
+Start the browser worker in a second terminal when you want JS-rendered fallbacks:
+
+```bash
+node --env-file=apps/scraper/.env apps/scraper/dist/browser-worker.js
+```
+
+Notes:
+
+- Running only `html-worker` is often enough to validate the pipeline locally.
+- Start `browser-worker` when you want to process HTML fallbacks or debug Playwright behavior.
+- For headed browser debugging, set `BROWSER_HEADLESS=false` in `apps/scraper/.env`.
+- If you change scraper code, rerun `pnpm --filter @cause/scraper run build` before restarting the worker.
+
+## Run Locally With Docker Compose (Alternative)
+
+Use this if you want your local environment to match the deployment model more closely.
 For production TrueNAS deployment, prefer registry images (see TrueNAS section).
 
 From repo root:
@@ -230,16 +268,6 @@ docker run -d \
   node dist/browser-worker.js
 ```
 
-## Local Node (Debug Only)
-
-```bash
-pnpm --filter @cause/scraper run check-types
-pnpm --filter @cause/scraper run build
-
-node --env-file=apps/scraper/.env apps/scraper/dist/html-worker.js
-node --env-file=apps/scraper/.env apps/scraper/dist/browser-worker.js
-```
-
 ## TrueNAS SCALE Deployment (Recommended)
 
 Default recommendation: use **TrueNAS Apps UI** with **registry images**.
@@ -328,5 +356,7 @@ curl -X POST "$CONVEX_SITE_URL/worker/enqueue" \
   - token mismatch between Convex env and worker `.env`
 - Queue stays empty:
   - no pending items yet; run search/backfill or manual enqueue
+- local browser worker fails with `Executable doesn't exist`:
+  - run `pnpm --filter @cause/scraper exec playwright install chromium`
 - Browser container restarts:
   - verify using `Dockerfile.browser` image and sufficient memory
