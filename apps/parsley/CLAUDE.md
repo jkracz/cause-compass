@@ -1,22 +1,23 @@
 # Parsley Data Pipeline
 
-Data processing pipeline: IRS imports → web discovery → crawling → AI enrichment → Convex export.
+IRS data import and transformation for Convex.
 
 ## Commands
 
 ```bash
-pnpm run start                           # Main entry point
-pnpm run create-profiles --state=ca      # Process IRS data for state
-pnpm run search-orgs                     # Google search for organizations
-pnpm run crawl-sites                     # Crawl websites
-pnpm run transform-to-convex             # Export to Convex
+pnpm run create-profiles-convex --state=ca  # Process IRS data for state → JSONL
+pnpm run transform-to-convex                # Transform raw data to Convex format
 ```
 
 ## Key Components
 
-**Scripts** (`src/scripts/`): `createOrgsByState.ts`, `googleSearchOrgs.ts`, `parseSearchResults.ts`, `transformToConvex.ts`
+**Scripts** (`src/scripts/`): `createOrgsByStateConvex.ts`, `transformToConvex.ts`
 
-**Services** (`src/services/`): `mongo.ts`, `crawler.ts`, `googleSearch.ts`, `batchManager.ts`
+**Services** (`src/services/`): `parseEoFile.ts` (IRS CSV parsing + code dictionary mapping)
+
+**Utils** (`src/utils/`): `convexUtils.ts`, `parseUtils.ts`, `textUtils.ts`, `titleCase.ts`, `fileWrite.ts`, `logger.ts`, `nanoid.ts`
+
+**Data** (`src/data/dataDictionaries/`): IRS code reference data (NTEE, activity codes, etc.)
 
 ## URL Scoring Algorithm
 

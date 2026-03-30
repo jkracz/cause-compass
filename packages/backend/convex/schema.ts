@@ -153,6 +153,10 @@ export default defineSchema({
     sourceUrl: v.string(),
     runAt: v.string(),
 
+    // Crawl metadata
+    crawlMethod: v.optional(v.union(v.literal("http"), v.literal("browser"))),
+    queueJobId: v.optional(v.id("crawlQueue")),
+
     // Crawled content
     textContent: v.optional(v.string()),
     aboutLinks: v.optional(v.array(v.string())),
@@ -194,6 +198,39 @@ export default defineSchema({
   })
     .index("by_ein", ["ein"])
     .index("by_orgId", ["orgId"]),
+
+  // Crawl queue - job queue for HTML and browser workers
+  crawlQueue: defineTable({
+    queueType: v.union(v.literal("html"), v.literal("browser")),
+    orgId: v.id("organizations"),
+    ein: v.string(),
+    url: v.string(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("processing"),
+      v.literal("completed"),
+      v.literal("failed"),
+    ),
+    attemptCount: v.number(),
+    maxAttempts: v.number(),
+    claimedAt: v.optional(v.number()),
+    fallbackReason: v.optional(
+      v.union(
+        v.literal("LOW_TEXT"),
+        v.literal("JS_APP_SHELL"),
+        v.literal("HTTP_403_OR_429"),
+        v.literal("CLOUDFLARE_CHALLENGE"),
+        v.literal("OTHER"),
+      ),
+    ),
+    lastError: v.optional(v.string()),
+    crawlResultId: v.optional(v.id("crawlResults")),
+    createdAt: v.number(),
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_queueType_and_status", ["queueType", "status"])
+    .index("by_ein_and_queueType", ["ein", "queueType"])
+    .index("by_status_and_claimedAt", ["status", "claimedAt"]),
 
   // Batch jobs table - audit log for OpenAI batch processing
   // Orchestration is handled by the workflow component; this table tracks results

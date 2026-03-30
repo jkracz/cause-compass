@@ -183,6 +183,53 @@ export const shrinkSearchResultsPayloads = migrations.define({
 });
 
 /**
+ * Migration: Promote ai_confirmed orgs with a confirmed website to ready
+ *
+ * Only advances organizations when an AI confirmation explicitly marked the
+ * website as correct and included a URL.
+ */
+export const promoteConfirmedOrgsToReady = migrations.define({
+  table: "organizations",
+  customRange: (query) =>
+    query.withIndex("by_enrichmentStage", (q) =>
+      q.eq("enrichmentStage", "ai_confirmed"),
+    ),
+  migrateOne: async (ctx, organization) => {
+    const confirmations = await ctx.db
+      .query("aiConfirmations")
+      .withIndex("by_ein", (q) => q.eq("ein", organization.ein))
+      .collect();
+
+    const latestConfirmedWebsite = confirmations
+      .filter(
+        (confirmation) =>
+          confirmation.outputs.hasCorrectWebsite &&
+          !!confirmation.outputs.correctWebsiteUrl,
+      )
+      .sort((a, b) => b.runAt.localeCompare(a.runAt))[0];
+
+    if (!latestConfirmedWebsite?.outputs.correctWebsiteUrl) {
+      return;
+    }
+
+    const confirmedWebsiteUrl = latestConfirmedWebsite.outputs.correctWebsiteUrl;
+
+    if (
+      organization.enrichmentStage === "ready" &&
+      organization.websiteUrl === confirmedWebsiteUrl
+    ) {
+      return;
+    }
+
+    return {
+      enrichmentStage: "ready" as const,
+      websiteUrl: confirmedWebsiteUrl,
+      updatedAt: Date.now(),
+    };
+  },
+});
+
+/**
  * Run all linking migrations in order
  *
  * Usage: npx convex run migrations:runAllLinking
@@ -201,4 +248,16 @@ export const runAllLinking = migrations.runner([
  */
 export const runSearchResultStorageShrink = migrations.runner(
   internal.migrations.shrinkSearchResultsPayloads,
+);
+
+/**
+ * Promote already-confirmed organizations to ready.
+ *
+ * Usage: npx convex run migrations:runPromoteConfirmedOrgsToReady
+ *
+ * Note: rerun pipelineHealth:backfillAggregate after this migration so the
+ * aggregate counts reflect the updated enrichment stages.
+ */
+export const runPromoteConfirmedOrgsToReady = migrations.runner(
+  internal.migrations.promoteConfirmedOrgsToReady,
 );

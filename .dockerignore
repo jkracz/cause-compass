@@ -1,0 +1,13 @@
+.git
+.github
+.claude
+.context
+.cursor
+.turbo
+.vscode
+docs
+node_modules
+**/node_modules
+**/dist
+apps/scraper/.env
+apps/scraper/docker-compose.yml

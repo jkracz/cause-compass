@@ -8,6 +8,7 @@ import { internal } from "../_generated/api";
 import type { WorkflowId } from "@convex-dev/workflow";
 import { workflow, batchCompletedEvent } from "./workflow";
 import type { OpenAIWebhookEvent } from "./types";
+import { getBatch } from "../../lib/openAiBatch";
 
 // Type declaration for environment variables in Convex actions
 declare const process: {
@@ -133,7 +134,8 @@ export const handleWebhook = internalAction({
     }
 
     if (event.type === "batch.completed") {
-      const outputFileId = event.data.output_file_id;
+      const batch = await getBatch(event.data.id);
+      const outputFileId = event.data.output_file_id ?? batch.output_file_id;
       if (!outputFileId) {
         console.error("batch.completed event missing output_file_id");
         return { success: false, error: "Missing output_file_id" };
@@ -156,9 +158,11 @@ export const handleWebhook = internalAction({
         `Notified workflow ${job.workflowId} that batch ${job.jobId} completed`,
       );
     } else if (event.type === "batch.failed") {
+      const batch = await getBatch(event.data.id);
       // Mark job as failed
       const errorMsg =
         event.data.errors?.data?.[0]?.message ??
+        batch.errors?.data?.[0]?.message ??
         "Batch failed (no error message)";
 
       await ctx.runMutation(internal.batchJobs.internalMarkFailed, {

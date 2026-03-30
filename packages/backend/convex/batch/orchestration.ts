@@ -4,6 +4,7 @@
 
 import { v } from "convex/values";
 import { internalAction } from "../_generated/server";
+import type { ActionCtx } from "../_generated/server";
 import { internal } from "../_generated/api";
 import type { WorkflowId } from "@convex-dev/workflow";
 import {
@@ -19,9 +20,70 @@ declare const process: {
 };
 
 /**
- * Polls OpenAI for completed batches and sends events to waiting workflows.
- * Called by cron every 15 minutes.
+ * Reconcile processing jobs against OpenAI batch status.
+ * Used by the manual poller and the daily workflow starter as a fallback when
+ * webhooks are delayed or missed.
  */
+async function reconcileProcessingJobs(
+  ctx: ActionCtx,
+): Promise<{
+  checked: number;
+  notified: number;
+}> {
+  const processingJobs = await ctx.runQuery(
+    internal.batchJobs.internalGetProcessingJobsWithWorkflow,
+    {},
+  );
+
+  let notified = 0;
+
+  for (const job of processingJobs) {
+    if (!job.batchId || !job.workflowId) continue;
+
+    try {
+      const batch = await getBatch(job.batchId);
+      console.log(`Batch ${job.batchId} status: ${batch.status}`);
+
+      if (isBatchCompleted(batch.status) && batch.output_file_id) {
+        await ctx.runMutation(internal.batchJobs.internalSetOutputFileId, {
+          jobId: job.jobId,
+          outputFileId: batch.output_file_id,
+        });
+
+        await workflow.sendEvent(ctx, {
+          ...batchCompletedEvent,
+          workflowId: job.workflowId as WorkflowId,
+          value: { outputFileId: batch.output_file_id },
+        });
+
+        console.log(
+          `Notified workflow ${job.workflowId} that batch ${job.jobId} completed`,
+        );
+        notified++;
+      } else if (isBatchFailed(batch.status)) {
+        const errorMsg =
+          batch.errors?.data?.[0]?.message ?? `Batch ${batch.status}`;
+        await ctx.runMutation(internal.batchJobs.internalMarkFailed, {
+          jobId: job.jobId,
+          error: errorMsg,
+        });
+
+        await workflow.cancel(ctx, job.workflowId as WorkflowId);
+        console.log(
+          `Canceled workflow ${job.workflowId} due to batch failure: ${errorMsg}`,
+        );
+      }
+    } catch (error) {
+      console.error(`Error checking batch ${job.batchId}:`, error);
+    }
+  }
+
+  console.log(
+    `Checked ${processingJobs.length} jobs, notified ${notified} workflows`,
+  );
+  return { checked: processingJobs.length, notified };
+}
+
 export const pollAndNotifyCompletedBatches = internalAction({
   args: {},
   handler: async (
@@ -36,64 +98,7 @@ export const pollAndNotifyCompletedBatches = internalAction({
       return { checked: 0, notified: 0 };
     }
 
-    // Get all jobs in "processing" status that have a workflowId
-    const processingJobs = await ctx.runQuery(
-      internal.batchJobs.internalGetProcessingJobsWithWorkflow,
-      {},
-    );
-
-    let notified = 0;
-
-    for (const job of processingJobs) {
-      if (!job.batchId || !job.workflowId) continue;
-
-      try {
-        // Check status on OpenAI
-        const batch = await getBatch(job.batchId);
-        console.log(`Batch ${job.batchId} status: ${batch.status}`);
-
-        if (isBatchCompleted(batch.status) && batch.output_file_id) {
-          // Update job with output file ID
-          await ctx.runMutation(internal.batchJobs.internalSetOutputFileId, {
-            jobId: job.jobId,
-            outputFileId: batch.output_file_id,
-          });
-
-          // Send event to unblock the waiting workflow
-          await workflow.sendEvent(ctx, {
-            ...batchCompletedEvent,
-            workflowId: job.workflowId as WorkflowId,
-            value: { outputFileId: batch.output_file_id },
-          });
-
-          console.log(
-            `Notified workflow ${job.workflowId} that batch ${job.jobId} completed`,
-          );
-          notified++;
-        } else if (isBatchFailed(batch.status)) {
-          // Mark job as failed
-          const errorMsg =
-            batch.errors?.data?.[0]?.message ?? `Batch ${batch.status}`;
-          await ctx.runMutation(internal.batchJobs.internalMarkFailed, {
-            jobId: job.jobId,
-            error: errorMsg,
-          });
-
-          // Cancel the workflow
-          await workflow.cancel(ctx, job.workflowId as WorkflowId);
-          console.log(
-            `Canceled workflow ${job.workflowId} due to batch failure: ${errorMsg}`,
-          );
-        }
-      } catch (error) {
-        console.error(`Error checking batch ${job.batchId}:`, error);
-      }
-    }
-
-    console.log(
-      `Checked ${processingJobs.length} jobs, notified ${notified} workflows`,
-    );
-    return { checked: processingJobs.length, notified };
+    return reconcileProcessingJobs(ctx);
   },
 });
 
@@ -117,7 +122,19 @@ export const startBatchWorkflow = internalAction({
       return { started: false, reason: "disabled" };
     }
 
-    // Check if any jobs are already processing (workflow waiting)
+    const initialProcessingJobs = await ctx.runQuery(
+      internal.batchJobs.internalGetProcessingJobs,
+      {},
+    );
+
+    if (initialProcessingJobs.length > 0) {
+      console.log(
+        `Reconciling ${initialProcessingJobs.length} processing batch job(s) before starting a new workflow`,
+      );
+      await reconcileProcessingJobs(ctx);
+    }
+
+    // Check if any jobs are still genuinely processing after reconciliation
     const processingJobs = await ctx.runQuery(
       internal.batchJobs.internalGetProcessingJobs,
       {},
@@ -143,7 +160,6 @@ export const startBatchWorkflow = internalAction({
 /**
  * Start the next batch workflow in the chain.
  * Called by a workflow after it completes processing to continue the chain.
- * Does NOT check ENABLE_BATCH_CRON since it's already part of an active chain.
  */
 export const chainNextWorkflow = internalAction({
   args: { limit: v.optional(v.number()) },
@@ -154,6 +170,14 @@ export const chainNextWorkflow = internalAction({
     started: boolean;
     workflowId?: string;
   }> => {
+    const isEnabled = process.env.ENABLE_BATCH_CRON === "true";
+    if (!isEnabled) {
+      console.log(
+        "Skipping chained batch workflow (ENABLE_BATCH_CRON !== 'true')",
+      );
+      return { started: false };
+    }
+
     // Start next workflow in the chain
     const workflowId = await workflow.start(
       ctx,
