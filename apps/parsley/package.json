@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint .",
-    "check-types": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "create-profiles-convex": "tsx src/scripts/createOrgsByStateConvex.ts",
     "transform-to-convex": "tsx src/scripts/transformToConvex.ts"
   },
@@ -41,6 +41,6 @@
     "globals": "^17.4.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
-    "typescript-eslint": "^8.57.1"
+    "typescript-eslint": "^8.57.2"
   }
 }

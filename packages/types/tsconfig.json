@@ -8,10 +8,5 @@
     "sourceMap": true
   },
   "include": ["src/**/*"],
-  "exclude": ["dist", "node_modules"],
-  "scripts": {
-    "dev": "tsc --watch",
-    "build": "tsc",
-    "check-types": "tsc --noEmit"
-  }
+  "exclude": ["dist", "node_modules"]
 }

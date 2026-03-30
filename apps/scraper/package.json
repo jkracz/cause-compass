@@ -8,7 +8,7 @@
     "html-worker": "tsx src/html-worker.ts",
     "browser-worker": "tsx src/browser-worker.ts",
     "build": "tsc",
-    "check-types": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint ."
   },
   "dependencies": {
@@ -23,6 +23,6 @@
     "eslint": "^10.1.0",
     "globals": "^17.4.0",
     "tsx": "^4.21.0",
-    "typescript-eslint": "^8.57.1"
+    "typescript-eslint": "^8.57.2"
   }
 }

@@ -16,7 +16,7 @@
     "dev": "tsc --watch",
     "clean": "rm -rf dist",
     "lint": "eslint .",
-    "check-types": "tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "zod": "^4.3.6"

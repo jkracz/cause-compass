@@ -135,7 +135,7 @@ cp apps/scraper/.env.example apps/scraper/.env
 # edit apps/scraper/.env with CONVEX_SITE_URL + WORKER_TOKEN
 
 pnpm install
-pnpm --filter @cause/scraper run check-types
+pnpm --filter @cause/scraper run typecheck
 pnpm --filter @cause/scraper run build
 
 # one-time Playwright browser install for the browser worker

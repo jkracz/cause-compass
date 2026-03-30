@@ -16,7 +16,7 @@ pnpm install       # Install dependencies
 pnpm dev           # Run all apps
 pnpm build         # Build all
 pnpm lint          # Lint all
-pnpm check-types   # Type check all
+pnpm typecheck     # Type check all
 ```
 
 ## Documentation

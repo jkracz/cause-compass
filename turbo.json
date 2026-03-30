@@ -42,7 +42,7 @@
         "tsconfig.json"
       ]
     },
-    "check-types": {
+    "typecheck": {
       "dependsOn": [],
       "inputs": ["**/*.ts", "**/*.tsx", "!dist/**", "tsconfig.json"]
     },

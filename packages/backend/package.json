@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "convex dev",
-    "check-types": "tsc --noEmit -p convex",
+    "typecheck": "tsc --noEmit -p convex",
     "lint": "eslint ."
   },
   "author": "",
@@ -13,9 +13,9 @@
   "dependencies": {
     "@cause/types": "workspace:*",
     "@convex-dev/aggregate": "^0.2.1",
-    "@convex-dev/migrations": "^0.3.1",
-    "@convex-dev/workflow": "^0.3.7",
-    "convex": "^1.34.0"
+    "@convex-dev/migrations": "^0.3.3",
+    "@convex-dev/workflow": "^0.3.8",
+    "convex": "^1.34.1"
   },
   "devDependencies": {
     "@cause/eslint-config": "workspace:*",

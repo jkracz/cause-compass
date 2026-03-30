@@ -7,7 +7,7 @@ Next.js 16 with App Router, Convex backend, Tailwind CSS 4, and shadcn/ui compon
 ```bash
 pnpm dev          # Dev server with Turbopack
 pnpm build        # Production build
-pnpm check-types  # Type check
+pnpm typecheck    # Type check
 ```
 
 ## Convex Integration
