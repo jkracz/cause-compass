@@ -5,6 +5,7 @@
 import { v } from "convex/values";
 import { internalQuery } from "../_generated/server";
 import type { OrgForAiConfirmation, CrawlItemData } from "./types";
+import { selectBatchPromptCrawlData } from "../../lib/batchPromptSelection";
 
 /**
  * Get organizations ready for AI confirmation.
@@ -37,11 +38,7 @@ export const internalGetOrgsForAiConfirmation = internalQuery({
           city: org.city,
           state: org.state,
           nteeCode: org.nteeCode,
-          crawlData: crawlResults.map((cr) => ({
-            url: cr.sourceUrl,
-            title: cr.sourceUrl, // Use URL as title if not available
-            textContent: cr.textContent ?? "",
-          })),
+          crawlData: selectBatchPromptCrawlData(crawlResults),
         };
       }),
     );

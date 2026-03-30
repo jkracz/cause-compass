@@ -160,7 +160,6 @@ export const startBatchWorkflow = internalAction({
 /**
  * Start the next batch workflow in the chain.
  * Called by a workflow after it completes processing to continue the chain.
- * Does NOT check ENABLE_BATCH_CRON since it's already part of an active chain.
  */
 export const chainNextWorkflow = internalAction({
   args: { limit: v.optional(v.number()) },
@@ -171,6 +170,14 @@ export const chainNextWorkflow = internalAction({
     started: boolean;
     workflowId?: string;
   }> => {
+    const isEnabled = process.env.ENABLE_BATCH_CRON === "true";
+    if (!isEnabled) {
+      console.log(
+        "Skipping chained batch workflow (ENABLE_BATCH_CRON !== 'true')",
+      );
+      return { started: false };
+    }
+
     // Start next workflow in the chain
     const workflowId = await workflow.start(
       ctx,
