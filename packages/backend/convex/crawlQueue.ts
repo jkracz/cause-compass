@@ -4,9 +4,20 @@
  */
 
 import { v } from "convex/values";
-import { internalMutation, internalQuery } from "./_generated/server";
+import {
+  internalMutation,
+  internalQuery,
+  type MutationCtx,
+} from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
+import {
+  extractCrawlCandidateUrls,
+  getCrawlCandidateKey,
+} from "../lib/crawlCandidates";
 
 const STALE_CLAIM_THRESHOLD_MS = 10 * 60 * 1000; // 10 minutes
+const SEARCHED_ORG_PAGE_SIZE = 100;
+const SEARCH_RESULT_LOOKBACK_LIMIT = 10;
 
 const queueTypeValidator = v.union(v.literal("html"), v.literal("browser"));
 
@@ -18,9 +29,132 @@ const fallbackReasonValidator = v.union(
   v.literal("OTHER"),
 );
 
+type SearchResultLookupFailure =
+  | "missingSearchResult"
+  | "invalidSearchResultJson"
+  | "missingSearchResultUrl";
+
+async function getLatestUsableSearchResultUrl(
+  ctx: MutationCtx,
+  ein: string,
+  orgName: string,
+): Promise<{ urls: string[]; reason?: SearchResultLookupFailure }> {
+  const searchResults = await ctx.db
+    .query("searchResults")
+    .withIndex("by_ein", (q) => q.eq("ein", ein))
+    .order("desc")
+    .take(SEARCH_RESULT_LOOKBACK_LIMIT);
+
+  if (searchResults.length === 0) {
+    return {
+      urls: [],
+      reason: "missingSearchResult",
+    };
+  }
+
+  let sawInvalidJson = false;
+
+  for (const searchResult of searchResults) {
+    const candidateUrls = extractCrawlCandidateUrls(
+      searchResult.resultsJson,
+      orgName,
+    );
+    if (candidateUrls.length > 0) {
+      return { urls: candidateUrls };
+    }
+
+    try {
+      JSON.parse(searchResult.resultsJson);
+    } catch {
+      sawInvalidJson = true;
+    }
+  }
+
+  return {
+    urls: [],
+    reason: sawInvalidJson
+      ? "invalidSearchResultJson"
+      : "missingSearchResultUrl",
+  };
+}
+
+async function findExistingActiveJob(
+  ctx: MutationCtx,
+  {
+    ein,
+    queueType,
+    url,
+  }: {
+    ein: string;
+    queueType: "html" | "browser";
+    url: string;
+  },
+) {
+  const candidateKey = getCrawlCandidateKey(url);
+  const activeJobs = await ctx.db
+    .query("crawlQueue")
+    .withIndex("by_ein_and_queueType", (q) =>
+      q.eq("ein", ein).eq("queueType", queueType),
+    )
+    .filter((q) =>
+      q.or(
+        q.eq(q.field("status"), "pending"),
+        q.eq(q.field("status"), "processing"),
+      ),
+    )
+    .collect();
+
+  return (
+    activeJobs.find((job) => getCrawlCandidateKey(job.url) === candidateKey) ??
+    null
+  );
+}
+
+export async function enqueueCrawlJob(
+  ctx: MutationCtx,
+  args: {
+    queueType: "html" | "browser";
+    orgId: Id<"organizations">;
+    ein: string;
+    url: string;
+    maxAttempts?: number;
+    fallbackReason?:
+      | "LOW_TEXT"
+      | "JS_APP_SHELL"
+      | "HTTP_403_OR_429"
+      | "CLOUDFLARE_CHALLENGE"
+      | "OTHER";
+  },
+): Promise<Id<"crawlQueue">> {
+  const existing = await findExistingActiveJob(ctx, {
+    ein: args.ein,
+    queueType: args.queueType,
+    url: args.url,
+  });
+
+  if (existing) {
+    return existing._id;
+  }
+
+  const defaultMaxAttempts = args.queueType === "html" ? 4 : 2;
+
+  return await ctx.db.insert("crawlQueue", {
+    queueType: args.queueType,
+    orgId: args.orgId,
+    ein: args.ein,
+    url: args.url,
+    status: "pending",
+    attemptCount: 0,
+    maxAttempts: args.maxAttempts ?? defaultMaxAttempts,
+    fallbackReason: args.fallbackReason,
+    createdAt: Date.now(),
+  });
+}
+
 /**
- * Enqueue a crawl job. Idempotent on ein + queueType:
- * if an active (pending/processing) job exists, returns the existing job ID.
+ * Enqueue a crawl job. Idempotent on ein + queueType + normalized hostname:
+ * if an active (pending/processing) job exists for the same candidate domain,
+ * returns the existing job ID.
  */
 export const enqueue = internalMutation({
   args: {
@@ -33,37 +167,7 @@ export const enqueue = internalMutation({
   },
   returns: v.id("crawlQueue"),
   handler: async (ctx, args) => {
-    // Check for existing active job
-    const existing = await ctx.db
-      .query("crawlQueue")
-      .withIndex("by_ein_and_queueType", (q) =>
-        q.eq("ein", args.ein).eq("queueType", args.queueType),
-      )
-      .filter((q) =>
-        q.or(
-          q.eq(q.field("status"), "pending"),
-          q.eq(q.field("status"), "processing"),
-        ),
-      )
-      .first();
-
-    if (existing) {
-      return existing._id;
-    }
-
-    const defaultMaxAttempts = args.queueType === "html" ? 4 : 2;
-
-    return await ctx.db.insert("crawlQueue", {
-      queueType: args.queueType,
-      orgId: args.orgId,
-      ein: args.ein,
-      url: args.url,
-      status: "pending",
-      attemptCount: 0,
-      maxAttempts: args.maxAttempts ?? defaultMaxAttempts,
-      fallbackReason: args.fallbackReason,
-      createdAt: Date.now(),
-    });
+    return await enqueueCrawlJob(ctx, args);
   },
 });
 
@@ -257,79 +361,106 @@ export const backfillSearchedOrgs = internalMutation({
   },
   returns: v.number(),
   handler: async (ctx, { limit }) => {
-    const batchLimit = limit ?? 100;
+    const targetEnqueueCount = limit ?? 100;
 
-    const searchedOrgs = await ctx.db
-      .query("organizations")
-      .withIndex("by_enrichmentStage", (q) =>
-        q.eq("enrichmentStage", "searched"),
-      )
-      .take(batchLimit);
-
-    let enqueued = 0;
-
-    for (const org of searchedOrgs) {
-      // Check if there's already an active crawl job
-      const existingJob = await ctx.db
-        .query("crawlQueue")
-        .withIndex("by_ein_and_queueType", (q) =>
-          q.eq("ein", org.ein).eq("queueType", "html"),
-        )
-        .filter((q) =>
-          q.or(
-            q.eq(q.field("status"), "pending"),
-            q.eq(q.field("status"), "processing"),
-          ),
-        )
-        .first();
-
-      if (existingJob) {
-        continue;
-      }
-
-      // Find search result to extract URL
-      const searchResult = await ctx.db
-        .query("searchResults")
-        .withIndex("by_ein", (q) => q.eq("ein", org.ein))
-        .first();
-
-      if (!searchResult) {
-        continue;
-      }
-
-      let url: string | null = null;
-      try {
-        const results: unknown = JSON.parse(searchResult.resultsJson);
-        if (
-          Array.isArray(results) &&
-          results.length > 0 &&
-          typeof (results[0] as Record<string, unknown>).link === "string"
-        ) {
-          url = (results[0] as Record<string, unknown>).link as string;
-        }
-      } catch {
-        continue;
-      }
-
-      if (!url) {
-        continue;
-      }
-
-      await ctx.db.insert("crawlQueue", {
-        queueType: "html",
-        orgId: org._id,
-        ein: org.ein,
-        url,
-        status: "pending",
-        attemptCount: 0,
-        maxAttempts: 4,
-        createdAt: Date.now(),
-      });
-      enqueued++;
+    if (targetEnqueueCount <= 0) {
+      return 0;
     }
 
-    if (enqueued > 0) {
-      console.log(`Backfill enqueued ${enqueued} crawl jobs`);
+    let enqueued = 0;
+    let scanned = 0;
+    let cursor: string | null = null;
+    let isDone = false;
+
+    const skipped = {
+      existingActiveJob: 0,
+      missingSearchResult: 0,
+      invalidSearchResultJson: 0,
+      missingSearchResultUrl: 0,
+    };
+
+    while (enqueued < targetEnqueueCount && !isDone) {
+      const searchedOrgs = await ctx.db
+        .query("organizations")
+        .withIndex("by_enrichmentStage", (q) =>
+          q.eq("enrichmentStage", "searched"),
+        )
+        .paginate({
+          numItems: SEARCHED_ORG_PAGE_SIZE,
+          cursor,
+        });
+
+      for (const org of searchedOrgs.page) {
+        scanned++;
+
+        const searchResult = await getLatestUsableSearchResultUrl(
+          ctx,
+          org.ein,
+          org.name,
+        );
+        if (searchResult.urls.length === 0) {
+          skipped[searchResult.reason ?? "missingSearchResultUrl"]++;
+          continue;
+        }
+
+        let orgEnqueued = 0;
+
+        for (const candidateUrl of searchResult.urls) {
+          const existingJob = await findExistingActiveJob(ctx, {
+            ein: org.ein,
+            queueType: "html",
+            url: candidateUrl,
+          });
+
+          if (existingJob) {
+            skipped.existingActiveJob++;
+            continue;
+          }
+
+          await enqueueCrawlJob(ctx, {
+            queueType: "html",
+            orgId: org._id,
+            ein: org.ein,
+            url: candidateUrl,
+          });
+          enqueued++;
+          orgEnqueued++;
+
+          if (enqueued >= targetEnqueueCount) {
+            break;
+          }
+        }
+
+        if (orgEnqueued === 0 && searchResult.urls.length > 0) {
+          continue;
+        }
+
+        if (enqueued >= targetEnqueueCount) {
+          break;
+        }
+      }
+
+      isDone = searchedOrgs.isDone;
+      cursor = searchedOrgs.continueCursor;
+    }
+
+    const skippedTotal = Object.values(skipped).reduce(
+      (total, count) => total + count,
+      0,
+    );
+
+    if (scanned > 0 || enqueued > 0) {
+      console.log(
+        [
+          `Backfill scanned ${scanned} searched orgs`,
+          `enqueued ${enqueued} crawl jobs`,
+          `skipped ${skippedTotal}`,
+          `active_job=${skipped.existingActiveJob}`,
+          `missing_search_result=${skipped.missingSearchResult}`,
+          `invalid_search_result_json=${skipped.invalidSearchResultJson}`,
+          `missing_search_result_url=${skipped.missingSearchResultUrl}`,
+        ].join(", "),
+      );
     }
 
     return enqueued;
