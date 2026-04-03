@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { runBackfillSearchedOrgs } from "./crawlQueue";
 
 // Type declaration for environment variables in Convex actions
 declare const process: {
@@ -78,17 +79,16 @@ export const scheduledBackfillSearchedOrgs = internalAction({
   handler: async (ctx, { limit }): Promise<ScheduledBackfillResult> => {
     const isEnabled = process.env.ENABLE_CRAWL_CRON === "true";
     if (!isEnabled) {
-      console.log("Crawl backfill cron disabled (ENABLE_CRAWL_CRON !== 'true')");
+      console.log(
+        "Crawl backfill cron disabled (ENABLE_CRAWL_CRON !== 'true')",
+      );
       return {
         skipped: true,
         reason: "ENABLE_CRAWL_CRON not set to true",
       };
     }
 
-    const enqueued = await ctx.runMutation(
-      internal.crawlQueue.backfillSearchedOrgs,
-      { limit },
-    );
+    const enqueued = await runBackfillSearchedOrgs(ctx, limit);
 
     return {
       skipped: false,

@@ -4,7 +4,11 @@
  */
 
 import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
+import { internal } from "./_generated/api";
 import {
+  type ActionCtx,
+  internalAction,
   internalMutation,
   internalQuery,
   type MutationCtx,
@@ -33,6 +37,47 @@ type SearchResultLookupFailure =
   | "missingSearchResult"
   | "invalidSearchResultJson"
   | "missingSearchResultUrl";
+
+type BackfillOrg = {
+  orgId: Id<"organizations">;
+  ein: string;
+  name: string;
+};
+
+const backfillOrgValidator = v.object({
+  orgId: v.id("organizations"),
+  ein: v.string(),
+  name: v.string(),
+});
+
+const backfillSkippedValidator = v.object({
+  existingActiveJob: v.number(),
+  missingSearchResult: v.number(),
+  invalidSearchResultJson: v.number(),
+  missingSearchResultUrl: v.number(),
+});
+
+type BackfillSkippedCounts = {
+  existingActiveJob: number;
+  missingSearchResult: number;
+  invalidSearchResultJson: number;
+  missingSearchResultUrl: number;
+};
+
+function createBackfillSkippedCounts(): BackfillSkippedCounts {
+  return {
+    existingActiveJob: 0,
+    missingSearchResult: 0,
+    invalidSearchResultJson: 0,
+    missingSearchResultUrl: 0,
+  };
+}
+
+type BackfillResult = {
+  enqueued: number;
+  scanned: number;
+  skipped: BackfillSkippedCounts;
+};
 
 async function getLatestUsableSearchResultUrl(
   ctx: MutationCtx,
@@ -351,119 +396,188 @@ export const recoverStaleJobs = internalMutation({
   },
 });
 
+export const listSearchedOrgsPage = internalQuery({
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, { paginationOpts }) => {
+    const searchedOrgs = await ctx.db
+      .query("organizations")
+      .withIndex("by_enrichmentStage", (q) =>
+        q.eq("enrichmentStage", "searched"),
+      )
+      .paginate(paginationOpts);
+
+    return {
+      ...searchedOrgs,
+      page: searchedOrgs.page.map((org) => ({
+        orgId: org._id,
+        ein: org.ein,
+        name: org.name,
+      })),
+    };
+  },
+});
+
+export const backfillSearchedOrgsPage = internalMutation({
+  args: {
+    orgs: v.array(backfillOrgValidator),
+    remaining: v.number(),
+  },
+  returns: v.object({
+    enqueued: v.number(),
+    scanned: v.number(),
+    skipped: backfillSkippedValidator,
+  }),
+  handler: async (ctx, { orgs, remaining }) => {
+    const skipped = createBackfillSkippedCounts();
+
+    if (remaining <= 0) {
+      return {
+        enqueued: 0,
+        scanned: 0,
+        skipped,
+      };
+    }
+
+    let enqueued = 0;
+    let scanned = 0;
+
+    for (const org of orgs) {
+      if (enqueued >= remaining) {
+        break;
+      }
+
+      scanned++;
+
+      const searchResult = await getLatestUsableSearchResultUrl(
+        ctx,
+        org.ein,
+        org.name,
+      );
+      if (searchResult.urls.length === 0) {
+        skipped[searchResult.reason ?? "missingSearchResultUrl"]++;
+        continue;
+      }
+
+      for (const candidateUrl of searchResult.urls) {
+        if (enqueued >= remaining) {
+          break;
+        }
+
+        const existingJob = await findExistingActiveJob(ctx, {
+          ein: org.ein,
+          queueType: "html",
+          url: candidateUrl,
+        });
+
+        if (existingJob) {
+          skipped.existingActiveJob++;
+          continue;
+        }
+
+        await enqueueCrawlJob(ctx, {
+          queueType: "html",
+          orgId: org.orgId,
+          ein: org.ein,
+          url: candidateUrl,
+        });
+        enqueued++;
+      }
+    }
+
+    return {
+      enqueued,
+      scanned,
+      skipped,
+    };
+  },
+});
+
+export async function runBackfillSearchedOrgs(
+  ctx: Pick<ActionCtx, "runQuery" | "runMutation">,
+  limit?: number,
+): Promise<number> {
+  const targetEnqueueCount = limit ?? 100;
+
+  if (targetEnqueueCount <= 0) {
+    return 0;
+  }
+
+  let enqueued = 0;
+  let scanned = 0;
+  let cursor: string | null = null;
+  let isDone = false;
+  const skipped = createBackfillSkippedCounts();
+
+  while (enqueued < targetEnqueueCount && !isDone) {
+    const searchedOrgs = (await ctx.runQuery(
+      internal.crawlQueue.listSearchedOrgsPage,
+      {
+        paginationOpts: {
+          numItems: SEARCHED_ORG_PAGE_SIZE,
+          cursor,
+        },
+      },
+    )) as {
+      page: BackfillOrg[];
+      isDone: boolean;
+      continueCursor: string;
+    };
+
+    const pageResult = (await ctx.runMutation(
+      internal.crawlQueue.backfillSearchedOrgsPage,
+      {
+        orgs: searchedOrgs.page,
+        remaining: targetEnqueueCount - enqueued,
+      },
+    )) as BackfillResult;
+
+    enqueued += pageResult.enqueued;
+    scanned += pageResult.scanned;
+    skipped.existingActiveJob += pageResult.skipped.existingActiveJob;
+    skipped.missingSearchResult += pageResult.skipped.missingSearchResult;
+    skipped.invalidSearchResultJson +=
+      pageResult.skipped.invalidSearchResultJson;
+    skipped.missingSearchResultUrl += pageResult.skipped.missingSearchResultUrl;
+
+    isDone = searchedOrgs.isDone;
+    cursor = searchedOrgs.continueCursor;
+  }
+
+  const skippedTotal = Object.values(skipped).reduce(
+    (total, count) => total + count,
+    0,
+  );
+
+  if (scanned > 0 || enqueued > 0) {
+    console.log(
+      [
+        `Backfill scanned ${scanned} searched orgs`,
+        `enqueued ${enqueued} crawl jobs`,
+        `skipped ${skippedTotal}`,
+        `active_job=${skipped.existingActiveJob}`,
+        `missing_search_result=${skipped.missingSearchResult}`,
+        `invalid_search_result_json=${skipped.invalidSearchResultJson}`,
+        `missing_search_result_url=${skipped.missingSearchResultUrl}`,
+      ].join(", "),
+    );
+  }
+
+  return enqueued;
+}
+
 /**
  * Backfill: find searched orgs missing active crawl jobs and enqueue them.
  * Called by a cron to catch any missed enqueues.
  */
-export const backfillSearchedOrgs = internalMutation({
+export const backfillSearchedOrgs = internalAction({
   args: {
     limit: v.optional(v.number()),
   },
   returns: v.number(),
   handler: async (ctx, { limit }) => {
-    const targetEnqueueCount = limit ?? 100;
-
-    if (targetEnqueueCount <= 0) {
-      return 0;
-    }
-
-    let enqueued = 0;
-    let scanned = 0;
-    let cursor: string | null = null;
-    let isDone = false;
-
-    const skipped = {
-      existingActiveJob: 0,
-      missingSearchResult: 0,
-      invalidSearchResultJson: 0,
-      missingSearchResultUrl: 0,
-    };
-
-    while (enqueued < targetEnqueueCount && !isDone) {
-      const searchedOrgs = await ctx.db
-        .query("organizations")
-        .withIndex("by_enrichmentStage", (q) =>
-          q.eq("enrichmentStage", "searched"),
-        )
-        .paginate({
-          numItems: SEARCHED_ORG_PAGE_SIZE,
-          cursor,
-        });
-
-      for (const org of searchedOrgs.page) {
-        scanned++;
-
-        const searchResult = await getLatestUsableSearchResultUrl(
-          ctx,
-          org.ein,
-          org.name,
-        );
-        if (searchResult.urls.length === 0) {
-          skipped[searchResult.reason ?? "missingSearchResultUrl"]++;
-          continue;
-        }
-
-        let orgEnqueued = 0;
-
-        for (const candidateUrl of searchResult.urls) {
-          const existingJob = await findExistingActiveJob(ctx, {
-            ein: org.ein,
-            queueType: "html",
-            url: candidateUrl,
-          });
-
-          if (existingJob) {
-            skipped.existingActiveJob++;
-            continue;
-          }
-
-          await enqueueCrawlJob(ctx, {
-            queueType: "html",
-            orgId: org._id,
-            ein: org.ein,
-            url: candidateUrl,
-          });
-          enqueued++;
-          orgEnqueued++;
-
-          if (enqueued >= targetEnqueueCount) {
-            break;
-          }
-        }
-
-        if (orgEnqueued === 0 && searchResult.urls.length > 0) {
-          continue;
-        }
-
-        if (enqueued >= targetEnqueueCount) {
-          break;
-        }
-      }
-
-      isDone = searchedOrgs.isDone;
-      cursor = searchedOrgs.continueCursor;
-    }
-
-    const skippedTotal = Object.values(skipped).reduce(
-      (total, count) => total + count,
-      0,
-    );
-
-    if (scanned > 0 || enqueued > 0) {
-      console.log(
-        [
-          `Backfill scanned ${scanned} searched orgs`,
-          `enqueued ${enqueued} crawl jobs`,
-          `skipped ${skippedTotal}`,
-          `active_job=${skipped.existingActiveJob}`,
-          `missing_search_result=${skipped.missingSearchResult}`,
-          `invalid_search_result_json=${skipped.invalidSearchResultJson}`,
-          `missing_search_result_url=${skipped.missingSearchResultUrl}`,
-        ].join(", "),
-      );
-    }
-
-    return enqueued;
+    return await runBackfillSearchedOrgs(ctx, limit);
   },
 });
 

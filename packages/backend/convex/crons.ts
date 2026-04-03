@@ -22,6 +22,7 @@ crons.daily(
   "search-organizations",
   { hourUTC: 0, minuteUTC: 0 },
   internal.searchOrgs.scheduledSearchOrganizations,
+  {},
 );
 
 /**
