@@ -13,6 +13,8 @@ import {
 import { internal } from "./_generated/api";
 import { patchOrganization } from "./aggregates";
 import { googleSearch, getAvailableKeys } from "../lib/googleSearch";
+import { extractCrawlCandidateUrls } from "../lib/crawlCandidates";
+import { enqueueCrawlJob } from "./crawlQueue";
 
 const SEARCH_LIMIT_PER_KEY = 100;
 const DELAY_BETWEEN_REQUESTS_MS = 100;
@@ -52,6 +54,11 @@ export const saveSearchResult = internalMutation({
     resultsJson: v.string(), // JSON-stringified reduced search results
   },
   handler: async (ctx, { orgId, ein, query, resultsJson }) => {
+    const org = await ctx.db.get(orgId);
+    if (!org) {
+      throw new Error(`Organization ${orgId} not found`);
+    }
+
     // Insert search result record
     await ctx.db.insert("searchResults", {
       ein,
@@ -67,36 +74,17 @@ export const saveSearchResult = internalMutation({
       updatedAt: Date.now(),
     });
 
-    // Enqueue HTML crawl job with the top search result URL
+    // Enqueue HTML crawl jobs for the best candidate URLs from search results.
     try {
-      const results = JSON.parse(resultsJson);
-      if (Array.isArray(results) && results.length > 0 && results[0].link) {
-        // Check for existing active crawl job (idempotent)
-        const existingJob = await ctx.db
-          .query("crawlQueue")
-          .withIndex("by_ein_and_queueType", (q) =>
-            q.eq("ein", ein).eq("queueType", "html"),
-          )
-          .filter((q) =>
-            q.or(
-              q.eq(q.field("status"), "pending"),
-              q.eq(q.field("status"), "processing"),
-            ),
-          )
-          .first();
+      const candidateUrls = extractCrawlCandidateUrls(resultsJson, org.name);
 
-        if (!existingJob) {
-          await ctx.db.insert("crawlQueue", {
-            queueType: "html",
-            orgId,
-            ein,
-            url: results[0].link,
-            status: "pending",
-            attemptCount: 0,
-            maxAttempts: 4,
-            createdAt: Date.now(),
-          });
-        }
+      for (const candidateUrl of candidateUrls) {
+        await enqueueCrawlJob(ctx, {
+          queueType: "html",
+          orgId,
+          ein,
+          url: candidateUrl,
+        });
       }
     } catch {
       // If URL extraction fails, backfill cron will catch it

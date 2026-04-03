@@ -1,6 +1,9 @@
 import { load } from "cheerio";
 import type { FallbackReason } from "./convex-client.js";
 
+const LOW_TEXT_FALLBACK_THRESHOLD = 700;
+const JS_APP_SHELL_TEXT_THRESHOLD = 1500;
+
 export type FallbackCheck = {
   shouldFallback: boolean;
   reason?: FallbackReason;
@@ -45,12 +48,16 @@ export function checkFallback(
   const scriptCount = (fullHtml.match(/<script[\s>]/gi) ?? []).length;
   const isHighScriptDensity = scriptCount > 5;
 
-  if (spaMarkers && isHighScriptDensity && visibleText.length < 1500) {
+  if (
+    spaMarkers &&
+    isHighScriptDensity &&
+    visibleText.length < JS_APP_SHELL_TEXT_THRESHOLD
+  ) {
     return { shouldFallback: true, reason: "JS_APP_SHELL" };
   }
 
   // 4. Low text content (after stripping)
-  if (visibleText.length < 1500) {
+  if (visibleText.length < LOW_TEXT_FALLBACK_THRESHOLD) {
     return { shouldFallback: true, reason: "LOW_TEXT" };
   }
 

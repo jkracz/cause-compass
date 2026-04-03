@@ -35,6 +35,32 @@ export interface NormalizeStoredSearchResultsResult {
   issue?: StoredSearchResultNormalizationIssue;
 }
 
+const EXCLUDED_SEARCH_HOSTS = new Set([
+  "en.wikipedia.org",
+  "guidestar.org",
+  "www.guidestar.org",
+  "greatnonprofits.org",
+  "www.greatnonprofits.org",
+  "irs.gov",
+  "www.irs.gov",
+  "sec.gov",
+  "www.sec.gov",
+  "zillow.com",
+  "www.zillow.com",
+  "volunteermatch.org",
+  "www.volunteermatch.org",
+]);
+
+const UNWANTED_SUBDOMAIN_PARTS = [
+  "blog",
+  "shop",
+  "store",
+  "mail",
+  "staging",
+  "dev",
+  "test",
+];
+
 function getSearchResultsArray(input: unknown): unknown[] | null {
   if (Array.isArray(input)) {
     return input;
@@ -61,6 +87,52 @@ function getOptionalString(value: unknown): string | undefined {
   return trimmed.length > 0 ? trimmed : undefined;
 }
 
+function parseSearchHostname(value: string): string | null {
+  try {
+    const normalizedValue =
+      value.startsWith("http://") || value.startsWith("https://")
+        ? value
+        : `https://${value}`;
+    return new URL(normalizedValue).hostname.toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
+function hasUnwantedSubdomain(hostname: string): boolean {
+  const hostnameWithoutWww = hostname.startsWith("www.")
+    ? hostname.slice(4)
+    : hostname;
+  const parts = hostnameWithoutWww.split(".");
+
+  if (parts.length <= 2) {
+    return false;
+  }
+
+  const subdomain = parts.slice(0, -2).join(".");
+  if (!subdomain) {
+    return false;
+  }
+
+  return UNWANTED_SUBDOMAIN_PARTS.some((part) => subdomain.includes(part));
+}
+
+function shouldExcludeStoredSearchResult(candidate: Record<string, unknown>): boolean {
+  const link = getOptionalString(candidate.link);
+  const displayLink = getOptionalString(candidate.displayLink);
+  const hostname = parseSearchHostname(link ?? displayLink ?? "");
+
+  if (!hostname) {
+    return false;
+  }
+
+  if (EXCLUDED_SEARCH_HOSTS.has(hostname)) {
+    return true;
+  }
+
+  return hasUnwantedSubdomain(hostname);
+}
+
 export function normalizeStoredSearchResults(
   input: unknown,
 ): NormalizeStoredSearchResultsResult {
@@ -78,6 +150,10 @@ export function normalizeStoredSearchResults(
       const candidate = item as Record<string, unknown>;
       const link = getOptionalString(candidate.link);
       if (!link) {
+        return acc;
+      }
+
+      if (shouldExcludeStoredSearchResult(candidate)) {
         return acc;
       }
 
