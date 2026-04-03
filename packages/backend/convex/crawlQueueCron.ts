@@ -78,16 +78,20 @@ export const scheduledBackfillSearchedOrgs = internalAction({
   handler: async (ctx, { limit }): Promise<ScheduledBackfillResult> => {
     const isEnabled = process.env.ENABLE_CRAWL_CRON === "true";
     if (!isEnabled) {
-      console.log("Crawl backfill cron disabled (ENABLE_CRAWL_CRON !== 'true')");
+      console.log(
+        "Crawl backfill cron disabled (ENABLE_CRAWL_CRON !== 'true')",
+      );
       return {
         skipped: true,
         reason: "ENABLE_CRAWL_CRON not set to true",
       };
     }
 
-    const enqueued = await ctx.runMutation(
+    const enqueued = await ctx.runAction(
       internal.crawlQueue.backfillSearchedOrgs,
-      { limit },
+      {
+        limit,
+      },
     );
 
     return {
