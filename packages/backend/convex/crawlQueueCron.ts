@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { runBackfillSearchedOrgs } from "./crawlQueue";
 
 // Type declaration for environment variables in Convex actions
 declare const process: {
@@ -87,12 +88,7 @@ export const scheduledBackfillSearchedOrgs = internalAction({
       };
     }
 
-    const enqueued = await ctx.runAction(
-      internal.crawlQueue.backfillSearchedOrgs,
-      {
-        limit,
-      },
-    );
+    const enqueued = await runBackfillSearchedOrgs(ctx, limit);
 
     return {
       skipped: false,
