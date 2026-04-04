@@ -73,6 +73,50 @@ function createBackfillSkippedCounts(): BackfillSkippedCounts {
   };
 }
 
+/** True if the org has any crawl job still pending or processing (HTML or browser). */
+async function hasActiveCrawlJobsForOrg(
+  ctx: MutationCtx,
+  orgId: Id<"organizations">,
+): Promise<boolean> {
+  const pending = await ctx.db
+    .query("crawlQueue")
+    .withIndex("by_orgId_and_status", (q) =>
+      q.eq("orgId", orgId).eq("status", "pending"),
+    )
+    .first();
+  if (pending) {
+    return true;
+  }
+  const processing = await ctx.db
+    .query("crawlQueue")
+    .withIndex("by_orgId_and_status", (q) =>
+      q.eq("orgId", orgId).eq("status", "processing"),
+    )
+    .first();
+  return processing !== null;
+}
+
+/**
+ * When no crawl jobs remain active for this org, advance searched → crawled
+ * so AI confirmation can consider it (still filtered by crawl result presence).
+ */
+async function maybeAdvanceOrgToCrawledWhenQueueSettled(
+  ctx: MutationCtx,
+  orgId: Id<"organizations">,
+): Promise<void> {
+  if (await hasActiveCrawlJobsForOrg(ctx, orgId)) {
+    return;
+  }
+  const org = await ctx.db.get(orgId);
+  if (!org || org.enrichmentStage !== "searched") {
+    return;
+  }
+  await ctx.db.patch(orgId, {
+    enrichmentStage: "crawled",
+    updatedAt: Date.now(),
+  });
+}
+
 type BackfillResult = {
   enqueued: number;
   scanned: number;
@@ -293,11 +337,7 @@ export const complete = internalMutation({
       completedAt: Date.now(),
     });
 
-    // Update org enrichment stage to crawled
-    await ctx.db.patch(job.orgId, {
-      enrichmentStage: "crawled",
-      updatedAt: Date.now(),
-    });
+    await maybeAdvanceOrgToCrawledWhenQueueSettled(ctx, job.orgId);
 
     return null;
   },
@@ -343,6 +383,7 @@ export const fail = internalMutation({
         lastError: error,
         claimedAt: undefined,
       });
+      await maybeAdvanceOrgToCrawledWhenQueueSettled(ctx, job.orgId);
     }
 
     return null;
@@ -384,6 +425,7 @@ export const recoverStaleJobs = internalMutation({
           lastError: "Stale claim recovered (retries exhausted)",
           claimedAt: undefined,
         });
+        await maybeAdvanceOrgToCrawledWhenQueueSettled(ctx, job.orgId);
       }
       recovered++;
     }

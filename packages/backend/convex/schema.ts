@@ -230,7 +230,8 @@ export default defineSchema({
   })
     .index("by_queueType_and_status", ["queueType", "status"])
     .index("by_ein_and_queueType", ["ein", "queueType"])
-    .index("by_status_and_claimedAt", ["status", "claimedAt"]),
+    .index("by_status_and_claimedAt", ["status", "claimedAt"])
+    .index("by_orgId_and_status", ["orgId", "status"]),
 
   // Batch jobs table - audit log for OpenAI batch processing
   // Orchestration is handled by the workflow component; this table tracks results
