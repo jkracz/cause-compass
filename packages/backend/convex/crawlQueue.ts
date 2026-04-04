@@ -540,7 +540,7 @@ export async function runBackfillSearchedOrgs(
   ctx: Pick<ActionCtx, "runQuery" | "runMutation">,
   limit?: number,
 ): Promise<number> {
-  const targetEnqueueCount = limit ?? 100;
+  const targetEnqueueCount = limit ?? 1000;
 
   if (targetEnqueueCount <= 0) {
     return 0;
