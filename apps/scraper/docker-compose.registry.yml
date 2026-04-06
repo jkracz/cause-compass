@@ -1,0 +1,43 @@
+services:
+  html-worker:
+    image: ${SCRAPER_HTML_IMAGE}
+    command: ["node", "dist/html-worker.js"]
+    environment:
+      CONVEX_SITE_URL: ${CONVEX_SITE_URL}
+      WORKER_TOKEN: ${WORKER_TOKEN}
+      WORKER_ID: html-worker-1
+      CONCURRENCY: "20"
+      POLL_INTERVAL_MS: ${POLL_INTERVAL_MS:-2000}
+      DOMAIN_THROTTLE_MS: ${DOMAIN_THROTTLE_MS:-2000}
+      WORKER_HEALTH_FILE: /tmp/html-worker.health.json
+      HEALTH_UPDATE_MS: ${HEALTH_UPDATE_MS:-10000}
+      HEALTH_MAX_AGE_MS: ${HEALTH_MAX_AGE_MS:-120000}
+    restart: always
+    healthcheck:
+      test: ["CMD", "node", "dist/healthcheck.js"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  browser-worker:
+    image: ${SCRAPER_BROWSER_IMAGE}
+    command: ["node", "dist/browser-worker.js"]
+    environment:
+      CONVEX_SITE_URL: ${CONVEX_SITE_URL}
+      WORKER_TOKEN: ${WORKER_TOKEN}
+      WORKER_ID: browser-worker-1
+      CONCURRENCY: "2"
+      POLL_INTERVAL_MS: ${POLL_INTERVAL_MS:-2000}
+      DOMAIN_THROTTLE_MS: ${DOMAIN_THROTTLE_MS:-2000}
+      WORKER_HEALTH_FILE: /tmp/browser-worker.health.json
+      HEALTH_UPDATE_MS: ${HEALTH_UPDATE_MS:-10000}
+      HEALTH_MAX_AGE_MS: ${HEALTH_MAX_AGE_MS:-120000}
+      BROWSER_HEADLESS: ${BROWSER_HEADLESS:-true}
+      BROWSER_NAV_TIMEOUT_MS: ${BROWSER_NAV_TIMEOUT_MS:-45000}
+      BROWSER_WAIT_AFTER_LOAD_MS: ${BROWSER_WAIT_AFTER_LOAD_MS:-1500}
+    restart: always
+    healthcheck:
+      test: ["CMD", "node", "dist/healthcheck.js"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
