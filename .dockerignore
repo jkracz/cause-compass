@@ -11,3 +11,4 @@ node_modules
 **/dist
 apps/scraper/.env
 apps/scraper/docker-compose.yml
+apps/scraper/docker-compose.registry.yml

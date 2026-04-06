@@ -164,7 +164,7 @@ Notes:
 ## Run Locally With Docker Compose (Alternative)
 
 Use this if you want your local environment to match the deployment model more closely.
-For production TrueNAS deployment, prefer registry images (see TrueNAS section).
+This file builds from your local checkout. For registry-image testing or TrueNAS deployment, use the registry path below instead of `build:`.
 
 From repo root:
 
@@ -182,53 +182,86 @@ Stop:
 docker compose -f apps/scraper/docker-compose.yml down
 ```
 
-## Build, Tag, and Push Images (Registry)
+## Publish Images To GHCR (Recommended)
 
-Use one naming convention in production:
+The repo already has a GitHub Actions workflow for publishing both worker images to GHCR:
 
-- `<dockerhub_user>/cause-scraper-html:<version>`
-- `<dockerhub_user>/cause-scraper-browser:<version>`
+- workflow: `.github/workflows/publish-scraper-images.yml`
+- automatic trigger: push to `main` when scraper image inputs change
+- manual trigger: `workflow_dispatch`
+- image names:
+  - `ghcr.io/<owner>/<repo>-scraper-html:<tag>`
+  - `ghcr.io/<owner>/<repo>-scraper-browser:<tag>`
 
-Use the same `<version>` for both images in one release (example: `v2026.03.06`).
-This keeps TrueNAS config obvious: one image for HTML worker, one image for browser worker, same release tag.
+Tags published by the workflow:
 
-You can use one repo name with different tags (for example `...:html-v2026.03.06` and `...:browser-v2026.03.06`), but two explicit image names are less error-prone in TrueNAS UI.
+- `latest`
+- `sha-<short_commit>`
+
+For deployment, use the immutable `sha-<short_commit>` tag for both workers.
+
+The workflow now publishes a multi-arch manifest for `linux/amd64` and `linux/arm64`, so:
+
+- TrueNAS can pull the correct Linux image directly
+- Apple Silicon Docker can pull the same tag without emulating an x86 image
+- you do not need a separate Linux build target when you are using GHCR images
+
+## Build And Push Manually (Fallback)
+
+Use this only when you need to publish from your machine instead of GitHub Actions.
 
 From repo root:
 
 ```bash
-USER=<dockerhub_user>
-VERSION=v2026.03.06
+OWNER=<github_owner>
+REPO=<github_repo>
+VERSION=sha-$(git rev-parse --short HEAD)
+CR_PAT=<ghcr_token_with_write_packages>
 
-docker login -u "$USER"
+echo "$CR_PAT" | docker login ghcr.io -u "$OWNER" --password-stdin
 
 docker build -f apps/scraper/Dockerfile \
-  -t "$USER/cause-scraper-html:$VERSION" .
+  -t "ghcr.io/$OWNER/$REPO-scraper-html:$VERSION" .
 docker build -f apps/scraper/Dockerfile.browser \
-  -t "$USER/cause-scraper-browser:$VERSION" .
+  -t "ghcr.io/$OWNER/$REPO-scraper-browser:$VERSION" .
 
-docker push "$USER/cause-scraper-html:$VERSION"
-docker push "$USER/cause-scraper-browser:$VERSION"
+docker push "ghcr.io/$OWNER/$REPO-scraper-html:$VERSION"
+docker push "ghcr.io/$OWNER/$REPO-scraper-browser:$VERSION"
 ```
 
-Optional convenience tags:
-
-```bash
-docker tag "$USER/cause-scraper-html:$VERSION" "$USER/cause-scraper-html:latest"
-docker tag "$USER/cause-scraper-browser:$VERSION" "$USER/cause-scraper-browser:latest"
-docker push "$USER/cause-scraper-html:latest"
-docker push "$USER/cause-scraper-browser:latest"
-```
-
-Avoid deploying `latest` in TrueNAS. Deploy the immutable version tag.
-
-If you are building on Apple Silicon for an amd64 NAS, use `buildx`:
+If you are building on Apple Silicon for an amd64 NAS, specify the target platform explicitly:
 
 ```bash
 docker buildx build --platform linux/amd64 -f apps/scraper/Dockerfile \
-  -t "$USER/cause-scraper-html:$VERSION" --push .
+  -t "ghcr.io/$OWNER/$REPO-scraper-html:$VERSION" --push .
 docker buildx build --platform linux/amd64 -f apps/scraper/Dockerfile.browser \
-  -t "$USER/cause-scraper-browser:$VERSION" --push .
+  -t "ghcr.io/$OWNER/$REPO-scraper-browser:$VERSION" --push .
+```
+
+## Test Registry Images Locally
+
+Use this when you want to test the exact GHCR images on your Mac before moving them to TrueNAS.
+
+From repo root:
+
+```bash
+cp apps/scraper/.env.example apps/scraper/.env
+# edit apps/scraper/.env with CONVEX_SITE_URL + WORKER_TOKEN
+
+export SCRAPER_HTML_IMAGE=ghcr.io/<owner>/<repo>-scraper-html:sha-<short_commit>
+export SCRAPER_BROWSER_IMAGE=ghcr.io/<owner>/<repo>-scraper-browser:sha-<short_commit>
+
+docker compose --env-file apps/scraper/.env \
+  -f apps/scraper/docker-compose.registry.yml up -d
+docker compose --env-file apps/scraper/.env \
+  -f apps/scraper/docker-compose.registry.yml logs -f html-worker browser-worker
+```
+
+Stop:
+
+```bash
+docker compose --env-file apps/scraper/.env \
+  -f apps/scraper/docker-compose.registry.yml down
 ```
 
 ## Run With Docker (No Compose)
@@ -270,26 +303,26 @@ docker run -d \
 
 ## TrueNAS SCALE Deployment (Recommended)
 
-Default recommendation: use **TrueNAS Apps UI** with **registry images**.
+Default recommendation: use **TrueNAS Apps UI** with **GHCR registry images**.
 
 Do not rely on building from repo source on the NAS as the primary deployment path.
 Use host-shell `docker compose` from source only as a fallback.
 
 Recommended runtime model in either case: always-on worker containers with restart policy `always`.
 
-1. Build and push images to a registry using the naming convention in "Build, Tag, and Push Images (Registry)".
+1. Publish images to GHCR from GitHub Actions, then copy the resulting immutable `sha-<short_commit>` tag.
 2. In TrueNAS Apps UI, deploy a Custom App via Docker Compose YAML:
    - Apps -> Discover Apps -> Custom App
    - choose Docker Compose
-   - define two services using `image:` (not `build:`):
-     - `html-worker` command: `node dist/html-worker.js`
-     - `browser-worker` command: `node dist/browser-worker.js`
+   - start from `apps/scraper/docker-compose.registry.yml`
+   - replace `SCRAPER_HTML_IMAGE` and `SCRAPER_BROWSER_IMAGE` with the GHCR tags you want to deploy, or define them as app env vars if you prefer
+   - keep `image:` services; do not use `apps/scraper/docker-compose.yml` on the NAS because its `../../` build context is for local source builds only
 3. Set environment variables for both services:
    - required: `CONVEX_SITE_URL`, `WORKER_TOKEN`
    - recommended shared: `POLL_INTERVAL_MS`, `DOMAIN_THROTTLE_MS`, `HEALTH_UPDATE_MS`, `HEALTH_MAX_AGE_MS`
    - HTML-specific: `WORKER_ID=html-worker-1`, `CONCURRENCY=20`, `WORKER_HEALTH_FILE=/tmp/html-worker.health.json`
    - browser-specific: `WORKER_ID=browser-worker-1`, `CONCURRENCY=2`, `WORKER_HEALTH_FILE=/tmp/browser-worker.health.json`
-4. Set restart policy to always and set resource limits:
+4. Set restart policy to always and set resource limits in the TrueNAS app config:
    - HTML worker: 1 CPU, 2 GB RAM
    - browser worker: 4 CPU, 8 GB RAM
 5. Start app and confirm both containers are healthy.
@@ -297,7 +330,7 @@ Recommended runtime model in either case: always-on worker containers with resta
    - ensure periodic polling
    - ensure no recurring 401/404 from `/worker/*`
 7. Update process:
-   - build and push new version tag for both images
+   - publish new images
    - change both image tags in TrueNAS app config
    - redeploy
 
