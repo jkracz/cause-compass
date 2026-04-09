@@ -230,6 +230,70 @@ export const promoteConfirmedOrgsToReady = migrations.define({
 });
 
 /**
+ * Migration: Advance searched orgs to crawled when no active crawl jobs remain
+ *
+ * Fixes orgs stuck in "searched" due to the escalation retry bug where HTML
+ * jobs were retried after escalating to browser, preventing the org from ever
+ * transitioning to "crawled".
+ */
+export const advanceSettledSearchedOrgs = migrations.define({
+  table: "organizations",
+  customRange: (query) =>
+    query.withIndex("by_enrichmentStage", (q) =>
+      q.eq("enrichmentStage", "searched"),
+    ),
+  migrateOne: async (ctx, org) => {
+    // Check for any active crawl jobs (pending or processing)
+    const pendingHtml = await ctx.db
+      .query("crawlQueue")
+      .withIndex("by_orgId_and_status", (q) =>
+        q.eq("orgId", org._id).eq("status", "pending"),
+      )
+      .first();
+    if (pendingHtml) return;
+
+    const processingHtml = await ctx.db
+      .query("crawlQueue")
+      .withIndex("by_orgId_and_status", (q) =>
+        q.eq("orgId", org._id).eq("status", "processing"),
+      )
+      .first();
+    if (processingHtml) return;
+
+    const completedJob = await ctx.db
+      .query("crawlQueue")
+      .withIndex("by_orgId_and_status", (q) =>
+        q.eq("orgId", org._id).eq("status", "completed"),
+      )
+      .first();
+    const failedJob = await ctx.db
+      .query("crawlQueue")
+      .withIndex("by_orgId_and_status", (q) =>
+        q.eq("orgId", org._id).eq("status", "failed"),
+      )
+      .first();
+
+    // Only advance orgs that actually have crawl queue history.
+    if (!completedJob && !failedJob) return;
+
+    // No active jobs and crawl work has settled — advance to crawled.
+    return {
+      enrichmentStage: "crawled" as const,
+      updatedAt: Date.now(),
+    };
+  },
+});
+
+/**
+ * Run the searched → crawled advancement migration
+ *
+ * Usage: npx convex run migrations:runAdvanceSettledSearchedOrgs
+ */
+export const runAdvanceSettledSearchedOrgs = migrations.runner(
+  internal.migrations.advanceSettledSearchedOrgs,
+);
+
+/**
  * Run all linking migrations in order
  *
  * Usage: npx convex run migrations:runAllLinking

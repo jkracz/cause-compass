@@ -167,7 +167,7 @@ async function getLatestUsableSearchResultUrl(
   };
 }
 
-async function findExistingActiveJob(
+async function findExistingJobForCandidate(
   ctx: MutationCtx,
   {
     ein,
@@ -180,23 +180,30 @@ async function findExistingActiveJob(
   },
 ) {
   const candidateKey = getCrawlCandidateKey(url);
-  const activeJobs = await ctx.db
+  const jobs = await ctx.db
     .query("crawlQueue")
     .withIndex("by_ein_and_queueType", (q) =>
       q.eq("ein", ein).eq("queueType", queueType),
     )
-    .filter((q) =>
-      q.or(
-        q.eq(q.field("status"), "pending"),
-        q.eq(q.field("status"), "processing"),
-      ),
-    )
     .collect();
 
-  return (
-    activeJobs.find((job) => getCrawlCandidateKey(job.url) === candidateKey) ??
-    null
-  );
+  let newestMatchingJob: (typeof jobs)[number] | null = null;
+
+  for (const job of jobs) {
+    if (getCrawlCandidateKey(job.url) !== candidateKey) {
+      continue;
+    }
+
+    if (job.status === "pending" || job.status === "processing") {
+      return job;
+    }
+
+    if (!newestMatchingJob || job.createdAt > newestMatchingJob.createdAt) {
+      newestMatchingJob = job;
+    }
+  }
+
+  return newestMatchingJob;
 }
 
 export async function enqueueCrawlJob(
@@ -215,7 +222,7 @@ export async function enqueueCrawlJob(
       | "OTHER";
   },
 ): Promise<Id<"crawlQueue">> {
-  const existing = await findExistingActiveJob(ctx, {
+  const existing = await findExistingJobForCandidate(ctx, {
     ein: args.ein,
     queueType: args.queueType,
     url: args.url,
@@ -242,8 +249,8 @@ export async function enqueueCrawlJob(
 
 /**
  * Enqueue a crawl job. Idempotent on ein + queueType + normalized hostname:
- * if an active (pending/processing) job exists for the same candidate domain,
- * returns the existing job ID.
+ * if a job already exists for the same candidate domain, returns the existing
+ * job ID instead of creating duplicate queue history for the same target.
  */
 export const enqueue = internalMutation({
   args: {
@@ -318,7 +325,7 @@ export const claim = internalMutation({
 export const complete = internalMutation({
   args: {
     jobId: v.id("crawlQueue"),
-    crawlResultId: v.id("crawlResults"),
+    crawlResultId: v.optional(v.id("crawlResults")),
   },
   returns: v.null(),
   handler: async (ctx, { jobId, crawlResultId }) => {
@@ -333,7 +340,7 @@ export const complete = internalMutation({
 
     await ctx.db.patch(jobId, {
       status: "completed",
-      crawlResultId,
+      ...(crawlResultId ? { crawlResultId } : {}),
       completedAt: Date.now(),
     });
 
@@ -492,6 +499,11 @@ export const backfillSearchedOrgsPage = internalMutation({
 
       scanned++;
 
+      if (await hasActiveCrawlJobsForOrg(ctx, org.orgId)) {
+        skipped.existingActiveJob++;
+        continue;
+      }
+
       const searchResult = await getLatestUsableSearchResultUrl(
         ctx,
         org.ein,
@@ -507,7 +519,7 @@ export const backfillSearchedOrgsPage = internalMutation({
           break;
         }
 
-        const existingJob = await findExistingActiveJob(ctx, {
+        const existingJob = await findExistingJobForCandidate(ctx, {
           ein: org.ein,
           queueType: "html",
           url: candidateUrl,

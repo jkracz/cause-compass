@@ -24,7 +24,7 @@ type ClaimBody = {
 
 type CompleteBody = {
   jobId: Id<"crawlQueue">;
-  crawlResult: {
+  crawlResult?: {
     textContent?: string;
     aboutLinks?: string[];
     donationLinks?: string[];
@@ -94,7 +94,7 @@ http.route({
 
 /**
  * POST /worker/complete
- * Body: { jobId: string, crawlResult: { ... crawlResults fields } }
+ * Body: { jobId: string, crawlResult?: { ... crawlResults fields } }
  */
 http.route({
   path: "/worker/complete",
@@ -106,16 +106,13 @@ http.route({
     try {
       const body = (await request.json()) as CompleteBody;
 
-      // Insert crawl result first
-      const crawlResultId = await ctx.runMutation(
-        internal.crawlQueue.insertCrawlResult,
-        {
-          jobId: body.jobId,
-          crawlResult: body.crawlResult,
-        },
-      );
+      const crawlResultId = body.crawlResult
+        ? await ctx.runMutation(internal.crawlQueue.insertCrawlResult, {
+            jobId: body.jobId,
+            crawlResult: body.crawlResult,
+          })
+        : undefined;
 
-      // Then complete the job
       await ctx.runMutation(internal.crawlQueue.complete, {
         jobId: body.jobId,
         crawlResultId,

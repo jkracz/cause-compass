@@ -62,9 +62,12 @@ export async function claimJob(
 
 export async function completeJob(
   jobId: string,
-  crawlResult: CrawlResult,
+  crawlResult?: CrawlResult,
 ): Promise<void> {
-  await workerFetch("/worker/complete", { jobId, crawlResult });
+  await workerFetch("/worker/complete", {
+    jobId,
+    ...(crawlResult ? { crawlResult } : {}),
+  });
 }
 
 export async function failJob(jobId: string, error: string): Promise<void> {

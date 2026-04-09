@@ -90,11 +90,10 @@ async function processJob(job: ClaimedJob): Promise<void> {
         fallbackReason: fallback.reason,
       });
 
-      // Fail the HTML job with reason
-      await failJob(
-        job.jobId,
-        `Escalated to browser: ${fallback.reason}`,
-      );
+      // Complete the HTML job without recording a crawl result so it doesn't
+      // retry and create duplicate browser jobs. The browser worker will
+      // produce the actual extraction result.
+      await completeJob(job.jobId);
       return;
     }
 
