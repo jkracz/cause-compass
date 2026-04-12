@@ -55,7 +55,13 @@ export const batchProcessingWorkflow = workflow.define({
       { retry: true },
     );
 
-    if (!createResult.success || !createResult.jobId) {
+    if (!createResult.success) {
+      throw new Error(
+        createResult.error ?? "Failed to create batch job for AI confirmation",
+      );
+    }
+
+    if (!createResult.jobId) {
       // No more orgs to process - chain ends here
       return {
         status: "no_work",

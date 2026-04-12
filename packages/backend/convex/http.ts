@@ -7,6 +7,10 @@ import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
+import {
+  sanitizeOptionalUnicodeString,
+  sanitizeUnicodeStringArray,
+} from "../lib/unicodeSanitization";
 
 // Type declaration for environment variables in Convex HTTP actions
 declare const process: {
@@ -48,6 +52,24 @@ type EnqueueBody = {
   fallbackReason?: "LOW_TEXT" | "JS_APP_SHELL" | "HTTP_403_OR_429" | "CLOUDFLARE_CHALLENGE" | "OTHER";
   maxAttempts?: number;
 };
+
+function sanitizeWorkerCrawlResult(
+  crawlResult: CompleteBody["crawlResult"],
+): CompleteBody["crawlResult"] {
+  if (!crawlResult) {
+    return undefined;
+  }
+
+  return {
+    textContent: sanitizeOptionalUnicodeString(crawlResult.textContent),
+    aboutLinks: sanitizeUnicodeStringArray(crawlResult.aboutLinks),
+    donationLinks: sanitizeUnicodeStringArray(crawlResult.donationLinks),
+    socialMediaUrls: sanitizeUnicodeStringArray(crawlResult.socialMediaUrls),
+    logoLinks: sanitizeUnicodeStringArray(crawlResult.logoLinks),
+    hasNewsletterSignup: crawlResult.hasNewsletterSignup,
+    emailAddresses: sanitizeUnicodeStringArray(crawlResult.emailAddresses),
+  };
+}
 
 // --- Worker auth helper ---
 
@@ -105,11 +127,12 @@ http.route({
     }
     try {
       const body = (await request.json()) as CompleteBody;
+      const sanitizedCrawlResult = sanitizeWorkerCrawlResult(body.crawlResult);
 
-      const crawlResultId = body.crawlResult
+      const crawlResultId = sanitizedCrawlResult
         ? await ctx.runMutation(internal.crawlQueue.insertCrawlResult, {
             jobId: body.jobId,
-            crawlResult: body.crawlResult,
+            crawlResult: sanitizedCrawlResult,
           })
         : undefined;
 

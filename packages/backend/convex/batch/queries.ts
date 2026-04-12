@@ -6,6 +6,11 @@ import { v } from "convex/values";
 import { internalQuery } from "../_generated/server";
 import type { OrgForAiConfirmation, CrawlItemData } from "./types";
 import { selectBatchPromptCrawlData } from "../../lib/batchPromptSelection";
+import {
+  sanitizeOptionalUnicodeString,
+  sanitizeUnicodeString,
+  sanitizeUnicodeStringArray,
+} from "../../lib/unicodeSanitization";
 
 /**
  * Get organizations ready for AI confirmation.
@@ -32,12 +37,12 @@ export const internalGetOrgsForAiConfirmation = internalQuery({
 
         return {
           _id: org._id,
-          ein: org.ein,
-          name: org.name,
-          street: org.street,
-          city: org.city,
-          state: org.state,
-          nteeCode: org.nteeCode,
+          ein: sanitizeUnicodeString(org.ein),
+          name: sanitizeUnicodeString(org.name),
+          street: sanitizeUnicodeString(org.street),
+          city: sanitizeUnicodeString(org.city),
+          state: sanitizeUnicodeString(org.state),
+          nteeCode: sanitizeOptionalUnicodeString(org.nteeCode),
           crawlData: selectBatchPromptCrawlData(crawlResults),
         };
       }),
@@ -74,13 +79,13 @@ export const internalGetCrawlResultsByEin = internalQuery({
       .collect();
 
     return crawlResults.map((cr) => ({
-      sourceUrl: cr.sourceUrl,
-      textContent: cr.textContent,
-      aboutLinks: cr.aboutLinks,
-      donationLinks: cr.donationLinks,
-      socialMediaUrls: cr.socialMediaUrls,
-      logoLinks: cr.logoLinks,
-      emailAddresses: cr.emailAddresses,
+      sourceUrl: sanitizeUnicodeString(cr.sourceUrl),
+      textContent: sanitizeOptionalUnicodeString(cr.textContent),
+      aboutLinks: sanitizeUnicodeStringArray(cr.aboutLinks),
+      donationLinks: sanitizeUnicodeStringArray(cr.donationLinks),
+      socialMediaUrls: sanitizeUnicodeStringArray(cr.socialMediaUrls),
+      logoLinks: sanitizeUnicodeStringArray(cr.logoLinks),
+      emailAddresses: sanitizeUnicodeStringArray(cr.emailAddresses),
     }));
   },
 });

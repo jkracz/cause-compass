@@ -18,6 +18,10 @@ import {
   extractCrawlCandidateUrls,
   getCrawlCandidateKey,
 } from "../lib/crawlCandidates";
+import {
+  sanitizeOptionalUnicodeString,
+  sanitizeUnicodeStringArray,
+} from "../lib/unicodeSanitization";
 
 const STALE_CLAIM_THRESHOLD_MS = 10 * 60 * 1000; // 10 minutes
 const SEARCHED_ORG_PAGE_SIZE = 100;
@@ -666,7 +670,13 @@ export const insertCrawlResult = internalMutation({
       runAt: new Date().toISOString(),
       crawlMethod: job.queueType === "html" ? "http" : "browser",
       queueJobId: jobId,
-      ...crawlResult,
+      textContent: sanitizeOptionalUnicodeString(crawlResult.textContent),
+      aboutLinks: sanitizeUnicodeStringArray(crawlResult.aboutLinks),
+      donationLinks: sanitizeUnicodeStringArray(crawlResult.donationLinks),
+      socialMediaUrls: sanitizeUnicodeStringArray(crawlResult.socialMediaUrls),
+      logoLinks: sanitizeUnicodeStringArray(crawlResult.logoLinks),
+      hasNewsletterSignup: crawlResult.hasNewsletterSignup,
+      emailAddresses: sanitizeUnicodeStringArray(crawlResult.emailAddresses),
     });
   },
 });
