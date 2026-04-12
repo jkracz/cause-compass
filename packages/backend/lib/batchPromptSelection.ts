@@ -2,6 +2,7 @@ import {
   MAX_BATCH_CRAWL_PAGES,
   MAX_BATCH_PAGE_TEXT_CHARS,
 } from "../convex/batch/constants";
+import { sanitizeUnicodeString } from "./unicodeSanitization";
 
 export interface BatchPromptCrawlItem {
   sourceUrl: string;
@@ -15,12 +16,14 @@ export interface SelectedBatchPromptCrawlItem {
 }
 
 function normalizeCrawlUrlForBatch(url: string): string {
+  const sanitizedUrl = sanitizeUnicodeString(url);
+
   try {
-    const parsed = new URL(url);
+    const parsed = new URL(sanitizedUrl);
     const normalizedPath = parsed.pathname.replace(/\/+$/, "") || "/";
     return `${parsed.hostname.toLowerCase()}${normalizedPath.toLowerCase()}`;
   } catch {
-    return url
+    return sanitizedUrl
       .trim()
       .toLowerCase()
       .replace(/^https?:\/\//, "")
@@ -30,7 +33,7 @@ function normalizeCrawlUrlForBatch(url: string): string {
 }
 
 function truncateBatchText(textContent: string | undefined): string {
-  const normalizedText = (textContent ?? "").trim();
+  const normalizedText = sanitizeUnicodeString(textContent ?? "").trim();
   if (normalizedText.length <= MAX_BATCH_PAGE_TEXT_CHARS) {
     return normalizedText;
   }
@@ -52,8 +55,8 @@ export function selectBatchPromptCrawlData(
 
     seenUrls.add(normalizedUrl);
     selectedPages.push({
-      url: crawlResult.sourceUrl,
-      title: crawlResult.sourceUrl,
+      url: sanitizeUnicodeString(crawlResult.sourceUrl),
+      title: sanitizeUnicodeString(crawlResult.sourceUrl),
       textContent: truncateBatchText(crawlResult.textContent),
     });
 
