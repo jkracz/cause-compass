@@ -19,10 +19,10 @@
     "@cause/eslint-config": "workspace:*",
     "@cause/typescript-config": "workspace:*",
     "@eslint/js": "^10.0.1",
-    "@types/node": "^25.5.2",
+    "@types/node": "^25.6.0",
     "eslint": "^10.2.0",
-    "globals": "^17.4.0",
+    "globals": "^17.5.0",
     "tsx": "^4.21.0",
-    "typescript-eslint": "^8.58.0"
+    "typescript-eslint": "^8.58.1"
   }
 }
