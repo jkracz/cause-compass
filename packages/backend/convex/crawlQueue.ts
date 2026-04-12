@@ -14,6 +14,7 @@ import {
   type MutationCtx,
 } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
+import { patchOrganization } from "./aggregates";
 import {
   extractCrawlCandidateUrls,
   getCrawlCandidateKey,
@@ -115,7 +116,7 @@ async function maybeAdvanceOrgToCrawledWhenQueueSettled(
   if (!org || org.enrichmentStage !== "searched") {
     return;
   }
-  await ctx.db.patch(orgId, {
+  await patchOrganization(ctx, orgId, {
     enrichmentStage: "crawled",
     updatedAt: Date.now(),
   });
