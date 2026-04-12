@@ -15,6 +15,8 @@ export interface SelectedBatchPromptCrawlItem {
   textContent: string;
 }
 
+const INCOMPLETE_ESCAPE_SUFFIX = /\\(?:x[0-9A-Fa-f]?|u[0-9A-Fa-f]{0,3})?$/;
+
 function normalizeCrawlUrlForBatch(url: string): string {
   const sanitizedUrl = sanitizeUnicodeString(url);
 
@@ -33,12 +35,20 @@ function normalizeCrawlUrlForBatch(url: string): string {
 }
 
 function truncateBatchText(textContent: string | undefined): string {
-  const normalizedText = sanitizeUnicodeString(textContent ?? "").trim();
+  const normalizedText = sanitizeBatchText(textContent ?? "");
   if (normalizedText.length <= MAX_BATCH_PAGE_TEXT_CHARS) {
     return normalizedText;
   }
 
-  return `${normalizedText.slice(0, MAX_BATCH_PAGE_TEXT_CHARS)}\n...[truncated]`;
+  const truncatedText = sanitizeBatchText(
+    normalizedText.slice(0, MAX_BATCH_PAGE_TEXT_CHARS),
+  );
+  return `${truncatedText}\n...[truncated]`;
+}
+
+function sanitizeBatchText(textContent: string): string {
+  const sanitizedText = sanitizeUnicodeString(textContent).trim();
+  return sanitizedText.replace(INCOMPLETE_ESCAPE_SUFFIX, "");
 }
 
 export function selectBatchPromptCrawlData(

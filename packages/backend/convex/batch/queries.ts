@@ -4,7 +4,11 @@
 
 import { v } from "convex/values";
 import { internalQuery } from "../_generated/server";
-import type { OrgForAiConfirmation, CrawlItemData } from "./types";
+import type {
+  OrgForAiConfirmation,
+  OrgForAiConfirmationBase,
+  CrawlItemData,
+} from "./types";
 import { selectBatchPromptCrawlData } from "../../lib/batchPromptSelection";
 import {
   sanitizeOptionalUnicodeString,
@@ -13,13 +17,11 @@ import {
 } from "../../lib/unicodeSanitization";
 
 /**
- * Get organizations ready for AI confirmation.
- * Returns orgs that have been crawled but not yet processed by AI.
+ * Get organization metadata ready for AI confirmation.
  */
-export const internalGetOrgsForAiConfirmation = internalQuery({
+export const internalListOrgsForAiConfirmation = internalQuery({
   args: { limit: v.number() },
-  handler: async (ctx, { limit }): Promise<OrgForAiConfirmation[]> => {
-    // Get organizations in "crawled" stage (have search + crawl results but no AI confirmation)
+  handler: async (ctx, { limit }): Promise<OrgForAiConfirmationBase[]> => {
     const orgs = await ctx.db
       .query("organizations")
       .withIndex("by_enrichmentStage", (q) =>
@@ -27,29 +29,30 @@ export const internalGetOrgsForAiConfirmation = internalQuery({
       )
       .take(limit);
 
-    // For each org, fetch the associated crawl results
-    const orgsWithCrawlData: OrgForAiConfirmation[] = await Promise.all(
-      orgs.map(async (org): Promise<OrgForAiConfirmation> => {
-        const crawlResults = await ctx.db
-          .query("crawlResults")
-          .withIndex("by_ein", (q) => q.eq("ein", org.ein))
-          .collect();
+    return orgs.map((org) => ({
+      _id: org._id,
+      ein: sanitizeUnicodeString(org.ein),
+      name: sanitizeUnicodeString(org.name),
+      street: sanitizeUnicodeString(org.street),
+      city: sanitizeUnicodeString(org.city),
+      state: sanitizeUnicodeString(org.state),
+      nteeCode: sanitizeOptionalUnicodeString(org.nteeCode),
+    }));
+  },
+});
 
-        return {
-          _id: org._id,
-          ein: sanitizeUnicodeString(org.ein),
-          name: sanitizeUnicodeString(org.name),
-          street: sanitizeUnicodeString(org.street),
-          city: sanitizeUnicodeString(org.city),
-          state: sanitizeUnicodeString(org.state),
-          nteeCode: sanitizeOptionalUnicodeString(org.nteeCode),
-          crawlData: selectBatchPromptCrawlData(crawlResults),
-        };
-      }),
-    );
+/**
+ * Get selected crawl data used in the batch prompt for a single EIN.
+ */
+export const internalGetSelectedCrawlDataForEin = internalQuery({
+  args: { ein: v.string() },
+  handler: async (ctx, { ein }): Promise<OrgForAiConfirmation["crawlData"]> => {
+    const crawlResults = await ctx.db
+      .query("crawlResults")
+      .withIndex("by_ein", (q) => q.eq("ein", ein))
+      .collect();
 
-    // Filter out orgs with no crawl data
-    return orgsWithCrawlData.filter((org) => org.crawlData.length > 0);
+    return selectBatchPromptCrawlData(crawlResults);
   },
 });
 
