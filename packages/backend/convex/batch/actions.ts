@@ -59,13 +59,37 @@ export const createBatchJob = internalAction({
     const modelName = model ?? DEFAULT_MODEL;
 
     try {
-      // 1. Fetch organizations ready for AI confirmation
-      const orgs = await ctx.runQuery(
-        internal.batch.queries.internalGetOrgsForAiConfirmation,
-        {
-          limit: batchSize,
-        },
+      // 1. Fetch organization metadata ready for AI confirmation.
+      const candidateOrgs = await ctx.runQuery(
+        internal.batch.queries.internalListOrgsForAiConfirmation,
+        { limit: batchSize },
       );
+
+      const orgs: OrgForAiConfirmation[] = [];
+
+      for (const org of candidateOrgs) {
+        try {
+          const crawlData = await ctx.runQuery(
+            internal.batch.queries.internalGetSelectedCrawlDataForEin,
+            { ein: org.ein },
+          );
+
+          if (crawlData.length === 0) {
+            continue;
+          }
+
+          orgs.push({
+            ...org,
+            crawlData,
+          });
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          console.warn(
+            `Skipping EIN ${org.ein} while preparing batch prompt data: ${errorMessage}`,
+          );
+        }
+      }
 
       if (orgs.length === 0) {
         console.log("No organizations found for AI confirmation");

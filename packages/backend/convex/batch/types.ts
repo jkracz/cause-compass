@@ -7,10 +7,7 @@ import type { Id } from "../_generated/dataModel";
 // Re-export types from lib files for convenience
 export type { CrawlItemData } from "../../lib/batchResponseProcessing";
 
-/**
- * Organization data ready for AI confirmation
- */
-export interface OrgForAiConfirmation {
+export interface OrgForAiConfirmationBase {
   _id: Id<"organizations">;
   ein: string;
   name: string;
@@ -18,6 +15,12 @@ export interface OrgForAiConfirmation {
   city: string;
   state: string;
   nteeCode: string | undefined;
+}
+
+/**
+ * Organization data ready for AI confirmation
+ */
+export interface OrgForAiConfirmation extends OrgForAiConfirmationBase {
   crawlData: Array<{
     url: string;
     title: string;
