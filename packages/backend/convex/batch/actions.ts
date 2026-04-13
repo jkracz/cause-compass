@@ -4,6 +4,7 @@
 
 import { v } from "convex/values";
 import { internalAction } from "../_generated/server";
+import type { ActionCtx } from "../_generated/server";
 import { internal } from "../_generated/api";
 import {
   uploadBatchFile,
@@ -19,8 +20,84 @@ import {
   DEFAULT_MODEL,
   WEBSITE_CONFIRMATION_SCHEMA,
 } from "./constants";
-import type { OrgForAiConfirmation } from "./types";
+import type { OrgForAiConfirmation, OrgForAiConfirmationBase } from "./types";
 import type { AiConfirmationResponse, GeographicFocusType } from "@cause/types";
+
+const CRAWLED_ORG_PAGE_SIZE = 250;
+
+type CrawledOrgsPage = {
+  page: OrgForAiConfirmationBase[];
+  isDone: boolean;
+  continueCursor: string;
+};
+
+async function collectOrgsForAiConfirmation(
+  ctx: ActionCtx,
+  batchSize: number,
+): Promise<{
+  orgs: OrgForAiConfirmation[];
+  scannedCount: number;
+  skippedCount: number;
+}> {
+  const orgs: OrgForAiConfirmation[] = [];
+  let scannedCount = 0;
+  let skippedCount = 0;
+  let cursor: string | null = null;
+  let isDone = false;
+
+  while (orgs.length < batchSize && !isDone) {
+    const crawledOrgs = (await ctx.runQuery(
+      internal.batch.queries.internalListCrawledOrgsPage,
+      {
+        paginationOpts: {
+          numItems: Math.max(batchSize, CRAWLED_ORG_PAGE_SIZE),
+          cursor,
+        },
+      },
+    )) as CrawledOrgsPage;
+
+    for (const org of crawledOrgs.page) {
+      if (orgs.length >= batchSize) {
+        break;
+      }
+
+      scannedCount++;
+
+      try {
+        const crawlData = await ctx.runQuery(
+          internal.batch.queries.internalGetSelectedCrawlDataForEin,
+          { ein: org.ein },
+        );
+
+        if (crawlData.length === 0) {
+          skippedCount++;
+          continue;
+        }
+
+        orgs.push({
+          ...org,
+          crawlData,
+        });
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        console.warn(
+          `Skipping EIN ${org.ein} while preparing batch prompt data: ${errorMessage}`,
+        );
+        skippedCount++;
+      }
+    }
+
+    isDone = crawledOrgs.isDone;
+    cursor = crawledOrgs.continueCursor;
+  }
+
+  return {
+    orgs,
+    scannedCount,
+    skippedCount,
+  };
+}
 
 /**
  * Generate a unique job ID.
@@ -59,40 +136,14 @@ export const createBatchJob = internalAction({
     const modelName = model ?? DEFAULT_MODEL;
 
     try {
-      // 1. Fetch organization metadata ready for AI confirmation.
-      const candidateOrgs = await ctx.runQuery(
-        internal.batch.queries.internalListOrgsForAiConfirmation,
-        { limit: batchSize },
-      );
-
-      const orgs: OrgForAiConfirmation[] = [];
-
-      for (const org of candidateOrgs) {
-        try {
-          const crawlData = await ctx.runQuery(
-            internal.batch.queries.internalGetSelectedCrawlDataForEin,
-            { ein: org.ein },
-          );
-
-          if (crawlData.length === 0) {
-            continue;
-          }
-
-          orgs.push({
-            ...org,
-            crawlData,
-          });
-        } catch (error) {
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
-          console.warn(
-            `Skipping EIN ${org.ein} while preparing batch prompt data: ${errorMessage}`,
-          );
-        }
-      }
+      // 1. Scan crawled orgs until we fill the batch or exhaust the queue.
+      const { orgs, scannedCount, skippedCount } =
+        await collectOrgsForAiConfirmation(ctx, batchSize);
 
       if (orgs.length === 0) {
-        console.log("No organizations found for AI confirmation");
+        console.log(
+          `No organizations found for AI confirmation after scanning ${scannedCount} crawled orgs`,
+        );
         return {
           success: true,
           jobId: null,
@@ -101,7 +152,9 @@ export const createBatchJob = internalAction({
         };
       }
 
-      console.log(`Found ${orgs.length} organizations for AI confirmation`);
+      console.log(
+        `Prepared ${orgs.length} organizations for AI confirmation after scanning ${scannedCount} crawled orgs and skipping ${skippedCount}`,
+      );
 
       // 2. Generate batch request lines
       const requestLines = orgs.map((org: OrgForAiConfirmation) =>

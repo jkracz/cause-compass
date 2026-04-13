@@ -3,6 +3,7 @@
  */
 
 import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 import { internalQuery } from "../_generated/server";
 import type {
   OrgForAiConfirmation,
@@ -17,27 +18,30 @@ import {
 } from "../../lib/unicodeSanitization";
 
 /**
- * Get organization metadata ready for AI confirmation.
+ * List a page of crawled organizations that are candidates for AI confirmation.
  */
-export const internalListOrgsForAiConfirmation = internalQuery({
-  args: { limit: v.number() },
-  handler: async (ctx, { limit }): Promise<OrgForAiConfirmationBase[]> => {
+export const internalListCrawledOrgsPage = internalQuery({
+  args: { paginationOpts: paginationOptsValidator },
+  handler: async (ctx, { paginationOpts }) => {
     const orgs = await ctx.db
       .query("organizations")
       .withIndex("by_enrichmentStage", (q) =>
         q.eq("enrichmentStage", "crawled"),
       )
-      .take(limit);
+      .paginate(paginationOpts);
 
-    return orgs.map((org) => ({
-      _id: org._id,
-      ein: sanitizeUnicodeString(org.ein),
-      name: sanitizeUnicodeString(org.name),
-      street: sanitizeUnicodeString(org.street),
-      city: sanitizeUnicodeString(org.city),
-      state: sanitizeUnicodeString(org.state),
-      nteeCode: sanitizeOptionalUnicodeString(org.nteeCode),
-    }));
+    return {
+      ...orgs,
+      page: orgs.page.map((org): OrgForAiConfirmationBase => ({
+        _id: org._id,
+        ein: sanitizeUnicodeString(org.ein),
+        name: sanitizeUnicodeString(org.name),
+        street: sanitizeUnicodeString(org.street),
+        city: sanitizeUnicodeString(org.city),
+        state: sanitizeUnicodeString(org.state),
+        nteeCode: sanitizeOptionalUnicodeString(org.nteeCode),
+      })),
+    };
   },
 });
 
