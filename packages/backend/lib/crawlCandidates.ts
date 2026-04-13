@@ -4,6 +4,7 @@ import {
 } from "@cause/types";
 
 export const MAX_CRAWL_CANDIDATES = 5;
+const MIN_CRAWL_CANDIDATE_SCORE = 10;
 
 const GENERIC_ORG_TOKENS = new Set([
   "association",
@@ -20,7 +21,54 @@ const GENERIC_ORG_TOKENS = new Set([
 ]);
 
 const HELPFUL_SUBDOMAIN_PARTS = ["donate", "events", "give"];
-const SUSPICIOUS_PATH_PARTS = ["article", "blog", "calendar", "event", "news", "post"];
+const SUSPICIOUS_PATH_PARTS = [
+  "article",
+  "blog",
+  "calendar",
+  "event",
+  "forum",
+  "jobs",
+  "news",
+  "photo",
+  "post",
+  "profile",
+  "search",
+  "topic",
+];
+const DISALLOWED_HOST_SUFFIXES = [
+  "facebook.com",
+  "instagram.com",
+  "linkedin.com",
+  "x.com",
+  "twitter.com",
+  "threads.net",
+  "youtube.com",
+  "youtu.be",
+  "indeed.com",
+  "yelp.com",
+  "tripadvisor.com",
+  "tripadvisor.in",
+  "hotels.com",
+  "airbnb.com",
+  "rvshare.com",
+];
+const DISALLOWED_PATH_EXTENSIONS = [
+  ".pdf",
+  ".csv",
+  ".tsv",
+  ".doc",
+  ".docx",
+  ".xls",
+  ".xlsx",
+  ".ppt",
+  ".pptx",
+  ".zip",
+  ".rar",
+  ".7z",
+  ".xml",
+  ".json",
+  ".txt",
+];
 
 export interface RankedCrawlCandidate {
   url: string;
@@ -89,6 +137,39 @@ function getPathParts(pathname: string): string[] {
     .filter(Boolean);
 }
 
+function hasDisallowedHostSuffix(hostname: string): boolean {
+  const normalized = hostname.toLowerCase();
+  return DISALLOWED_HOST_SUFFIXES.some(
+    (suffix) => normalized === suffix || normalized.endsWith(`.${suffix}`),
+  );
+}
+
+function hasDisallowedPathExtension(pathname: string): boolean {
+  const normalized = pathname.toLowerCase();
+  return DISALLOWED_PATH_EXTENSIONS.some((ext) => normalized.endsWith(ext));
+}
+
+export function isEligibleCrawlCandidateUrl(url: string): boolean {
+  const parsedUrl = parseCandidateUrl(url);
+  if (!parsedUrl) {
+    return false;
+  }
+
+  if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+    return false;
+  }
+
+  if (hasDisallowedHostSuffix(parsedUrl.hostname)) {
+    return false;
+  }
+
+  if (hasDisallowedPathExtension(parsedUrl.pathname)) {
+    return false;
+  }
+
+  return true;
+}
+
 function scoreCandidate(
   result: StoredSearchResultItem,
   orgName: string,
@@ -106,6 +187,26 @@ function scoreCandidate(
   let score = 0;
   const reasons: string[] = [];
   let matchedHostnameTokens = 0;
+
+  if (!parsedUrl) {
+    return {
+      url: result.link,
+      score: Number.NEGATIVE_INFINITY,
+      reasons: ["invalid_url"],
+      candidateKey,
+      sourceRank: result.rank,
+    };
+  }
+
+  if (!isEligibleCrawlCandidateUrl(result.link)) {
+    return {
+      url: result.link,
+      score: Number.NEGATIVE_INFINITY,
+      reasons: ["disallowed_candidate_url"],
+      candidateKey,
+      sourceRank: result.rank,
+    };
+  }
 
   if (orgNameCompact && hostnameCompact.includes(orgNameCompact)) {
     score += 100;
@@ -203,6 +304,10 @@ export function rankCrawlCandidates(
 
   for (const result of normalizedResults.results) {
     const candidate = scoreCandidate(result, orgName);
+    if (candidate.score < MIN_CRAWL_CANDIDATE_SCORE) {
+      continue;
+    }
+
     const existing = bestCandidateByKey.get(candidate.candidateKey);
 
     if (

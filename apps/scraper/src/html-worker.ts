@@ -14,6 +14,40 @@ import { startHealthReporter } from "./health.js";
 const FETCH_TIMEOUT_MS = 30_000;
 const USER_AGENT =
   "Mozilla/5.0 (compatible; CauseCompassBot/1.0; +https://causecompass.org)";
+const DISALLOWED_HOST_SUFFIXES = [
+  "facebook.com",
+  "instagram.com",
+  "linkedin.com",
+  "x.com",
+  "twitter.com",
+  "threads.net",
+  "youtube.com",
+  "youtu.be",
+  "indeed.com",
+  "yelp.com",
+  "tripadvisor.com",
+  "tripadvisor.in",
+  "hotels.com",
+  "airbnb.com",
+  "rvshare.com",
+];
+const DISALLOWED_PATH_EXTENSIONS = [
+  ".pdf",
+  ".csv",
+  ".tsv",
+  ".doc",
+  ".docx",
+  ".xls",
+  ".xlsx",
+  ".ppt",
+  ".pptx",
+  ".zip",
+  ".rar",
+  ".7z",
+  ".xml",
+  ".json",
+  ".txt",
+];
 
 const throttle = new DomainThrottle(config.domainThrottleMs);
 
@@ -36,9 +70,64 @@ function log(level: string, msg: string, data?: Record<string, unknown>) {
   console.log(JSON.stringify(entry));
 }
 
+function shouldSkipDirectHtmlCrawl(url: string): string | null {
+  let parsedUrl: URL;
+  try {
+    parsedUrl = new URL(url);
+  } catch {
+    return "invalid_url";
+  }
+
+  const hostname = parsedUrl.hostname.toLowerCase();
+  const pathname = parsedUrl.pathname.toLowerCase();
+  const hasDisallowedHost = DISALLOWED_HOST_SUFFIXES.some(
+    (suffix) => hostname === suffix || hostname.endsWith(`.${suffix}`),
+  );
+
+  if (hasDisallowedHost) {
+    return "disallowed_host";
+  }
+
+  const hasDisallowedExtension = DISALLOWED_PATH_EXTENSIONS.some((ext) =>
+    pathname.endsWith(ext),
+  );
+  if (hasDisallowedExtension) {
+    return "disallowed_extension";
+  }
+
+  return null;
+}
+
+function isSkippableContentType(contentType: string | null): boolean {
+  if (!contentType) {
+    return false;
+  }
+
+  const normalized = contentType.toLowerCase();
+  if (
+    normalized.includes("text/html") ||
+    normalized.includes("application/xhtml+xml")
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
 async function processJob(job: ClaimedJob): Promise<void> {
   activeJobs++;
   try {
+    const skipReason = shouldSkipDirectHtmlCrawl(job.url);
+    if (skipReason) {
+      await completeJob(job.jobId);
+      log("info", "Skipping low-value HTML candidate", {
+        ein: job.ein,
+        url: job.url,
+        reason: skipReason,
+      });
+      return;
+    }
+
     // Throttle per domain
     await throttle.wait(job.url);
 
@@ -67,6 +156,17 @@ async function processJob(job: ClaimedJob): Promise<void> {
       return;
     } finally {
       clearTimeout(timeout);
+    }
+
+    const contentType = response.headers.get("content-type");
+    if (isSkippableContentType(contentType)) {
+      await completeJob(job.jobId);
+      log("info", "Skipping non-HTML response", {
+        ein: job.ein,
+        url: job.url,
+        contentType,
+      });
+      return;
     }
 
     const html = await response.text();
