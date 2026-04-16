@@ -111,6 +111,9 @@ npx convex run migrations:runPromoteConfirmedOrgsToReady
 
 # Refresh pipeline health aggregate after stage backfills
 npx convex run pipelineHealth:backfillAggregate '{"cursor": null}'
+
+# Backfill crawl queue status aggregate after deploying queue stats changes
+npx convex run crawlQueue:backfillQueueStatsAggregate '{"cursor": null}'
 ```
 
 ### Files
