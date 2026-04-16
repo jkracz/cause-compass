@@ -14,7 +14,13 @@ import {
   type MutationCtx,
 } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
-import { patchOrganization } from "./aggregates";
+import {
+  crawlQueueStatusAggregate,
+  getCrawlQueueStatusNamespace,
+  insertCrawlQueueJob,
+  patchCrawlQueueJob,
+  patchOrganization,
+} from "./aggregates";
 import {
   extractCrawlCandidateUrls,
   getCrawlCandidateKey,
@@ -239,7 +245,7 @@ export async function enqueueCrawlJob(
 
   const defaultMaxAttempts = args.queueType === "html" ? 4 : 2;
 
-  return await ctx.db.insert("crawlQueue", {
+  return await insertCrawlQueueJob(ctx, {
     queueType: args.queueType,
     orgId: args.orgId,
     ein: args.ein,
@@ -306,7 +312,7 @@ export const claim = internalMutation({
       return null;
     }
 
-    await ctx.db.patch(job._id, {
+    await patchCrawlQueueJob(ctx, job._id, {
       status: "processing",
       claimedAt: Date.now(),
     });
@@ -343,7 +349,7 @@ export const complete = internalMutation({
       return null;
     }
 
-    await ctx.db.patch(jobId, {
+    await patchCrawlQueueJob(ctx, jobId, {
       status: "completed",
       ...(crawlResultId ? { crawlResultId } : {}),
       completedAt: Date.now(),
@@ -381,7 +387,7 @@ export const fail = internalMutation({
 
     if (newAttemptCount < job.maxAttempts) {
       // Reset to pending for retry
-      await ctx.db.patch(jobId, {
+      await patchCrawlQueueJob(ctx, jobId, {
         status: "pending",
         attemptCount: newAttemptCount,
         lastError: error,
@@ -389,7 +395,7 @@ export const fail = internalMutation({
       });
     } else {
       // Exhausted retries
-      await ctx.db.patch(jobId, {
+      await patchCrawlQueueJob(ctx, jobId, {
         status: "failed",
         attemptCount: newAttemptCount,
         lastError: error,
@@ -424,14 +430,14 @@ export const recoverStaleJobs = internalMutation({
       const newAttemptCount = job.attemptCount + 1;
 
       if (newAttemptCount < job.maxAttempts) {
-        await ctx.db.patch(job._id, {
+        await patchCrawlQueueJob(ctx, job._id, {
           status: "pending",
           attemptCount: newAttemptCount,
           lastError: "Stale claim recovered",
           claimedAt: undefined,
         });
       } else {
-        await ctx.db.patch(job._id, {
+        await patchCrawlQueueJob(ctx, job._id, {
           status: "failed",
           attemptCount: newAttemptCount,
           lastError: "Stale claim recovered (retries exhausted)",
@@ -696,39 +702,42 @@ export const getQueueStats = internalQuery({
     failed: v.number(),
   }),
   handler: async (ctx, { queueType }) => {
-    const pending = await ctx.db
-      .query("crawlQueue")
-      .withIndex("by_queueType_and_status", (q) =>
-        q.eq("queueType", queueType).eq("status", "pending"),
-      )
-      .collect();
-
-    const processing = await ctx.db
-      .query("crawlQueue")
-      .withIndex("by_queueType_and_status", (q) =>
-        q.eq("queueType", queueType).eq("status", "processing"),
-      )
-      .collect();
-
-    const completed = await ctx.db
-      .query("crawlQueue")
-      .withIndex("by_queueType_and_status", (q) =>
-        q.eq("queueType", queueType).eq("status", "completed"),
-      )
-      .collect();
-
-    const failed = await ctx.db
-      .query("crawlQueue")
-      .withIndex("by_queueType_and_status", (q) =>
-        q.eq("queueType", queueType).eq("status", "failed"),
-      )
-      .collect();
+    const counts = await crawlQueueStatusAggregate.countBatch(ctx, [
+      { namespace: getCrawlQueueStatusNamespace(queueType, "pending") },
+      { namespace: getCrawlQueueStatusNamespace(queueType, "processing") },
+      { namespace: getCrawlQueueStatusNamespace(queueType, "completed") },
+      { namespace: getCrawlQueueStatusNamespace(queueType, "failed") },
+    ]);
 
     return {
-      pending: pending.length,
-      processing: processing.length,
-      completed: completed.length,
-      failed: failed.length,
+      pending: counts[0] ?? 0,
+      processing: counts[1] ?? 0,
+      completed: counts[2] ?? 0,
+      failed: counts[3] ?? 0,
     };
+  },
+});
+
+export const backfillQueueStatsAggregate = internalMutation({
+  args: { cursor: v.union(v.string(), v.null()) },
+  returns: v.null(),
+  handler: async (ctx, { cursor }) => {
+    const result = await ctx.db
+      .query("crawlQueue")
+      .paginate({ numItems: 100, cursor: cursor ?? null });
+
+    for (const doc of result.page) {
+      await crawlQueueStatusAggregate.insertIfDoesNotExist(ctx, doc);
+    }
+
+    if (!result.isDone) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.crawlQueue.backfillQueueStatsAggregate,
+        { cursor: result.continueCursor },
+      );
+    }
+
+    return null;
   },
 });

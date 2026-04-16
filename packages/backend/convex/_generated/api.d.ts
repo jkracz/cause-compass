@@ -94,4 +94,5 @@ export declare const components: {
   migrations: import("@convex-dev/migrations/_generated/component.js").ComponentApi<"migrations">;
   workflow: import("@convex-dev/workflow/_generated/component.js").ComponentApi<"workflow">;
   aggregate: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"aggregate">;
+  queueStatsAggregate: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"queueStatsAggregate">;
 };
