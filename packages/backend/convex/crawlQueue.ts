@@ -479,9 +479,9 @@ export const listSearchedOrgsPage = internalQuery({
   },
 });
 
-export const backfillSearchedOrgsPage = internalMutation({
+export const backfillSearchedOrg = internalMutation({
   args: {
-    orgs: v.array(backfillOrgValidator),
+    org: backfillOrgValidator,
     remaining: v.number(),
   },
   returns: v.object({
@@ -489,7 +489,7 @@ export const backfillSearchedOrgsPage = internalMutation({
     scanned: v.number(),
     skipped: backfillSkippedValidator,
   }),
-  handler: async (ctx, { orgs, remaining }) => {
+  handler: async (ctx, { org, remaining }) => {
     const skipped = createBackfillSkippedCounts();
 
     if (remaining <= 0) {
@@ -501,54 +501,56 @@ export const backfillSearchedOrgsPage = internalMutation({
     }
 
     let enqueued = 0;
-    let scanned = 0;
+    const scanned = 1;
 
-    for (const org of orgs) {
+    // Keep each org's queue backfill in its own mutation so worker claims only
+    // force retries for a tiny unit of work instead of an entire page.
+    if (await hasActiveCrawlJobsForOrg(ctx, org.orgId)) {
+      skipped.existingActiveJob++;
+      return {
+        enqueued,
+        scanned,
+        skipped,
+      };
+    }
+
+    const searchResult = await getLatestUsableSearchResultUrl(
+      ctx,
+      org.ein,
+      org.name,
+    );
+    if (searchResult.urls.length === 0) {
+      skipped[searchResult.reason ?? "missingSearchResultUrl"]++;
+      return {
+        enqueued,
+        scanned,
+        skipped,
+      };
+    }
+
+    for (const candidateUrl of searchResult.urls) {
       if (enqueued >= remaining) {
         break;
       }
 
-      scanned++;
+      const existingJob = await findExistingJobForCandidate(ctx, {
+        ein: org.ein,
+        queueType: "html",
+        url: candidateUrl,
+      });
 
-      if (await hasActiveCrawlJobsForOrg(ctx, org.orgId)) {
+      if (existingJob) {
         skipped.existingActiveJob++;
         continue;
       }
 
-      const searchResult = await getLatestUsableSearchResultUrl(
-        ctx,
-        org.ein,
-        org.name,
-      );
-      if (searchResult.urls.length === 0) {
-        skipped[searchResult.reason ?? "missingSearchResultUrl"]++;
-        continue;
-      }
-
-      for (const candidateUrl of searchResult.urls) {
-        if (enqueued >= remaining) {
-          break;
-        }
-
-        const existingJob = await findExistingJobForCandidate(ctx, {
-          ein: org.ein,
-          queueType: "html",
-          url: candidateUrl,
-        });
-
-        if (existingJob) {
-          skipped.existingActiveJob++;
-          continue;
-        }
-
-        await enqueueCrawlJob(ctx, {
-          queueType: "html",
-          orgId: org.orgId,
-          ein: org.ein,
-          url: candidateUrl,
-        });
-        enqueued++;
-      }
+      await enqueueCrawlJob(ctx, {
+        queueType: "html",
+        orgId: org.orgId,
+        ein: org.ein,
+        url: candidateUrl,
+      });
+      enqueued++;
     }
 
     return {
@@ -590,21 +592,28 @@ export async function runBackfillSearchedOrgs(
       continueCursor: string;
     };
 
-    const pageResult = (await ctx.runMutation(
-      internal.crawlQueue.backfillSearchedOrgsPage,
-      {
-        orgs: searchedOrgs.page,
-        remaining: targetEnqueueCount - enqueued,
-      },
-    )) as BackfillResult;
+    for (const org of searchedOrgs.page) {
+      if (enqueued >= targetEnqueueCount) {
+        break;
+      }
 
-    enqueued += pageResult.enqueued;
-    scanned += pageResult.scanned;
-    skipped.existingActiveJob += pageResult.skipped.existingActiveJob;
-    skipped.missingSearchResult += pageResult.skipped.missingSearchResult;
-    skipped.invalidSearchResultJson +=
-      pageResult.skipped.invalidSearchResultJson;
-    skipped.missingSearchResultUrl += pageResult.skipped.missingSearchResultUrl;
+      const orgResult = (await ctx.runMutation(
+        internal.crawlQueue.backfillSearchedOrg,
+        {
+          org,
+          remaining: targetEnqueueCount - enqueued,
+        },
+      )) as BackfillResult;
+
+      enqueued += orgResult.enqueued;
+      scanned += orgResult.scanned;
+      skipped.existingActiveJob += orgResult.skipped.existingActiveJob;
+      skipped.missingSearchResult += orgResult.skipped.missingSearchResult;
+      skipped.invalidSearchResultJson +=
+        orgResult.skipped.invalidSearchResultJson;
+      skipped.missingSearchResultUrl +=
+        orgResult.skipped.missingSearchResultUrl;
+    }
 
     isDone = searchedOrgs.isDone;
     cursor = searchedOrgs.continueCursor;
