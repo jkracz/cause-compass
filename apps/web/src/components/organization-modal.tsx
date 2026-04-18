@@ -321,15 +321,16 @@ export function OrganizationModal({
 
   const content = (
     <div className="flex flex-col">
-      <div className="relative h-56 w-full shrink-0 overflow-hidden bg-gradient-to-br from-purple-900 via-fuchsia-900 to-pink-900 sm:h-64">
-        <div className="absolute inset-0 opacity-40">
-          <div className="absolute -top-24 -right-16 h-80 w-80 rounded-full bg-pink-500/40 blur-3xl" />
-          <div className="absolute -bottom-20 -left-10 h-72 w-72 rounded-full bg-purple-500/40 blur-3xl" />
+      <div className="relative h-60 w-full shrink-0 overflow-hidden bg-neutral-950 sm:h-72">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-purple-950 via-neutral-950 to-fuchsia-950/70" />
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-24 -right-16 h-80 w-80 rounded-full bg-pink-500/15 blur-3xl" />
+          <div className="absolute -bottom-20 -left-10 h-72 w-72 rounded-full bg-purple-500/15 blur-3xl" />
         </div>
 
         <svg
           aria-hidden
-          className="absolute inset-0 h-full w-full text-white/[0.05]"
+          className="pointer-events-none absolute inset-0 h-full w-full text-white/[0.035]"
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
@@ -346,10 +347,9 @@ export function OrganizationModal({
         </svg>
 
         {organization.ein && (
-          <div className="absolute top-4 left-5 flex items-center gap-2 text-[10px] font-semibold tracking-[0.28em] text-white/70 uppercase">
-            <span className="h-px w-6 bg-white/50" />
+          <div className="absolute top-4 left-5 z-20 flex cursor-text items-center gap-2 text-[10px] font-semibold tracking-[0.28em] text-white/70 uppercase select-text">
             <span>EIN</span>
-            <span className="font-mono tracking-[0.1em] text-white/55 normal-case">
+            <span className="font-mono tracking-[0.1em] text-white/60 normal-case select-text">
               {formatEin(organization.ein)}
             </span>
           </div>
@@ -357,7 +357,7 @@ export function OrganizationModal({
 
         <div className="relative z-10 flex h-full items-center justify-center px-6">
           {organization.logoUrl ? (
-            <div className="relative h-32 w-32 overflow-hidden rounded-2xl border border-white/20 bg-white/95 shadow-2xl sm:h-36 sm:w-36">
+            <div className="relative h-40 w-40 overflow-hidden rounded-2xl border border-white/20 bg-white/95 shadow-2xl shadow-black/50 sm:h-48 sm:w-48">
               <Image
                 src={organization.logoUrl}
                 alt={organization.name}
@@ -367,8 +367,8 @@ export function OrganizationModal({
               />
             </div>
           ) : (
-            <div className="flex h-32 w-32 items-center justify-center rounded-2xl border border-white/20 bg-gradient-to-br from-pink-400 to-purple-600 shadow-2xl sm:h-36 sm:w-36">
-              <span className="font-heading text-4xl font-bold text-white drop-shadow">
+            <div className="flex h-40 w-40 items-center justify-center rounded-2xl border border-white/20 bg-gradient-to-br from-pink-400 to-purple-600 shadow-2xl shadow-black/50 sm:h-48 sm:w-48">
+              <span className="font-heading text-5xl font-bold text-white drop-shadow">
                 {organization.name
                   .split(" ")
                   .map((w) => w[0])
@@ -385,202 +385,209 @@ export function OrganizationModal({
         </div>
       </div>
 
-      <div className="px-5 pt-6 pb-6 sm:px-8 sm:pt-8 sm:pb-8">
-        <div className="mb-5">
-          <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-semibold tracking-[0.24em] text-white/55 uppercase">
-            <span>{organization.city}</span>
-            <span className="text-white/30">·</span>
-            <span>{organization.state}</span>
-            {organization.geographicFocus && (
-              <>
+      <div className="px-5 pt-6 pb-6 sm:px-8 sm:pt-8 sm:pb-10 lg:px-12">
+        <div className="grid gap-x-12 gap-y-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+          <div className="flex flex-col gap-7">
+            <div>
+              <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-semibold tracking-[0.24em] text-white/55 uppercase">
+                <span>{organization.city}</span>
                 <span className="text-white/30">·</span>
-                <span className="text-amber-200/80">
-                  {organization.geographicFocus} reach
-                </span>
-              </>
-            )}
-          </div>
+                <span>{organization.state}</span>
+                {organization.geographicFocus && (
+                  <>
+                    <span className="text-white/30">·</span>
+                    <span className="text-amber-200/80">
+                      {organization.geographicFocus} reach
+                    </span>
+                  </>
+                )}
+              </div>
 
-          <DialogTitle className="font-heading text-[28px] leading-[1.08] font-bold text-white sm:text-[34px]">
-            {organization.name}
-          </DialogTitle>
+              <DialogTitle className="font-heading text-[28px] leading-[1.08] font-bold text-white sm:text-[36px]">
+                {organization.name}
+              </DialogTitle>
 
-          {(nteeLabel || sizeLabel || organization.geographicFocus) && (
-            <div className="mt-4 flex flex-wrap gap-1.5">
-              {organization.geographicFocus && (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/25 bg-amber-300/10 px-2.5 py-1 text-[11px] font-medium text-amber-100">
-                  <Globe2 className="h-3 w-3" />
-                  {organization.geographicFocus}
-                </span>
-              )}
-              {sizeLabel && (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-2.5 py-1 text-[11px] font-medium text-white/80">
-                  <Layers className="h-3 w-3" />
-                  {sizeLabel}
-                </span>
-              )}
-              {nteeLabel && (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-2.5 py-1 text-[11px] font-medium text-white/80">
-                  {nteeLabel}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-
-        {lead && (
-          <p className="font-heading mb-6 border-l-2 border-pink-400/70 pl-4 text-[17px] leading-[1.45] font-medium text-white/92 italic sm:text-[19px]">
-            <Quote className="mb-1 inline h-3.5 w-3.5 text-pink-300/70" />{" "}
-            {lead}
-          </p>
-        )}
-
-        {organization.mission && (
-          <section className="mb-6">
-            <SectionLabel>The Mission</SectionLabel>
-            <p className="text-[14.5px] leading-[1.65] text-white/80">
-              {organization.mission}
-            </p>
-          </section>
-        )}
-
-        {organization.whySupport && organization.whySupport !== lead && (
-          <section className="mb-6">
-            <SectionLabel>Why Support</SectionLabel>
-            <p className="text-[14.5px] leading-[1.65] text-white/80">
-              {organization.whySupport}
-            </p>
-          </section>
-        )}
-
-        {organization.activities && organization.activities.length > 0 && (
-          <section className="mb-6">
-            <SectionLabel>What They Do</SectionLabel>
-            <div className="grid gap-2.5 sm:grid-cols-2">
-              {organization.activities.slice(0, 6).map((activity, i) => (
-                <div
-                  key={`${activity.name}-${i}`}
-                  className="rounded-lg border border-white/10 bg-white/[0.03] p-3.5 transition-colors hover:border-white/20 hover:bg-white/[0.06]"
-                >
-                  <h4 className="font-heading mb-1 text-[13px] font-semibold text-white">
-                    {activity.name}
-                  </h4>
-                  {activity.description && (
-                    <p className="text-[12px] leading-[1.55] text-white/65">
-                      {activity.description}
-                    </p>
+              {(nteeLabel || sizeLabel || organization.geographicFocus) && (
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  {organization.geographicFocus && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/25 bg-amber-300/10 px-2.5 py-1 text-[11px] font-medium text-amber-100">
+                      <Globe2 className="h-3 w-3" />
+                      {organization.geographicFocus}
+                    </span>
+                  )}
+                  {sizeLabel && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-2.5 py-1 text-[11px] font-medium text-white/80">
+                      <Layers className="h-3 w-3" />
+                      {sizeLabel}
+                    </span>
+                  )}
+                  {nteeLabel && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-2.5 py-1 text-[11px] font-medium text-white/80">
+                      {nteeLabel}
+                    </span>
                   )}
                 </div>
-              ))}
+              )}
             </div>
-          </section>
-        )}
 
-        {organization.targetAudience && (
-          <section className="mb-6 flex items-start gap-3 rounded-lg border border-white/8 bg-white/[0.02] px-4 py-3">
-            <Users className="mt-0.5 h-4 w-4 shrink-0 text-amber-300/80" />
-            <div>
-              <div className="mb-0.5 text-[10px] font-semibold tracking-[0.22em] text-white/55 uppercase">
-                Who They Serve
-              </div>
-              <p className="text-[13.5px] leading-[1.55] text-white/85">
-                {organization.targetAudience}
+            {lead && (
+              <p className="font-heading border-l-2 border-pink-400/70 pl-5 text-[18px] leading-[1.45] font-medium text-white/92 italic sm:text-[20px]">
+                <Quote className="mb-1 inline h-3.5 w-3.5 text-pink-300/70" />{" "}
+                {lead}
               </p>
-            </div>
-          </section>
-        )}
+            )}
 
-        {organization.keywords && organization.keywords.length > 0 && (
-          <section className="mb-6">
-            <SectionLabel>Tags</SectionLabel>
-            <div className="flex flex-wrap gap-1.5">
-              {organization.keywords.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-1 text-[11px] font-medium text-white/75"
-                >
-                  {tag}
+            {organization.mission && (
+              <section>
+                <SectionLabel>The Mission</SectionLabel>
+                <p className="text-[14.5px] leading-[1.65] text-white/80">
+                  {organization.mission}
+                </p>
+              </section>
+            )}
+
+            {organization.whySupport && organization.whySupport !== lead && (
+              <section>
+                <SectionLabel>Why Support</SectionLabel>
+                <p className="text-[14.5px] leading-[1.65] text-white/80">
+                  {organization.whySupport}
+                </p>
+              </section>
+            )}
+
+            {organization.activities && organization.activities.length > 0 && (
+              <section>
+                <SectionLabel>What They Do</SectionLabel>
+                <div className="grid gap-2.5 sm:grid-cols-2">
+                  {organization.activities.slice(0, 6).map((activity, i) => (
+                    <div
+                      key={`${activity.name}-${i}`}
+                      className="rounded-lg border border-white/10 bg-white/[0.03] p-3.5 transition-colors hover:border-white/20 hover:bg-white/[0.06]"
+                    >
+                      <h4 className="font-heading mb-1 text-[13px] font-semibold text-white">
+                        {activity.name}
+                      </h4>
+                      {activity.description && (
+                        <p className="text-[12px] leading-[1.55] text-white/65">
+                          {activity.description}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+
+          <aside className="flex flex-col gap-5">
+            <div className="order-last rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.015] p-5 shadow-lg shadow-black/20 lg:order-none lg:sticky lg:top-6">
+              <div className="mb-3 flex items-center gap-2.5">
+                <span className="h-px w-6 bg-pink-300/60" />
+                <span className="text-[10px] font-semibold tracking-[0.24em] text-pink-200/80 uppercase">
+                  Take Action
                 </span>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {socialLinks.length > 0 && (
-          <section className="mb-7">
-            <SectionLabel>Connect</SectionLabel>
-            <div className="flex flex-wrap gap-2">
-              {socialLinks.map(({ key, href, label, Icon }) => (
-                <a
-                  key={key}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  className="group/social flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-white/70 transition-all hover:scale-105 hover:border-pink-400/40 hover:bg-pink-500/15 hover:text-pink-100"
-                >
-                  <Icon className="h-[15px] w-[15px]" />
-                </a>
-              ))}
-            </div>
-          </section>
-        )}
-
-        <div className="flex flex-col gap-2 border-t border-white/10 pt-5">
-          <div className="flex flex-col gap-2 sm:flex-row">
-            {hasDonate && (
-              <a
-                href={organization.donationUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={handleDonateClick}
-                className="sm:flex-1"
-              >
-                <Button className="w-full bg-gradient-to-r from-pink-500 to-fuchsia-600 font-semibold text-white shadow-lg shadow-pink-500/20 hover:from-pink-400 hover:to-fuchsia-500">
-                  <HandHeart className="mr-2 h-4 w-4" />
-                  Donate
-                </Button>
-              </a>
-            )}
-            {hasWebsite && (
-              <a
-                href={organization.websiteUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={handleWebsiteClick}
-                className={hasDonate ? "sm:flex-1" : "flex-1"}
-              >
+              </div>
+              <div className="flex flex-col gap-2">
+                {hasDonate && (
+                  <a
+                    href={organization.donationUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={handleDonateClick}
+                  >
+                    <Button className="w-full bg-gradient-to-r from-pink-500 to-fuchsia-600 font-semibold text-white shadow-lg shadow-pink-500/25 hover:from-pink-400 hover:to-fuchsia-500">
+                      <HandHeart className="mr-2 h-4 w-4" />
+                      Donate
+                    </Button>
+                  </a>
+                )}
+                {hasWebsite && (
+                  <a
+                    href={organization.websiteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={handleWebsiteClick}
+                  >
+                    <Button
+                      variant={hasDonate ? "outline" : "default"}
+                      className={`w-full ${hasDonate ? "border-white/20 bg-white/[0.04] text-white hover:bg-white/10" : ""}`}
+                    >
+                      Visit Website
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </Button>
+                  </a>
+                )}
                 <Button
-                  variant={hasDonate ? "outline" : "default"}
-                  className={`w-full ${hasDonate ? "border-white/20 bg-white/[0.04] text-white hover:bg-white/10" : ""}`}
+                  variant="outline"
+                  className="w-full border-white/15 bg-transparent text-white/80 hover:bg-white/[0.06]"
+                  onClick={() => void handleShare()}
                 >
-                  Visit Website
-                  <ExternalLink className="ml-2 h-4 w-4" />
+                  <Share2 className="mr-2 h-4 w-4" />
+                  Share
                 </Button>
-              </a>
-            )}
-          </div>
+                {showRemoveButton && (
+                  <Button
+                    variant="destructive-outline"
+                    className="w-full"
+                    onClick={handleRemoveClick}
+                  >
+                    <Heart className="mr-2 h-4 w-4 fill-current" />
+                    Remove
+                  </Button>
+                )}
+              </div>
+            </div>
 
-          <div className="flex gap-2">
-            {showRemoveButton && (
-              <Button
-                variant="destructive-outline"
-                className="flex-1"
-                onClick={handleRemoveClick}
-              >
-                <Heart className="mr-2 h-4 w-4 fill-current" />
-                Remove
-              </Button>
+            {organization.targetAudience && (
+              <section className="rounded-xl border border-white/8 bg-white/[0.025] px-4 py-4">
+                <div className="mb-2 flex items-center gap-2">
+                  <Users className="h-3.5 w-3.5 text-amber-300/80" />
+                  <span className="text-[10px] font-semibold tracking-[0.24em] text-white/60 uppercase">
+                    Who They Serve
+                  </span>
+                </div>
+                <p className="text-[13.5px] leading-[1.55] text-white/85">
+                  {organization.targetAudience}
+                </p>
+              </section>
             )}
-            <Button
-              variant="outline"
-              className="flex-1 border-white/15 bg-transparent text-white/80 hover:bg-white/[0.06]"
-              onClick={() => void handleShare()}
-            >
-              <Share2 className="mr-2 h-4 w-4" />
-              Share
-            </Button>
-          </div>
+
+            {organization.keywords && organization.keywords.length > 0 && (
+              <section>
+                <SectionLabel>Tags</SectionLabel>
+                <div className="flex flex-wrap gap-1.5">
+                  {organization.keywords.map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-1 text-[11px] font-medium text-white/75"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {socialLinks.length > 0 && (
+              <section>
+                <SectionLabel>Connect</SectionLabel>
+                <div className="flex flex-wrap gap-2">
+                  {socialLinks.map(({ key, href, label, Icon }) => (
+                    <a
+                      key={key}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={label}
+                      className="group/social flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-white/70 transition-all hover:scale-105 hover:border-pink-400/40 hover:bg-pink-500/15 hover:text-pink-100"
+                    >
+                      <Icon className="h-[15px] w-[15px]" />
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )}
+          </aside>
         </div>
       </div>
 
@@ -634,7 +641,7 @@ export function OrganizationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-h-[92vh] max-w-3xl overflow-auto border-white/10 bg-neutral-950/95 p-0 text-white backdrop-blur-xl sm:rounded-2xl">
+      <DialogContent className="max-h-[92vh] w-[calc(100vw-2rem)] !max-w-5xl overflow-auto border-white/10 bg-neutral-950/95 p-0 text-white backdrop-blur-xl sm:!max-w-5xl sm:rounded-2xl">
         {content}
       </DialogContent>
     </Dialog>
