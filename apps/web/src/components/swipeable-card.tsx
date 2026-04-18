@@ -6,6 +6,7 @@ import { Heart, X } from "lucide-react";
 import Image from "next/image";
 
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
+import { Button } from "@/components/ui/button";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
 
 type Organization = Doc<"organizations">;
@@ -14,12 +15,14 @@ interface SwipeableCardProps {
   organization: Organization;
   onSwipeLeft: () => void;
   onSwipeRight: () => void;
+  onOpenDetails: () => void;
 }
 
 export function SwipeableCard({
   organization,
   onSwipeLeft,
   onSwipeRight,
+  onOpenDetails,
 }: SwipeableCardProps) {
   const [exitX, setExitX] = useState<number | null>(null);
 
@@ -112,6 +115,19 @@ export function SwipeableCard({
               <p className="text-base leading-relaxed">{displayTagline}</p>
             </div>
           )}
+          <div className="px-4">
+            <Button
+              variant="outline"
+              className="border-white/20 bg-white/5 hover:bg-white/10"
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => {
+                event.stopPropagation();
+                onOpenDetails();
+              }}
+            >
+              Learn More
+            </Button>
+          </div>
         </div>
 
         <motion.div

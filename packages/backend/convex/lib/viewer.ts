@@ -64,6 +64,13 @@ export function mergeLikedOrganizations(
   return Array.from(new Set([...existingLiked, ...incomingLiked]));
 }
 
+export function mergeDismissedOrganizations(
+  existingDismissed: string[] = [],
+  incomingDismissed: string[] = [],
+) {
+  return Array.from(new Set([...existingDismissed, ...incomingDismissed]));
+}
+
 export function mergePreferences(
   existing: {
     causes?: string[];

@@ -19,6 +19,11 @@ interface OnboardingFlowProps {
   questions: Question[];
 }
 
+type StoredCoordinates = {
+  latitude: number;
+  longitude: number;
+};
+
 export function OnboardingFlow({ questions }: OnboardingFlowProps) {
   const router = useRouter();
   const { guestId } = useAppSession();
@@ -68,7 +73,7 @@ export function OnboardingFlow({ questions }: OnboardingFlowProps) {
           },
         );
 
-        const location = {
+        const location: StoredCoordinates = {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         };
