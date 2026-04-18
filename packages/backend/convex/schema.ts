@@ -59,6 +59,7 @@ export default defineSchema({
       ),
     }),
     likedOrganizations: v.array(v.string()),
+    dismissedOrganizations: v.optional(v.array(v.string())),
     profile: v.optional(
       v.object({
         email: v.optional(v.string()),

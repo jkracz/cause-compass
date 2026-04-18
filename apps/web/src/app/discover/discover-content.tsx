@@ -1,11 +1,5 @@
-import { preloadQuery } from "convex/nextjs";
-import { api } from "@cause/backend/convex/_generated/api";
 import Discover from "@/components/discover";
 
-export async function DiscoverContent() {
-  const preloadedOrganizations = await preloadQuery(
-    api.organizations.getRecommended,
-    { limit: 10 },
-  );
-  return <Discover preloadedOrganizations={preloadedOrganizations} />;
+export function DiscoverContent() {
+  return <Discover />;
 }

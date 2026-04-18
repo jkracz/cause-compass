@@ -1,7 +1,54 @@
-import { query } from "./_generated/server";
+import { query, type QueryCtx } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { getViewerRecord } from "./lib/viewer";
+import {
+  applyDiversityPass,
+  CAUSE_CONFIG,
+  getSeededVariantScore,
+  scoreRecommendation,
+} from "./lib/recommendations";
+
+function unique<T>(values: T[]) {
+  return Array.from(new Set(values));
+}
+
+async function getReadyOrganizationsByNteeMajor(
+  ctx: QueryCtx,
+  nteeMajor: string,
+  limit: number,
+) {
+  return await ctx.db
+    .query("organizations")
+    .withIndex("by_nteeMajor", (q) => q.eq("nteeMajor", nteeMajor))
+    .filter((q) => q.eq(q.field("enrichmentStage"), "ready"))
+    .take(limit);
+}
+
+async function getReadyOrganizationsByGeographicFocus(
+  ctx: QueryCtx,
+  geographicFocus: "Global" | "National" | "Regional" | "Local",
+  limit: number,
+) {
+  return await ctx.db
+    .query("organizations")
+    .withIndex("by_geographicFocus", (q) => q.eq("geographicFocus", geographicFocus))
+    .filter((q) => q.eq(q.field("enrichmentStage"), "ready"))
+    .take(limit);
+}
+
+async function getReadyOrganizationsByState(
+  ctx: QueryCtx,
+  state: string,
+  limit: number,
+) {
+  return await ctx.db
+    .query("organizations")
+    .withIndex("by_state", (q) => q.eq("state", state))
+    .filter((q) => q.eq(q.field("enrichmentStage"), "ready"))
+    .take(limit);
+}
 
 // Get single org by slug (for detail page)
 export const getBySlug = query({
@@ -22,6 +69,115 @@ export const getRecommended = query({
       .query("organizations")
       .withIndex("by_enrichmentStage", (q) => q.eq("enrichmentStage", "ready"))
       .take(limit);
+  },
+});
+
+export const getPersonalizedRecommended = query({
+  args: {
+    guestId: v.optional(v.string()),
+    limit: v.optional(v.number()),
+    sessionLocationState: v.optional(v.string()),
+    sessionSeed: v.optional(v.string()),
+  },
+  handler: async (
+    ctx,
+    { guestId, limit = 10, sessionLocationState, sessionSeed },
+  ) => {
+    const viewer = await getViewerRecord(ctx, guestId);
+    const preferences = viewer.user?.preferences ?? {};
+    const likedOrganizations = new Set(viewer.user?.likedOrganizations ?? []);
+    const dismissedOrganizations = new Set(
+      viewer.user?.dismissedOrganizations ?? [],
+    );
+    const candidates = new Map<string, Doc<"organizations">>();
+    const candidateTarget = Math.max(limit * 10, 150);
+
+    const addCandidates = (organizations: Doc<"organizations">[]) => {
+      for (const organization of organizations) {
+        if (
+          organization.enrichmentStage !== "ready" ||
+          likedOrganizations.has(organization.slug) ||
+          dismissedOrganizations.has(organization.slug)
+        ) {
+          continue;
+        }
+        candidates.set(organization._id, organization);
+      }
+    };
+
+    const nteeMajors = unique(
+      (preferences.causes ?? []).flatMap(
+        (cause) => CAUSE_CONFIG[cause]?.nteeMajors ?? [],
+      ),
+    );
+
+    for (const nteeMajor of nteeMajors) {
+      addCandidates(await getReadyOrganizationsByNteeMajor(ctx, nteeMajor, 20));
+    }
+
+    if (preferences.changeScope === "local") {
+      addCandidates(await getReadyOrganizationsByGeographicFocus(ctx, "Local", 20));
+      addCandidates(
+        await getReadyOrganizationsByGeographicFocus(ctx, "Regional", 20),
+      );
+    } else if (preferences.changeScope === "national") {
+      addCandidates(
+        await getReadyOrganizationsByGeographicFocus(ctx, "National", 40),
+      );
+    } else if (preferences.changeScope === "global") {
+      addCandidates(await getReadyOrganizationsByGeographicFocus(ctx, "Global", 20));
+      addCandidates(
+        await getReadyOrganizationsByGeographicFocus(ctx, "National", 20),
+      );
+    }
+
+    if (sessionLocationState) {
+      addCandidates(
+        await getReadyOrganizationsByState(ctx, sessionLocationState, 40),
+      );
+    }
+
+    if (candidates.size < candidateTarget) {
+      addCandidates(
+        await ctx.db
+          .query("organizations")
+          .withIndex("by_enrichmentStage", (q) =>
+            q.eq("enrichmentStage", "ready"),
+          )
+          .take(candidateTarget),
+      );
+    }
+
+    const scoredRecommendations = Array.from(candidates.values())
+      .map((organization) => {
+        const recommendation = scoreRecommendation(
+          organization,
+          preferences,
+          sessionLocationState,
+        );
+        const seededVariantScore = getSeededVariantScore(
+          sessionSeed ?? "default",
+          organization.slug,
+        );
+        return {
+          organization,
+          ...recommendation,
+          rankScore: recommendation.score + seededVariantScore,
+        };
+      })
+      .sort((left, right) => {
+        if (right.rankScore !== left.rankScore) {
+          return right.rankScore - left.rankScore;
+        }
+        return left.organization.name.localeCompare(right.organization.name);
+      });
+
+    return applyDiversityPass(
+      scoredRecommendations.map(({ rankScore: _rankScore, ...recommendation }) =>
+        recommendation,
+      ),
+      limit,
+    );
   },
 });
 

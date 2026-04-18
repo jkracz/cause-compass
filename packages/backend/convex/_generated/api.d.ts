@@ -25,6 +25,7 @@ import type * as crawlQueue from "../crawlQueue.js";
 import type * as crawlQueueCron from "../crawlQueueCron.js";
 import type * as crons from "../crons.js";
 import type * as http from "../http.js";
+import type * as lib_recommendations from "../lib/recommendations.js";
 import type * as lib_viewer from "../lib/viewer.js";
 import type * as migrations from "../migrations.js";
 import type * as organizations from "../organizations.js";
@@ -56,6 +57,7 @@ declare const fullApi: ApiFromModules<{
   crawlQueueCron: typeof crawlQueueCron;
   crons: typeof crons;
   http: typeof http;
+  "lib/recommendations": typeof lib_recommendations;
   "lib/viewer": typeof lib_viewer;
   migrations: typeof migrations;
   organizations: typeof organizations;
