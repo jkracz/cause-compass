@@ -9,7 +9,6 @@ import { useMutation, useQuery } from "convex/react";
 
 import { SwipeableCard } from "@/components/swipeable-card";
 import { Button } from "@/components/ui/button";
-import { OrganizationModal } from "@/components/organization-modal";
 import { DiscoverSkeleton } from "@/app/discover/discover-skeleton";
 import type { SessionLocation } from "@/app/discover/actions";
 import { reverseGeocodeForSession } from "@/app/discover/actions";
@@ -89,9 +88,6 @@ export default function Discover() {
   const [sessionRecommendations, setSessionRecommendations] = useState<
     RecommendationResult[] | null
   >(null);
-  const [selectedRecommendation, setSelectedRecommendation] =
-    useState<RecommendationResult | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const hasTrackedCompletionRef = useRef(false);
   const trackedImpressionsRef = useRef<Set<string>>(new Set());
 
@@ -292,32 +288,6 @@ export default function Discover() {
     setCurrentIndex((index) => index + 1);
   };
 
-  const handleOpenDetails = () => {
-    if (!currentRecommendation) {
-      return;
-    }
-
-    setSelectedRecommendation(currentRecommendation);
-    setIsModalOpen(true);
-
-    posthog.capture("organization_details_viewed", {
-      organization_id: currentRecommendation.organization.slug,
-      organization_name: currentRecommendation.organization.name,
-      organization_ein: currentRecommendation.organization.ein,
-      organization_city: currentRecommendation.organization.city,
-      organization_state: currentRecommendation.organization.state,
-      source: "discover",
-      recommendation_version: RECOMMENDATION_VERSION,
-      recommendation_score: currentRecommendation.score,
-      matched_signals: currentRecommendation.matchedSignals,
-    });
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedRecommendation(null);
-  };
-
   const handleViewMyCauses = () => {
     router.push("/my-causes");
   };
@@ -389,9 +359,6 @@ export default function Discover() {
                           stackIndex === 0 ? () => void handleSkip() : () => {}
                         }
                         onSwipeRight={stackIndex === 0 ? handleLike : () => {}}
-                        onOpenDetails={
-                          stackIndex === 0 ? handleOpenDetails : () => {}
-                        }
                       />
                     </motion.div>
                   );
@@ -429,14 +396,6 @@ export default function Discover() {
           </div>
         )}
       </div>
-
-      {selectedRecommendation && (
-        <OrganizationModal
-          organization={selectedRecommendation.organization}
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-        />
-      )}
     </>
   );
 }
