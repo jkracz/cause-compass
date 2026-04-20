@@ -77,6 +77,10 @@ Set the same value in:
 ## Cron Jobs vs Workers
 
 Workers continuously poll and process queue items.
+After a configurable streak of empty claims, each worker switches from the
+normal poll interval to a much slower idle poll interval until it claims work
+again.
+
 Crons populate/recover queue state.
 
 - `search-organizations` (daily): creates new candidates
@@ -113,6 +117,8 @@ Common:
 - `WORKER_ID`
 - `CONCURRENCY`
 - `POLL_INTERVAL_MS`
+- `EMPTY_CLAIM_THRESHOLD`
+- `IDLE_POLL_INTERVAL_MS`
 - `DOMAIN_THROTTLE_MS`
 - `WORKER_HEALTH_FILE`
 - `HEALTH_UPDATE_MS`
@@ -319,7 +325,7 @@ Recommended runtime model in either case: always-on worker containers with resta
    - keep `image:` services; do not use `apps/scraper/docker-compose.yml` on the NAS because its `../../` build context is for local source builds only
 3. Set environment variables for both services:
    - required: `CONVEX_SITE_URL`, `WORKER_TOKEN`
-   - recommended shared: `POLL_INTERVAL_MS`, `DOMAIN_THROTTLE_MS`, `HEALTH_UPDATE_MS`, `HEALTH_MAX_AGE_MS`
+   - recommended shared: `POLL_INTERVAL_MS`, `EMPTY_CLAIM_THRESHOLD`, `IDLE_POLL_INTERVAL_MS`, `DOMAIN_THROTTLE_MS`, `HEALTH_UPDATE_MS`, `HEALTH_MAX_AGE_MS`
    - HTML-specific: `WORKER_ID=html-worker-1`, `CONCURRENCY=20`, `WORKER_HEALTH_FILE=/tmp/html-worker.health.json`
    - browser-specific: `WORKER_ID=browser-worker-1`, `CONCURRENCY=2`, `WORKER_HEALTH_FILE=/tmp/browser-worker.health.json`
 4. Set restart policy to always and set resource limits in the TrueNAS app config:

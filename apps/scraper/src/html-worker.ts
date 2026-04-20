@@ -53,6 +53,7 @@ const throttle = new DomainThrottle(config.domainThrottleMs);
 
 let shuttingDown = false;
 let activeJobs = 0;
+let consecutiveEmptyClaims = 0;
 const health = startHealthReporter(() => ({
   workerType: "html",
   shuttingDown,
@@ -243,6 +244,8 @@ async function pollLoop(): Promise<void> {
   log("info", "Starting HTML worker", {
     concurrency: config.concurrency,
     pollInterval: config.pollIntervalMs,
+    emptyClaimThreshold: config.emptyClaimThreshold,
+    idlePollInterval: config.idlePollIntervalMs,
   });
 
   // Prune throttle entries every 30s
@@ -263,10 +266,33 @@ async function pollLoop(): Promise<void> {
     });
 
     if (!job) {
-      // No jobs available — wait and poll again
-      await sleep(config.pollIntervalMs);
+      consecutiveEmptyClaims++;
+
+      if (consecutiveEmptyClaims === config.emptyClaimThreshold) {
+        log("info", "Entering idle polling mode", {
+          emptyClaims: consecutiveEmptyClaims,
+          idlePollInterval: config.idlePollIntervalMs,
+        });
+      }
+
+      // Once the worker crosses the threshold, every later empty claim keeps
+      // the worker on the slower idle poll interval until a job is claimed.
+      const sleepMs =
+        consecutiveEmptyClaims >= config.emptyClaimThreshold
+          ? config.idlePollIntervalMs
+          : config.pollIntervalMs;
+
+      await sleep(sleepMs);
       continue;
     }
+
+    if (consecutiveEmptyClaims >= config.emptyClaimThreshold) {
+      log("info", "Resuming active polling", {
+        emptyClaims: consecutiveEmptyClaims,
+        pollInterval: config.pollIntervalMs,
+      });
+    }
+    consecutiveEmptyClaims = 0;
 
     // Fire and forget (respects concurrency via activeJobs counter)
     processJob(job);
