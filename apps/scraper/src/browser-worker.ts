@@ -23,6 +23,7 @@ const throttle = new DomainThrottle(config.domainThrottleMs);
 let shuttingDown = false;
 let activeJobs = 0;
 let browser: Browser | null = null;
+let consecutiveEmptyClaims = 0;
 
 const health = startHealthReporter(() => ({
   workerType: "browser",
@@ -130,6 +131,8 @@ async function pollLoop(): Promise<void> {
   log("info", "Starting browser worker", {
     concurrency: config.concurrency,
     pollInterval: config.pollIntervalMs,
+    emptyClaimThreshold: config.emptyClaimThreshold,
+    idlePollInterval: config.idlePollIntervalMs,
     headless: config.browserHeadless,
   });
 
@@ -149,9 +152,33 @@ async function pollLoop(): Promise<void> {
     });
 
     if (!job) {
-      await sleep(config.pollIntervalMs);
+      consecutiveEmptyClaims++;
+
+      if (consecutiveEmptyClaims === config.emptyClaimThreshold) {
+        log("info", "Entering idle polling mode", {
+          emptyClaims: consecutiveEmptyClaims,
+          idlePollInterval: config.idlePollIntervalMs,
+        });
+      }
+
+      // Once the worker crosses the threshold, every later empty claim keeps
+      // the worker on the slower idle poll interval until a job is claimed.
+      const sleepMs =
+        consecutiveEmptyClaims >= config.emptyClaimThreshold
+          ? config.idlePollIntervalMs
+          : config.pollIntervalMs;
+
+      await sleep(sleepMs);
       continue;
     }
+
+    if (consecutiveEmptyClaims >= config.emptyClaimThreshold) {
+      log("info", "Resuming active polling", {
+        emptyClaims: consecutiveEmptyClaims,
+        pollInterval: config.pollIntervalMs,
+      });
+    }
+    consecutiveEmptyClaims = 0;
 
     processJob(job);
   }
@@ -192,4 +219,3 @@ pollLoop().catch((err) => {
 process.on("exit", () => {
   health.stop();
 });
-

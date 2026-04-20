@@ -36,6 +36,8 @@ export const config = {
   workerId,
   concurrency: optionalInt("CONCURRENCY", 20),
   pollIntervalMs: optionalInt("POLL_INTERVAL_MS", 2000),
+  emptyClaimThreshold: optionalInt("EMPTY_CLAIM_THRESHOLD", 10),
+  idlePollIntervalMs: optionalInt("IDLE_POLL_INTERVAL_MS", 30 * 60 * 1000),
   domainThrottleMs: optionalInt("DOMAIN_THROTTLE_MS", 2000),
   healthFile: optional("WORKER_HEALTH_FILE", `/tmp/${workerId}.health.json`),
   healthUpdateMs: optionalInt("HEALTH_UPDATE_MS", 10000),
