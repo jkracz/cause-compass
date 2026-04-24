@@ -25,6 +25,7 @@ const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 type SessionContextValue = {
   guestId?: string;
   userId: string | null;
+  token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   name?: string;
@@ -48,14 +49,12 @@ function useConvexShooAuth() {
           return null;
         }
 
-        return sessionTokenRef.current;
+        return session.token;
       },
     }),
-    [session.isAuthenticated, session.isLoading],
+    [session.isAuthenticated, session.isLoading, session.token],
   );
 }
-
-const sessionTokenRef: { current: string | null } = { current: null };
 
 function AuthLinker() {
   const session = useAppSession();
@@ -169,9 +168,8 @@ export function AppSessionProvider({
   });
 
   const userId = auth.identity.userId ?? null;
+  const token = auth.identity.token ?? null;
   const isAuthenticated = Boolean(userId);
-
-  sessionTokenRef.current = auth.identity.token ?? null;
 
   const signIn = useCallback(async () => {
     await auth.signIn();
@@ -218,6 +216,7 @@ export function AppSessionProvider({
     () => ({
       guestId: initialGuestId,
       userId,
+      token,
       isLoading: auth.loading,
       isAuthenticated,
       name: auth.claims?.name,
@@ -235,6 +234,7 @@ export function AppSessionProvider({
       isAuthenticated,
       signIn,
       signOut,
+      token,
       userId,
     ],
   );
