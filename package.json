@@ -1,7 +1,7 @@
 {
   "name": "cause-compass",
   "private": true,
-  "packageManager": "pnpm@10.33.0",
+  "packageManager": "pnpm@10.33.2",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
@@ -12,10 +12,10 @@
     "worktree:cleanup": "./scripts/worktree-cleanup"
   },
   "devDependencies": {
-    "baseline-browser-mapping": "^2.10.18",
-    "prettier": "^3.8.2",
-    "prettier-plugin-tailwindcss": "^0.7.2",
+    "baseline-browser-mapping": "^2.10.21",
+    "prettier": "^3.8.3",
+    "prettier-plugin-tailwindcss": "^0.7.3",
     "turbo": "^2.9.6",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.3"
   }
 }

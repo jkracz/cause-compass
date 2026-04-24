@@ -14,13 +14,13 @@
     "@cause/types": "workspace:*",
     "@convex-dev/aggregate": "^0.2.1",
     "@convex-dev/migrations": "^0.3.3",
-    "@convex-dev/workflow": "^0.3.9",
-    "convex": "^1.35.1"
+    "@convex-dev/workflow": "^0.3.11",
+    "convex": "^1.36.1"
   },
   "devDependencies": {
     "@cause/eslint-config": "workspace:*",
     "@cause/typescript-config": "workspace:*",
-    "eslint": "^10.2.0",
+    "eslint": "^10.2.1",
     "typescript": "latest"
   }
 }
