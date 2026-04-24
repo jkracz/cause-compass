@@ -55,6 +55,7 @@ export const internalUpdateOrgWithAiResults = internalMutation({
         v.union(
           v.literal("created"),
           v.literal("searched"),
+          v.literal("uncrawlable"),
           v.literal("crawled"),
           v.literal("ai_confirmed"),
           v.literal("ready"),
