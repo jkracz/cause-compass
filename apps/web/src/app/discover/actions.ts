@@ -2,6 +2,9 @@
 
 const MAPBOX_REVERSE_GEOCODE_URL =
   "https://api.mapbox.com/search/geocode/v6/reverse";
+const SHOULD_LOG_MAPBOX_DEBUG =
+  process.env.VERCEL_ENV === "development" ||
+  (!process.env.VERCEL_ENV && process.env.NODE_ENV !== "production");
 
 type MapboxFeature = {
   properties?: {
@@ -105,7 +108,18 @@ export async function reverseGeocodeForSession({
       features?: MapboxFeature[];
     };
 
-    return extractLocation(data.features ?? []);
+    const location = extractLocation(data.features ?? []);
+
+    if (SHOULD_LOG_MAPBOX_DEBUG) {
+      console.info("Mapbox reverse geocode result", {
+        latitude,
+        longitude,
+        city: location.city,
+        state: location.state,
+      });
+    }
+
+    return location;
   } catch (error) {
     console.error("Reverse geocoding failed", error);
     return null;
