@@ -13,6 +13,7 @@ export type AmountBucket =
 export type EnrichmentStage =
   | "created"
   | "searched"
+  | "uncrawlable"
   | "crawled"
   | "ai_confirmed"
   | "ready";
