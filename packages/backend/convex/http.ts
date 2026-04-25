@@ -129,19 +129,12 @@ http.route({
       const body = (await request.json()) as CompleteBody;
       const sanitizedCrawlResult = sanitizeWorkerCrawlResult(body.crawlResult);
 
-      const crawlResultId = sanitizedCrawlResult
-        ? await ctx.runMutation(internal.crawlQueue.insertCrawlResult, {
-            jobId: body.jobId,
-            crawlResult: sanitizedCrawlResult,
-          })
-        : undefined;
-
       await ctx.runMutation(internal.crawlQueue.complete, {
         jobId: body.jobId,
-        crawlResultId,
+        crawlResult: sanitizedCrawlResult,
       });
 
-      return Response.json({ success: true, crawlResultId });
+      return Response.json({ success: true });
     } catch (error) {
       console.error("Worker complete error:", error);
       return new Response("Internal error", { status: 500 });

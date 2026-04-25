@@ -6,6 +6,7 @@ import { v } from "convex/values";
 const ENRICHMENT_STAGES = [
   "created",
   "searched",
+  "uncrawlable",
   "crawled",
   "ai_confirmed",
   "ready",
@@ -57,6 +58,7 @@ const summaryValidator = v.object({
   byStage: v.object({
     created: stageHealthValidator,
     searched: stageHealthValidator,
+    uncrawlable: stageHealthValidator,
     crawled: stageHealthValidator,
     ai_confirmed: stageHealthValidator,
     ready: stageHealthValidator,
@@ -186,6 +188,11 @@ export const getSummary = query({
     if (byStage.searched.total > 0) {
       notes.push(
         `Backlog in 'searched': ${byStage.searched.total} orgs likely waiting on crawler.`,
+      );
+    }
+    if (byStage.uncrawlable.total > 0) {
+      notes.push(
+        `Backlog in 'uncrawlable': ${byStage.uncrawlable.total} orgs need manual review or future crawl logic.`,
       );
     }
     if (byStage.ai_confirmed.total > 0) {

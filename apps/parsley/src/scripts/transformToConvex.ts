@@ -341,6 +341,7 @@ async function main() {
   const stageCounts: Record<EnrichmentStage, number> = {
     created: 0,
     searched: 0,
+    uncrawlable: 0,
     crawled: 0,
     ai_confirmed: 0,
     ready: 0,
@@ -427,6 +428,7 @@ async function main() {
   logger.info("Enrichment stage distribution:");
   logger.info(`  created: ${stageCounts.created}`);
   logger.info(`  searched: ${stageCounts.searched}`);
+  logger.info(`  uncrawlable: ${stageCounts.uncrawlable}`);
   logger.info(`  crawled: ${stageCounts.crawled}`);
   logger.info(`  ai_confirmed: ${stageCounts.ai_confirmed}`);
   logger.info(`  ready: ${stageCounts.ready}`);

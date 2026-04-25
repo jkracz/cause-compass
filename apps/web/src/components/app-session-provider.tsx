@@ -229,6 +229,7 @@ export function AppSessionProvider({
       auth.claims?.email,
       auth.claims?.name,
       auth.claims?.picture,
+      auth.identity.token,
       auth.loading,
       initialGuestId,
       isAuthenticated,

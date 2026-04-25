@@ -62,6 +62,16 @@ export const saveSearchResult = internalMutation({
       throw new Error(`Organization ${orgId} not found`);
     }
 
+    let candidateUrls: string[];
+    let candidateExtractionFailed = false;
+    try {
+      candidateUrls = extractCrawlCandidateUrls(resultsJson, org.name);
+    } catch {
+      console.warn(`Failed to extract crawl candidates for org ${ein}`);
+      candidateUrls = [];
+      candidateExtractionFailed = true;
+    }
+
     // Insert search result record
     await ctx.db.insert("searchResults", {
       ein,
@@ -71,27 +81,23 @@ export const saveSearchResult = internalMutation({
       resultsJson,
     });
 
-    // Update organization's enrichment stage
+    // Set the next stage immediately so empty candidate sets don't sit in
+    // "searched" waiting for backfill to classify them.
     await patchOrganization(ctx, orgId, {
-      enrichmentStage: "searched",
+      enrichmentStage:
+        candidateUrls.length > 0 || candidateExtractionFailed
+          ? ("searched" as const)
+          : ("uncrawlable" as const),
       updatedAt: Date.now(),
     });
 
-    // Enqueue HTML crawl jobs for the best candidate URLs from search results.
-    try {
-      const candidateUrls = extractCrawlCandidateUrls(resultsJson, org.name);
-
-      for (const candidateUrl of candidateUrls) {
-        await enqueueCrawlJob(ctx, {
-          queueType: "html",
-          orgId,
-          ein,
-          url: candidateUrl,
-        });
-      }
-    } catch {
-      // If URL extraction fails, backfill cron will catch it
-      console.warn(`Failed to enqueue crawl job for org ${ein}`);
+    for (const candidateUrl of candidateUrls) {
+      await enqueueCrawlJob(ctx, {
+        queueType: "html",
+        orgId,
+        ein,
+        url: candidateUrl,
+      });
     }
   },
 });

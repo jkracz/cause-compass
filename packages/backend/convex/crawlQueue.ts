@@ -32,6 +32,7 @@ import {
 
 const STALE_CLAIM_THRESHOLD_MS = 10 * 60 * 1000; // 10 minutes
 const SEARCHED_ORG_PAGE_SIZE = 100;
+const BACKFILL_ORG_BATCH_SIZE = 10;
 const SEARCH_RESULT_LOOKBACK_LIMIT = 10;
 
 const queueTypeValidator = v.union(v.literal("html"), v.literal("browser"));
@@ -128,11 +129,58 @@ async function maybeAdvanceOrgToCrawledWhenQueueSettled(
   });
 }
 
+async function markOrgUncrawlable(
+  ctx: MutationCtx,
+  orgId: Id<"organizations">,
+): Promise<void> {
+  const org = await ctx.db.get(orgId);
+  if (!org || org.enrichmentStage !== "searched") {
+    return;
+  }
+
+  await patchOrganization(ctx, orgId, {
+    enrichmentStage: "uncrawlable",
+    updatedAt: Date.now(),
+  });
+}
+
 type BackfillResult = {
   enqueued: number;
   scanned: number;
   skipped: BackfillSkippedCounts;
 };
+
+const crawlResultInputValidator = v.object({
+  textContent: v.optional(v.string()),
+  aboutLinks: v.optional(v.array(v.string())),
+  donationLinks: v.optional(v.array(v.string())),
+  socialMediaUrls: v.optional(v.array(v.string())),
+  logoLinks: v.optional(v.array(v.string())),
+  hasNewsletterSignup: v.optional(v.boolean()),
+  emailAddresses: v.optional(v.array(v.string())),
+});
+
+function createBackfillResult(): BackfillResult {
+  return {
+    enqueued: 0,
+    scanned: 0,
+    skipped: createBackfillSkippedCounts(),
+  };
+}
+
+function mergeBackfillResult(
+  target: BackfillResult,
+  next: BackfillResult,
+): BackfillResult {
+  target.enqueued += next.enqueued;
+  target.scanned += next.scanned;
+  target.skipped.existingActiveJob += next.skipped.existingActiveJob;
+  target.skipped.missingSearchResult += next.skipped.missingSearchResult;
+  target.skipped.invalidSearchResultJson +=
+    next.skipped.invalidSearchResultJson;
+  target.skipped.missingSearchResultUrl += next.skipped.missingSearchResultUrl;
+  return target;
+}
 
 async function getLatestUsableSearchResultUrl(
   ctx: MutationCtx,
@@ -330,16 +378,16 @@ export const claim = internalMutation({
 });
 
 /**
- * Mark a job as completed and link the crawl result.
- * Idempotent: if already completed, returns success.
+ * Mark a job as completed and optionally persist the crawl result.
+ * Idempotent: if already completed, returns success without inserting duplicates.
  */
 export const complete = internalMutation({
   args: {
     jobId: v.id("crawlQueue"),
-    crawlResultId: v.optional(v.id("crawlResults")),
+    crawlResult: v.optional(crawlResultInputValidator),
   },
   returns: v.null(),
-  handler: async (ctx, { jobId, crawlResultId }) => {
+  handler: async (ctx, { jobId, crawlResult }) => {
     const job = await ctx.db.get(jobId);
     if (!job) {
       throw new Error(`Job ${jobId} not found`);
@@ -348,6 +396,26 @@ export const complete = internalMutation({
     if (job.status === "completed") {
       return null;
     }
+
+    const crawlResultId = crawlResult
+      ? await ctx.db.insert("crawlResults", {
+          ein: job.ein,
+          orgId: job.orgId,
+          sourceUrl: job.url,
+          runAt: new Date().toISOString(),
+          crawlMethod: job.queueType === "html" ? "http" : "browser",
+          queueJobId: jobId,
+          textContent: sanitizeOptionalUnicodeString(crawlResult.textContent),
+          aboutLinks: sanitizeUnicodeStringArray(crawlResult.aboutLinks),
+          donationLinks: sanitizeUnicodeStringArray(crawlResult.donationLinks),
+          socialMediaUrls: sanitizeUnicodeStringArray(
+            crawlResult.socialMediaUrls,
+          ),
+          logoLinks: sanitizeUnicodeStringArray(crawlResult.logoLinks),
+          hasNewsletterSignup: crawlResult.hasNewsletterSignup,
+          emailAddresses: sanitizeUnicodeStringArray(crawlResult.emailAddresses),
+        })
+      : undefined;
 
     await patchCrawlQueueJob(ctx, jobId, {
       status: "completed",
@@ -481,7 +549,7 @@ export const listSearchedOrgsPage = internalQuery({
 
 export const backfillSearchedOrg = internalMutation({
   args: {
-    org: backfillOrgValidator,
+    orgs: v.array(backfillOrgValidator),
     remaining: v.number(),
   },
   returns: v.object({
@@ -489,75 +557,84 @@ export const backfillSearchedOrg = internalMutation({
     scanned: v.number(),
     skipped: backfillSkippedValidator,
   }),
-  handler: async (ctx, { org, remaining }) => {
-    const skipped = createBackfillSkippedCounts();
+  handler: async (ctx, { orgs, remaining }) => {
+    const result = createBackfillResult();
 
-    if (remaining <= 0) {
-      return {
-        enqueued: 0,
-        scanned: 0,
-        skipped,
-      };
+    if (remaining <= 0 || orgs.length === 0) {
+      return result;
     }
 
-    let enqueued = 0;
-    const scanned = 1;
-
-    // Keep each org's queue backfill in its own mutation so worker claims only
-    // force retries for a tiny unit of work instead of an entire page.
-    if (await hasActiveCrawlJobsForOrg(ctx, org.orgId)) {
-      skipped.existingActiveJob++;
-      return {
-        enqueued,
-        scanned,
-        skipped,
-      };
-    }
-
-    const searchResult = await getLatestUsableSearchResultUrl(
-      ctx,
-      org.ein,
-      org.name,
-    );
-    if (searchResult.urls.length === 0) {
-      skipped[searchResult.reason ?? "missingSearchResultUrl"]++;
-      return {
-        enqueued,
-        scanned,
-        skipped,
-      };
-    }
-
-    for (const candidateUrl of searchResult.urls) {
-      if (enqueued >= remaining) {
+    for (const org of orgs) {
+      if (result.enqueued >= remaining) {
         break;
       }
 
-      const existingJob = await findExistingJobForCandidate(ctx, {
-        ein: org.ein,
-        queueType: "html",
-        url: candidateUrl,
-      });
+      const orgResult = createBackfillResult();
+      orgResult.scanned = 1;
+      let processedAllCandidateUrls = true;
 
-      if (existingJob) {
-        skipped.existingActiveJob++;
+      if (await hasActiveCrawlJobsForOrg(ctx, org.orgId)) {
+        orgResult.skipped.existingActiveJob++;
+        mergeBackfillResult(result, orgResult);
         continue;
       }
 
-      await enqueueCrawlJob(ctx, {
-        queueType: "html",
-        orgId: org.orgId,
-        ein: org.ein,
-        url: candidateUrl,
-      });
-      enqueued++;
+      const searchResult = await getLatestUsableSearchResultUrl(
+        ctx,
+        org.ein,
+        org.name,
+      );
+      if (searchResult.urls.length === 0) {
+        orgResult.skipped[searchResult.reason ?? "missingSearchResultUrl"]++;
+        if (searchResult.reason === "missingSearchResultUrl") {
+          await markOrgUncrawlable(ctx, org.orgId);
+        }
+        mergeBackfillResult(result, orgResult);
+        continue;
+      }
+
+      let sawExistingJobForEveryCandidate = true;
+
+      for (const candidateUrl of searchResult.urls) {
+        if (result.enqueued + orgResult.enqueued >= remaining) {
+          processedAllCandidateUrls = false;
+          break;
+        }
+
+        const existingJob = await findExistingJobForCandidate(ctx, {
+          ein: org.ein,
+          queueType: "html",
+          url: candidateUrl,
+        });
+
+        if (existingJob) {
+          orgResult.skipped.existingActiveJob++;
+          continue;
+        }
+
+        sawExistingJobForEveryCandidate = false;
+
+        await enqueueCrawlJob(ctx, {
+          queueType: "html",
+          orgId: org.orgId,
+          ein: org.ein,
+          url: candidateUrl,
+        });
+        orgResult.enqueued++;
+      }
+
+      if (
+        orgResult.enqueued === 0 &&
+        processedAllCandidateUrls &&
+        sawExistingJobForEveryCandidate
+      ) {
+        await maybeAdvanceOrgToCrawledWhenQueueSettled(ctx, org.orgId);
+      }
+
+      mergeBackfillResult(result, orgResult);
     }
 
-    return {
-      enqueued,
-      scanned,
-      skipped,
-    };
+    return result;
   },
 });
 
@@ -566,6 +643,7 @@ export async function runBackfillSearchedOrgs(
   limit?: number,
 ): Promise<number> {
   const targetEnqueueCount = limit ?? 1000;
+  const maxScannedOrgs = Math.max(targetEnqueueCount, SEARCHED_ORG_PAGE_SIZE);
 
   if (targetEnqueueCount <= 0) {
     return 0;
@@ -577,7 +655,11 @@ export async function runBackfillSearchedOrgs(
   let isDone = false;
   const skipped = createBackfillSkippedCounts();
 
-  while (enqueued < targetEnqueueCount && !isDone) {
+  while (
+    enqueued < targetEnqueueCount &&
+    scanned < maxScannedOrgs &&
+    !isDone
+  ) {
     const searchedOrgs = (await ctx.runQuery(
       internal.crawlQueue.listSearchedOrgsPage,
       {
@@ -592,15 +674,25 @@ export async function runBackfillSearchedOrgs(
       continueCursor: string;
     };
 
-    for (const org of searchedOrgs.page) {
-      if (enqueued >= targetEnqueueCount) {
-        break;
-      }
+    for (
+      let start = 0;
+      start < searchedOrgs.page.length &&
+      enqueued < targetEnqueueCount &&
+      scanned < maxScannedOrgs;
+      start += BACKFILL_ORG_BATCH_SIZE
+    ) {
+      const batch = searchedOrgs.page.slice(
+        start,
+        Math.min(
+          start + BACKFILL_ORG_BATCH_SIZE,
+          start + (maxScannedOrgs - scanned),
+        ),
+      );
 
       const orgResult = (await ctx.runMutation(
         internal.crawlQueue.backfillSearchedOrg,
         {
-          org,
+          orgs: batch,
           remaining: targetEnqueueCount - enqueued,
         },
       )) as BackfillResult;
@@ -628,6 +720,7 @@ export async function runBackfillSearchedOrgs(
     console.log(
       [
         `Backfill scanned ${scanned} searched orgs`,
+        `scan_budget ${maxScannedOrgs}`,
         `enqueued ${enqueued} crawl jobs`,
         `skipped ${skippedTotal}`,
         `active_job=${skipped.existingActiveJob}`,
@@ -652,48 +745,6 @@ export const backfillSearchedOrgs = internalAction({
   returns: v.number(),
   handler: async (ctx, { limit }) => {
     return await runBackfillSearchedOrgs(ctx, limit);
-  },
-});
-
-/**
- * Insert a crawl result from a worker.
- * Called by the /worker/complete HTTP route before marking the job complete.
- */
-export const insertCrawlResult = internalMutation({
-  args: {
-    jobId: v.id("crawlQueue"),
-    crawlResult: v.object({
-      textContent: v.optional(v.string()),
-      aboutLinks: v.optional(v.array(v.string())),
-      donationLinks: v.optional(v.array(v.string())),
-      socialMediaUrls: v.optional(v.array(v.string())),
-      logoLinks: v.optional(v.array(v.string())),
-      hasNewsletterSignup: v.optional(v.boolean()),
-      emailAddresses: v.optional(v.array(v.string())),
-    }),
-  },
-  returns: v.id("crawlResults"),
-  handler: async (ctx, { jobId, crawlResult }) => {
-    const job = await ctx.db.get(jobId);
-    if (!job) {
-      throw new Error(`Job ${jobId} not found`);
-    }
-
-    return await ctx.db.insert("crawlResults", {
-      ein: job.ein,
-      orgId: job.orgId,
-      sourceUrl: job.url,
-      runAt: new Date().toISOString(),
-      crawlMethod: job.queueType === "html" ? "http" : "browser",
-      queueJobId: jobId,
-      textContent: sanitizeOptionalUnicodeString(crawlResult.textContent),
-      aboutLinks: sanitizeUnicodeStringArray(crawlResult.aboutLinks),
-      donationLinks: sanitizeUnicodeStringArray(crawlResult.donationLinks),
-      socialMediaUrls: sanitizeUnicodeStringArray(crawlResult.socialMediaUrls),
-      logoLinks: sanitizeUnicodeStringArray(crawlResult.logoLinks),
-      hasNewsletterSignup: crawlResult.hasNewsletterSignup,
-      emailAddresses: sanitizeUnicodeStringArray(crawlResult.emailAddresses),
-    });
   },
 });
 
