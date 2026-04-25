@@ -1,7 +1,13 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useQuery } from "convex/react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { useQueries, useQuery } from "convex/react";
 import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
 import posthog from "posthog-js";
@@ -13,10 +19,119 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { CATEGORY_ROW_TITLES } from "@/lib/ntee-labels";
 import { api } from "@cause/backend/convex/_generated/api";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
+import { useAppSession } from "@/components/app-session-provider";
+import {
+  reverseGeocodeForSession,
+  type SessionLocation,
+} from "@/app/discover/actions";
 
 type Organization = Doc<"organizations">;
+type StoredCoordinates = {
+  latitude: number;
+  longitude: number;
+};
+type GeographicFocus = "Global" | "National" | "Regional" | "Local";
+type CollectionFilters = {
+  nteeMajors?: string[];
+  geographicFocuses?: GeographicFocus[];
+  states?: string[];
+  preferredState?: string;
+};
+
+const HOME_PAGE_ROW_CONFIG = [
+  {
+    key: "artsAndCulture",
+    title: CATEGORY_ROW_TITLES.artsAndCulture,
+    filters: { nteeMajors: ["A"] },
+  },
+  {
+    key: "education",
+    title: CATEGORY_ROW_TITLES.education,
+    filters: { nteeMajors: ["B"] },
+  },
+  {
+    key: "healthAndWellness",
+    title: CATEGORY_ROW_TITLES.healthAndWellness,
+    filters: { nteeMajors: ["E", "F"] },
+  },
+  {
+    key: "environmentAndAnimals",
+    title: CATEGORY_ROW_TITLES.environmentAndAnimals,
+    filters: { nteeMajors: ["C", "D"] },
+  },
+  {
+    key: "globalImpact",
+    title: CATEGORY_ROW_TITLES.globalImpact,
+    filters: { geographicFocuses: ["Global"] },
+  },
+  {
+    key: "localCommunity",
+    title: CATEGORY_ROW_TITLES.localCommunity,
+    filters: { geographicFocuses: ["Local"] },
+    preferSessionState: true,
+  },
+] satisfies {
+  key: string;
+  title: string;
+  filters: CollectionFilters;
+  preferSessionState?: boolean;
+}[];
+
+function createSessionSeed() {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : String(Date.now());
+}
+
+function parseStoredCoordinates(location?: string): StoredCoordinates | null {
+  if (!location?.trim()) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(location) as {
+      latitude?: unknown;
+      longitude?: unknown;
+    };
+
+    if (
+      typeof parsed.latitude === "number" &&
+      typeof parsed.longitude === "number"
+    ) {
+      return {
+        latitude: parsed.latitude,
+        longitude: parsed.longitude,
+      };
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
+function getCollectionFilters(
+  row: (typeof HOME_PAGE_ROW_CONFIG)[number],
+  sessionState?: string,
+): CollectionFilters {
+  if (!row.preferSessionState || !sessionState) {
+    return row.filters;
+  }
+
+  return {
+    ...row.filters,
+    states: [sessionState],
+    preferredState: sessionState,
+  };
+}
 
 export function DiscoveryHomeContent() {
+  const { guestId } = useAppSession();
+  const viewer = useQuery(api.users.getViewer, guestId ? { guestId } : {});
+  const [sessionSeed] = useState(createSessionSeed);
+  const [sessionLocation, setSessionLocation] =
+    useState<SessionLocation | null>(null);
+  const [sessionLocationResolved, setSessionLocationResolved] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,8 +139,87 @@ export function DiscoveryHomeContent() {
   const debouncedQuery = useDebounce(searchQuery, 300);
   const isSearching = debouncedQuery.length > 0;
 
-  // Fetch all homepage rows in a single query
-  const homePageRows = useQuery(api.organizations.getHomePageRows);
+  useEffect(() => {
+    if (viewer === undefined || sessionLocationResolved) {
+      return;
+    }
+
+    const storedLocation = viewer?.preferences.location;
+    if (
+      !storedLocation ||
+      storedLocation === "skipped" ||
+      storedLocation === "denied" ||
+      storedLocation === "unavailable"
+    ) {
+      startTransition(() => {
+        setSessionLocationResolved(true);
+      });
+      return;
+    }
+
+    const resolveSessionLocation = async () => {
+      try {
+        const storedCoordinates = parseStoredCoordinates(storedLocation);
+        let coordinates = storedCoordinates;
+
+        if (!coordinates && storedLocation === "granted") {
+          coordinates = await new Promise<StoredCoordinates>(
+            (resolve, reject) =>
+              navigator.geolocation.getCurrentPosition(
+                (position) =>
+                  resolve({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                  }),
+                reject,
+                {
+                  timeout: 10000,
+                  enableHighAccuracy: true,
+                },
+              ),
+          );
+        }
+
+        if (!coordinates) {
+          startTransition(() => {
+            setSessionLocationResolved(true);
+          });
+          return;
+        }
+
+        const location = await reverseGeocodeForSession(coordinates);
+        if (location) {
+          setSessionLocation(location);
+        }
+      } catch (error) {
+        console.error("Error resolving homepage session location:", error);
+        posthog.captureException(error);
+      } finally {
+        setSessionLocationResolved(true);
+      }
+    };
+
+    void resolveSessionLocation();
+  }, [sessionLocationResolved, viewer]);
+
+  const collectionQueries = useMemo(
+    () =>
+      Object.fromEntries(
+        HOME_PAGE_ROW_CONFIG.map((row) => [
+          row.key,
+          {
+            query: api.organizations.getOrganizationCollection,
+            args: {
+              collectionKey: row.key,
+              filters: getCollectionFilters(row, sessionLocation?.state),
+              sessionSeed,
+            },
+          },
+        ]),
+      ),
+    [sessionLocation?.state, sessionSeed],
+  );
+  const rowResults = useQueries(collectionQueries);
 
   // Search query
   const searchResults = useQuery(
@@ -34,7 +228,16 @@ export function DiscoveryHomeContent() {
   );
 
   const isSearchLoading = isSearching && searchResults === undefined;
-  const isLoadingRows = homePageRows === undefined;
+  const rowError = Object.values(rowResults).find(
+    (result): result is Error => result instanceof Error,
+  );
+  if (rowError) {
+    throw rowError;
+  }
+
+  const isLoadingRows = Object.values(rowResults).some(
+    (organizations) => organizations === undefined,
+  );
 
   const handleCardClick = useCallback(
     (org: Organization) => {
@@ -69,41 +272,11 @@ export function DiscoveryHomeContent() {
     }
   };
 
-  // Prepare category rows data
-  const categoryRows = homePageRows
-    ? [
-        {
-          key: "artsAndCulture",
-          title: CATEGORY_ROW_TITLES.artsAndCulture,
-          organizations: homePageRows.artsAndCulture,
-        },
-        {
-          key: "education",
-          title: CATEGORY_ROW_TITLES.education,
-          organizations: homePageRows.education,
-        },
-        {
-          key: "healthAndWellness",
-          title: CATEGORY_ROW_TITLES.healthAndWellness,
-          organizations: homePageRows.healthAndWellness,
-        },
-        {
-          key: "environmentAndAnimals",
-          title: CATEGORY_ROW_TITLES.environmentAndAnimals,
-          organizations: homePageRows.environmentAndAnimals,
-        },
-        {
-          key: "globalImpact",
-          title: CATEGORY_ROW_TITLES.globalImpact,
-          organizations: homePageRows.globalImpact,
-        },
-        {
-          key: "localCommunity",
-          title: CATEGORY_ROW_TITLES.localCommunity,
-          organizations: homePageRows.localCommunity,
-        },
-      ]
-    : [];
+  const categoryRows = HOME_PAGE_ROW_CONFIG.map((row) => ({
+    key: row.key,
+    title: row.title,
+    organizations: (rowResults[row.key] as Organization[] | undefined) ?? [],
+  }));
 
   // Filter out empty categories
   const visibleRows = categoryRows.filter(

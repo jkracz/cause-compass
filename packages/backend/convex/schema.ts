@@ -130,9 +130,15 @@ export default defineSchema({
     .index("by_ein", ["ein"])
     .index("by_slug", ["slug"])
     .index("by_state", ["state"])
+    .index("by_enrichmentStage_and_state", ["enrichmentStage", "state"])
     .index("by_nteeMajor", ["nteeMajor"])
+    .index("by_enrichmentStage_and_nteeMajor", ["enrichmentStage", "nteeMajor"])
     .index("by_enrichmentStage", ["enrichmentStage"])
     .index("by_geographicFocus", ["geographicFocus"])
+    .index("by_enrichmentStage_and_geographicFocus", [
+      "enrichmentStage",
+      "geographicFocus",
+    ])
     .searchIndex("search_name", {
       searchField: "name",
       filterFields: ["enrichmentStage"],

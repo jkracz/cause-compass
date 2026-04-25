@@ -10,6 +10,22 @@ import {
   scoreRecommendation,
 } from "./lib/recommendations";
 
+type GeographicFocus = "Global" | "National" | "Regional" | "Local";
+const ORGANIZATION_COLLECTION_POOL_SIZE = 60;
+const geographicFocusValidator = v.union(
+  v.literal("Global"),
+  v.literal("National"),
+  v.literal("Regional"),
+  v.literal("Local"),
+);
+
+type OrganizationCollectionFilters = {
+  nteeMajors?: string[];
+  geographicFocuses?: GeographicFocus[];
+  states?: string[];
+  preferredState?: string;
+};
+
 function unique<T>(values: T[]) {
   return Array.from(new Set(values));
 }
@@ -21,20 +37,22 @@ async function getReadyOrganizationsByNteeMajor(
 ) {
   return await ctx.db
     .query("organizations")
-    .withIndex("by_nteeMajor", (q) => q.eq("nteeMajor", nteeMajor))
-    .filter((q) => q.eq(q.field("enrichmentStage"), "ready"))
+    .withIndex("by_enrichmentStage_and_nteeMajor", (q) =>
+      q.eq("enrichmentStage", "ready").eq("nteeMajor", nteeMajor),
+    )
     .take(limit);
 }
 
 async function getReadyOrganizationsByGeographicFocus(
   ctx: QueryCtx,
-  geographicFocus: "Global" | "National" | "Regional" | "Local",
+  geographicFocus: GeographicFocus,
   limit: number,
 ) {
   return await ctx.db
     .query("organizations")
-    .withIndex("by_geographicFocus", (q) => q.eq("geographicFocus", geographicFocus))
-    .filter((q) => q.eq(q.field("enrichmentStage"), "ready"))
+    .withIndex("by_enrichmentStage_and_geographicFocus", (q) =>
+      q.eq("enrichmentStage", "ready").eq("geographicFocus", geographicFocus),
+    )
     .take(limit);
 }
 
@@ -45,9 +63,86 @@ async function getReadyOrganizationsByState(
 ) {
   return await ctx.db
     .query("organizations")
-    .withIndex("by_state", (q) => q.eq("state", state))
-    .filter((q) => q.eq(q.field("enrichmentStage"), "ready"))
+    .withIndex("by_enrichmentStage_and_state", (q) =>
+      q.eq("enrichmentStage", "ready").eq("state", state),
+    )
     .take(limit);
+}
+
+async function getOrganizationsForCollection(
+  ctx: QueryCtx,
+  filters: OrganizationCollectionFilters,
+  poolLimit: number,
+) {
+  const queries: Promise<Doc<"organizations">[]>[] = [];
+
+  for (const nteeMajor of filters.nteeMajors ?? []) {
+    queries.push(getReadyOrganizationsByNteeMajor(ctx, nteeMajor, poolLimit));
+  }
+
+  for (const geographicFocus of filters.geographicFocuses ?? []) {
+    queries.push(
+      getReadyOrganizationsByGeographicFocus(ctx, geographicFocus, poolLimit),
+    );
+  }
+
+  for (const state of filters.states ?? []) {
+    queries.push(getReadyOrganizationsByState(ctx, state, poolLimit));
+  }
+
+  if (queries.length === 0) {
+    queries.push(
+      ctx.db
+        .query("organizations")
+        .withIndex("by_enrichmentStage", (q) =>
+          q.eq("enrichmentStage", "ready"),
+        )
+        .take(poolLimit),
+    );
+  }
+
+  const batches = await Promise.all(queries);
+  return uniqueById(batches.flat());
+}
+
+function uniqueById(organizations: Doc<"organizations">[]) {
+  return Array.from(
+    new Map(
+      organizations.map((organization) => [organization._id, organization]),
+    ).values(),
+  );
+}
+
+function applySeededCollectionSampling(
+  organizations: Doc<"organizations">[],
+  collectionKey: string,
+  limit: number,
+  sessionSeed?: string,
+  preferredState?: string,
+) {
+  const seed = `${sessionSeed ?? "default"}:${collectionKey}`;
+
+  return [...organizations]
+    .sort((left, right) => {
+      if (preferredState && left.state !== right.state) {
+        if (right.state === preferredState) {
+          return 1;
+        }
+        if (left.state === preferredState) {
+          return -1;
+        }
+      }
+
+      const rightScore = getSeededVariantScore(seed, right.slug);
+      const leftScore = getSeededVariantScore(seed, left.slug);
+
+      if (rightScore !== leftScore) {
+        return rightScore - leftScore;
+      }
+
+      return left.name.localeCompare(right.name);
+    })
+    .slice(0, limit);
 }
 
 // Get single org by slug (for detail page)
@@ -272,86 +367,50 @@ export const getByNteeMajor = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, { nteeMajor, limit = 15 }) => {
-    const orgs = await ctx.db
-      .query("organizations")
-      .withIndex("by_nteeMajor", (q) => q.eq("nteeMajor", nteeMajor))
-      .collect();
-
-    // Filter to ready orgs and take limit
-    return orgs
-      .filter((org) => org.enrichmentStage === "ready")
-      .slice(0, limit);
+    return await getReadyOrganizationsByNteeMajor(ctx, nteeMajor, limit);
   },
 });
 
 // Get organizations by geographic focus
 export const getByGeographicFocus = query({
   args: {
-    focus: v.union(
-      v.literal("Global"),
-      v.literal("National"),
-      v.literal("Regional"),
-      v.literal("Local"),
-    ),
+    focus: geographicFocusValidator,
     limit: v.optional(v.number()),
   },
   handler: async (ctx, { focus, limit = 15 }) => {
-    const orgs = await ctx.db
-      .query("organizations")
-      .withIndex("by_geographicFocus", (q) => q.eq("geographicFocus", focus))
-      .collect();
-
-    // Filter to ready orgs and take limit
-    return orgs
-      .filter((org) => org.enrichmentStage === "ready")
-      .slice(0, limit);
+    return await getReadyOrganizationsByGeographicFocus(ctx, focus, limit);
   },
 });
 
-// Get all homepage category rows in a single batched query
-export const getHomePageRows = query({
-  args: {},
-  handler: async (ctx) => {
-    // Fetch all ready organizations once
-    const allReady = await ctx.db
-      .query("organizations")
-      .withIndex("by_enrichmentStage", (q) => q.eq("enrichmentStage", "ready"))
-      .collect();
+export const getOrganizationCollection = query({
+  args: {
+    collectionKey: v.string(),
+    filters: v.object({
+      nteeMajors: v.optional(v.array(v.string())),
+      geographicFocuses: v.optional(v.array(geographicFocusValidator)),
+      states: v.optional(v.array(v.string())),
+      preferredState: v.optional(v.string()),
+    }),
+    limit: v.optional(v.number()),
+    poolLimit: v.optional(v.number()),
+    sessionSeed: v.optional(v.string()),
+  },
+  handler: async (
+    ctx,
+    { collectionKey, filters, limit = 15, poolLimit, sessionSeed },
+  ) => {
+    const organizations = await getOrganizationsForCollection(
+      ctx,
+      filters,
+      poolLimit ?? Math.max(limit * 4, ORGANIZATION_COLLECTION_POOL_SIZE),
+    );
 
-    const limit = 15;
-
-    // Filter into categories
-    const artsAndCulture = allReady
-      .filter((org) => org.nteeMajor === "A")
-      .slice(0, limit);
-
-    const education = allReady
-      .filter((org) => org.nteeMajor === "B")
-      .slice(0, limit);
-
-    const healthAndWellness = allReady
-      .filter((org) => org.nteeMajor === "E" || org.nteeMajor === "F")
-      .slice(0, limit);
-
-    const environmentAndAnimals = allReady
-      .filter((org) => org.nteeMajor === "C" || org.nteeMajor === "D")
-      .slice(0, limit);
-
-    const globalImpact = allReady
-      .filter((org) => org.geographicFocus === "Global")
-      .slice(0, limit);
-
-    const localCommunity = allReady
-      .filter((org) => org.geographicFocus === "Local")
-      .slice(0, limit);
-
-    return {
-      artsAndCulture,
-      education,
-      healthAndWellness,
-      environmentAndAnimals,
-      globalImpact,
-      localCommunity,
-    };
+    return applySeededCollectionSampling(
+      organizations,
+      collectionKey,
+      limit,
+      sessionSeed,
+      filters.preferredState,
+    );
   },
 });
