@@ -34,6 +34,43 @@ import { Button } from "@/components/ui/button";
 import { useAppSession } from "@/components/app-session-provider";
 import { useResetPreferences } from "@/hooks/use-reset-preferences";
 
+function AccountAvatar({
+  picture,
+  name,
+  email,
+  size,
+  textClassName,
+}: {
+  picture?: string;
+  name?: string;
+  email?: string;
+  size: number;
+  textClassName: string;
+}) {
+  const [failedPicture, setFailedPicture] = useState<string | null>(null);
+  const label = name || email || "User";
+
+  if (picture && picture !== failedPicture) {
+    return (
+      <Image
+        src={picture}
+        alt={label}
+        width={size}
+        height={size}
+        className="h-full w-full object-cover"
+        unoptimized
+        onError={() => setFailedPicture(picture)}
+      />
+    );
+  }
+
+  return (
+    <span className={textClassName}>
+      {label.slice(0, 1).toUpperCase()}
+    </span>
+  );
+}
+
 export function TopNav({ className }: { className?: string }) {
   const pathname = usePathname();
   const session = useAppSession();
@@ -113,22 +150,13 @@ export function TopNav({ className }: { className?: string }) {
                       className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/20 bg-white/10 transition hover:bg-white/20"
                       aria-label="Open account menu"
                     >
-                      {session.picture ? (
-                        <Image
-                          src={session.picture}
-                          alt={session.name || "Profile"}
-                          width={40}
-                          height={40}
-                          className="h-full w-full object-cover"
-                          unoptimized
-                        />
-                      ) : (
-                        <span className="text-sm font-semibold text-white">
-                          {(session.name || session.email || "U")
-                            .slice(0, 1)
-                            .toUpperCase()}
-                        </span>
-                      )}
+                      <AccountAvatar
+                        picture={session.picture}
+                        name={session.name}
+                        email={session.email}
+                        size={40}
+                        textClassName="text-sm font-semibold text-white"
+                      />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
@@ -138,22 +166,13 @@ export function TopNav({ className }: { className?: string }) {
                     <DropdownMenuLabel className="p-3">
                       <div className="flex items-center gap-3">
                         <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-white/20 bg-white/10">
-                          {session.picture ? (
-                            <Image
-                              src={session.picture}
-                              alt={session.name || "Profile"}
-                              width={48}
-                              height={48}
-                              className="h-full w-full object-cover"
-                              unoptimized
-                            />
-                          ) : (
-                            <span className="text-base font-semibold text-white">
-                              {(session.name || session.email || "U")
-                                .slice(0, 1)
-                                .toUpperCase()}
-                            </span>
-                          )}
+                          <AccountAvatar
+                            picture={session.picture}
+                            name={session.name}
+                            email={session.email}
+                            size={48}
+                            textClassName="text-base font-semibold text-white"
+                          />
                         </div>
                         <div className="min-w-0">
                           <p className="truncate font-semibold text-white">
