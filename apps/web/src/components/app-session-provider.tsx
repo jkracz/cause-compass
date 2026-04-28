@@ -89,13 +89,18 @@ function AuthLinker() {
       convexAuth.isLoading ||
       !session.isAuthenticated ||
       !convexAuth.isAuthenticated ||
-      !session.userId ||
-      !session.guestId
+      !session.userId
     ) {
       return;
     }
 
-    const linkKey = `${session.userId}:${session.guestId}`;
+    const linkKey = [
+      session.userId,
+      session.guestId ?? "",
+      session.email ?? "",
+      session.name ?? "",
+      session.picture ?? "",
+    ].join(":");
     if (lastAttemptRef.current === linkKey) {
       return;
     }
@@ -229,7 +234,6 @@ export function AppSessionProvider({
       auth.claims?.email,
       auth.claims?.name,
       auth.claims?.picture,
-      auth.identity.token,
       auth.loading,
       initialGuestId,
       isAuthenticated,
