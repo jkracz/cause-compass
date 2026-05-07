@@ -586,9 +586,7 @@ export const backfillSearchedOrg = internalMutation({
       );
       if (searchResult.urls.length === 0) {
         orgResult.skipped[searchResult.reason ?? "missingSearchResultUrl"]++;
-        if (searchResult.reason === "missingSearchResultUrl") {
-          await markOrgUncrawlable(ctx, org.orgId);
-        }
+        await markOrgUncrawlable(ctx, org.orgId);
         mergeBackfillResult(result, orgResult);
         continue;
       }

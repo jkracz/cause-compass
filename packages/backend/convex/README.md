@@ -107,10 +107,10 @@ npx convex run batch/manual:manualProcessResults '{"jobId": "..."}'
 npx convex run batch/manual:manualPollBatches
 
 # Promote existing ai_confirmed orgs with a confirmed website to ready
-npx convex run migrations:runPromoteConfirmedOrgsToReady
+npx convex run migrations:runPromoteConfirmedOrgsToReady '{"cursor": null}'
 
-# Refresh pipeline health aggregate after stage backfills
-npx convex run pipelineHealth:backfillAggregate '{"cursor": null}'
+# Repair pipeline health aggregate after imports or aggregate drift
+npx convex run pipelineHealth:resetAggregate
 
 # Backfill crawl queue status aggregate after deploying queue stats changes
 npx convex run crawlQueue:backfillQueueStatsAggregate '{"cursor": null}'

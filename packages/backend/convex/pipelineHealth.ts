@@ -237,6 +237,10 @@ export const getSummary = query({
 //
 // Trigger from the Convex dashboard or CLI:
 //   npx convex run pipelineHealth:backfillAggregate '{"cursor": null}'
+//
+// This only inserts missing aggregate entries. If existing aggregate entries
+// are stale because orgs were patched outside the aggregate helper, run
+// resetAggregate first.
 // ---------------------------------------------------------------------------
 
 export const backfillAggregate = internalMutation({
@@ -258,6 +262,30 @@ export const backfillAggregate = internalMutation({
         { cursor: result.continueCursor },
       );
     }
+
+    return null;
+  },
+});
+
+/**
+ * Reset and rebuild the organization stage aggregate from the organizations
+ * table. Use this to repair drift after direct imports or migrations that
+ * patched organizations without going through patchOrganization.
+ *
+ * Trigger from the Convex dashboard or CLI:
+ *   npx convex run pipelineHealth:resetAggregate
+ */
+export const resetAggregate = internalMutation({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    for (const stage of ENRICHMENT_STAGES) {
+      await orgStageAggregate.clear(ctx, { namespace: stage });
+    }
+
+    await ctx.scheduler.runAfter(0, internal.pipelineHealth.backfillAggregate, {
+      cursor: null,
+    });
 
     return null;
   },

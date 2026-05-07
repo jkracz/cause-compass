@@ -30,14 +30,36 @@ npx convex run pipelineHealth:backfillAggregate '{"cursor": null}'
 
 This self-schedules through all organizations in pages of 100. Once complete, `getSummary` returns accurate counts.
 
+This backfill only inserts missing aggregate entries. It does not remove stale
+entries left behind when an organization was patched outside the aggregate
+helper.
+
+### Aggregate repair
+
+If `getSummary` returns impossible values, such as a stage's stale count
+exceeding its total or a stale percentage over 100%, reset and rebuild the
+aggregate:
+
+```bash
+npx convex run pipelineHealth:resetAggregate
+```
+
+This clears each enrichment-stage aggregate namespace and self-schedules the
+paginated backfill from the live `organizations` table.
+
 ### Keeping the aggregate in sync
 
-All mutations that modify the organizations table must go through the `patchOrganization` helper in `packages/backend/convex/aggregates.ts`. This function patches the document and syncs the aggregate atomically. The three current call sites are:
+All mutations that modify the organizations table must go through the `patchOrganization` helper in `packages/backend/convex/aggregates.ts`. This function patches the document and syncs the aggregate atomically. Current call sites are:
 
 - `searchOrgs.ts` — `saveSearchResult`, `markOrgSearched`
+- `crawlQueue.ts` — crawl-settled advancement and uncrawlable classification
 - `batch/mutations.ts` — `internalUpdateOrgWithAiResults`
+- `migrations.ts` — organization-stage migration runners
 
-Bulk imports via `npx convex import` bypass mutations, so the backfill must be rerun after any import.
+Do not use `@convex-dev/migrations` returned patch objects for organization
+stage changes; those patches bypass `patchOrganization`. Bulk imports via
+`npx convex import` also bypass mutations, so the aggregate must be reset or
+backfilled after any import.
 
 ## Run Commands
 
