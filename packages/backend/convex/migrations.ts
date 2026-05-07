@@ -1,8 +1,11 @@
 import { Migrations } from "@convex-dev/migrations";
 import { normalizeStoredSearchResults } from "@cause/types";
+import { v } from "convex/values";
 import { components } from "./_generated/api.js";
 import { DataModel } from "./_generated/dataModel.js";
 import { internal } from "./_generated/api.js";
+import { internalMutation } from "./_generated/server.js";
+import { patchOrganization } from "./aggregates.js";
 
 // Initialize migrations with type safety
 export const migrations = new Migrations<DataModel>(components.migrations);
@@ -285,13 +288,80 @@ export const advanceSettledSearchedOrgs = migrations.define({
 });
 
 /**
- * Run the searched → crawled advancement migration
+ * Run the searched → crawled advancement migration.
  *
- * Usage: npx convex run migrations:runAdvanceSettledSearchedOrgs
+ * This runner intentionally uses patchOrganization instead of
+ * @convex-dev/migrations's returned patch object so orgStageAggregate stays in
+ * sync with organization stage changes.
+ *
+ * Usage: npx convex run migrations:runAdvanceSettledSearchedOrgs '{"cursor": null}'
  */
-export const runAdvanceSettledSearchedOrgs = migrations.runner(
-  internal.migrations.advanceSettledSearchedOrgs,
-);
+export const runAdvanceSettledSearchedOrgs = internalMutation({
+  args: { cursor: v.union(v.string(), v.null()) },
+  returns: v.null(),
+  handler: async (ctx, { cursor }) => {
+    const result = await ctx.db
+      .query("organizations")
+      .withIndex("by_enrichmentStage", (q) =>
+        q.eq("enrichmentStage", "searched"),
+      )
+      .paginate({ numItems: 100, cursor });
+
+    for (const org of result.page) {
+      const pendingJob = await ctx.db
+        .query("crawlQueue")
+        .withIndex("by_orgId_and_status", (q) =>
+          q.eq("orgId", org._id).eq("status", "pending"),
+        )
+        .first();
+      if (pendingJob) {
+        continue;
+      }
+
+      const processingJob = await ctx.db
+        .query("crawlQueue")
+        .withIndex("by_orgId_and_status", (q) =>
+          q.eq("orgId", org._id).eq("status", "processing"),
+        )
+        .first();
+      if (processingJob) {
+        continue;
+      }
+
+      const completedJob = await ctx.db
+        .query("crawlQueue")
+        .withIndex("by_orgId_and_status", (q) =>
+          q.eq("orgId", org._id).eq("status", "completed"),
+        )
+        .first();
+      const failedJob = await ctx.db
+        .query("crawlQueue")
+        .withIndex("by_orgId_and_status", (q) =>
+          q.eq("orgId", org._id).eq("status", "failed"),
+        )
+        .first();
+
+      if (!completedJob && !failedJob) {
+        continue;
+      }
+
+      await patchOrganization(ctx, org._id, {
+        enrichmentStage: "crawled",
+        updatedAt: Date.now(),
+      });
+    }
+
+    if (!result.isDone) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.migrations.runAdvanceSettledSearchedOrgs,
+        { cursor: result.continueCursor },
+      );
+    }
+
+    return null;
+  },
+});
 
 /**
  * Run all linking migrations in order
@@ -317,11 +387,56 @@ export const runSearchResultStorageShrink = migrations.runner(
 /**
  * Promote already-confirmed organizations to ready.
  *
- * Usage: npx convex run migrations:runPromoteConfirmedOrgsToReady
+ * This runner intentionally uses patchOrganization instead of
+ * @convex-dev/migrations's returned patch object so orgStageAggregate stays in
+ * sync with organization stage changes.
  *
- * Note: rerun pipelineHealth:backfillAggregate after this migration so the
- * aggregate counts reflect the updated enrichment stages.
+ * Usage: npx convex run migrations:runPromoteConfirmedOrgsToReady '{"cursor": null}'
  */
-export const runPromoteConfirmedOrgsToReady = migrations.runner(
-  internal.migrations.promoteConfirmedOrgsToReady,
-);
+export const runPromoteConfirmedOrgsToReady = internalMutation({
+  args: { cursor: v.union(v.string(), v.null()) },
+  returns: v.null(),
+  handler: async (ctx, { cursor }) => {
+    const result = await ctx.db
+      .query("organizations")
+      .withIndex("by_enrichmentStage", (q) =>
+        q.eq("enrichmentStage", "ai_confirmed"),
+      )
+      .paginate({ numItems: 100, cursor });
+
+    for (const organization of result.page) {
+      const confirmations = await ctx.db
+        .query("aiConfirmations")
+        .withIndex("by_ein", (q) => q.eq("ein", organization.ein))
+        .collect();
+
+      const latestConfirmedWebsite = confirmations
+        .filter(
+          (confirmation) =>
+            confirmation.outputs.hasCorrectWebsite &&
+            !!confirmation.outputs.correctWebsiteUrl,
+        )
+        .sort((a, b) => b.runAt.localeCompare(a.runAt))[0];
+
+      if (!latestConfirmedWebsite?.outputs.correctWebsiteUrl) {
+        continue;
+      }
+
+      await patchOrganization(ctx, organization._id, {
+        enrichmentStage: "ready",
+        websiteUrl: latestConfirmedWebsite.outputs.correctWebsiteUrl,
+        updatedAt: Date.now(),
+      });
+    }
+
+    if (!result.isDone) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.migrations.runPromoteConfirmedOrgsToReady,
+        { cursor: result.continueCursor },
+      );
+    }
+
+    return null;
+  },
+});
