@@ -2,24 +2,31 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
   "timezone": "America/Los_Angeles",
-  "schedule": ["* * * * 5,6"],
+  "schedule": ["* 0-4 * * 1"],
   "rangeStrategy": "bump",
   "dependencyDashboard": true,
   "prCreation": "immediate",
   "prConcurrentLimit": 10,
-  "postUpgradeTasks": {
-    "commands": ["pnpm --filter @cause/backend dlx convex codegen"],
-    "fileFilters": ["packages/backend/convex/_generated/**"]
-  },
   "packageRules": [
     {
-      "matchUpdateTypes": ["major"],
+      "description": "Ignore pre-1.0 npm dependencies",
+      "matchManagers": ["npm"],
+      "matchCurrentVersion": "/^0\\./",
       "enabled": false
     },
     {
-      "matchUpdateTypes": ["minor", "patch"],
-      "groupName": "all non-major dependencies",
-      "groupSlug": "all-minor-patch"
+      "groupName": "Routine updates",
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    },
+    {
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true
     }
   ]
 }
