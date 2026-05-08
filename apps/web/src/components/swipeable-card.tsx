@@ -7,6 +7,7 @@ import Image from "next/image";
 
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
+import { sanitizeTagline } from "@cause/types";
 
 type Organization = Doc<"organizations">;
 
@@ -36,7 +37,9 @@ export function SwipeableCard({
       ? `${organization.city}, ${organization.state}`
       : undefined;
   const displayTagline =
-    organization.tagline || organization.mission || organization.whySupport;
+    sanitizeTagline(organization.tagline) ||
+    organization.mission ||
+    organization.whySupport;
 
   const handleDragEnd = (
     _event: MouseEvent | TouchEvent | PointerEvent,

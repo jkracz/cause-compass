@@ -42,7 +42,8 @@ export const WEBSITE_CONFIRMATION_SCHEMA = {
     },
     organizationTagline: {
       type: ["string", "null"],
-      description: "A tagline or slogan of the organization",
+      description:
+        "A real tagline or slogan of the organization. Use null if none is present; never return punctuation, separators, placeholders, or empty text.",
     },
     organizationUniqueTrait: {
       type: ["string", "null"],

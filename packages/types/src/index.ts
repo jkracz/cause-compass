@@ -8,3 +8,4 @@ export * from "./eoFile";
 export * from "./batch";
 export * from "./worker";
 export * from "./llm";
+export * from "./text";

@@ -21,7 +21,11 @@ import {
   WEBSITE_CONFIRMATION_SCHEMA,
 } from "./constants";
 import type { OrgForAiConfirmation, OrgForAiConfirmationBase } from "./types";
-import type { AiConfirmationResponse, GeographicFocusType } from "@cause/types";
+import {
+  sanitizeTagline,
+  type AiConfirmationResponse,
+  type GeographicFocusType,
+} from "@cause/types";
 
 const CRAWLED_ORG_PAGE_SIZE = 250;
 
@@ -298,6 +302,10 @@ export const processResults = internalAction({
 
           // Parse the response content
           const parsed = JSON.parse(content) as AiConfirmationResponse;
+          const confirmedWebsiteUrl = parsed.hasCorrectWebsite
+            ? parsed.correctWebsiteUrl
+            : null;
+          const hasConfirmedWebsite = Boolean(confirmedWebsiteUrl);
 
           // Get organization from database
           const org = await ctx.runQuery(
@@ -319,23 +327,36 @@ export const processResults = internalAction({
               model: response.response?.body?.model ?? DEFAULT_MODEL,
               outputs: {
                 hasCorrectWebsite: parsed.hasCorrectWebsite,
-                correctWebsiteUrl: parsed.correctWebsiteUrl ?? undefined,
-                mission: parsed.organizationMission ?? undefined,
-                tagline: parsed.organizationTagline ?? undefined,
-                oneSentenceSummary:
-                  parsed.organizationOneSentenceSummary ?? undefined,
-                whySupport: parsed.whySupportOrganization ?? undefined,
-                targetAudience: parsed.organizationTargetAudience ?? undefined,
-                geographicFocus:
-                  parsed.organizationGeographicFocus ?? undefined,
-                activityTags: parsed.organizationActivities ?? undefined,
+                correctWebsiteUrl: confirmedWebsiteUrl ?? undefined,
+                mission: hasConfirmedWebsite
+                  ? (parsed.organizationMission ?? undefined)
+                  : undefined,
+                tagline: hasConfirmedWebsite
+                  ? sanitizeTagline(parsed.organizationTagline)
+                  : undefined,
+                oneSentenceSummary: hasConfirmedWebsite
+                  ? (parsed.organizationOneSentenceSummary ?? undefined)
+                  : undefined,
+                whySupport: hasConfirmedWebsite
+                  ? (parsed.whySupportOrganization ?? undefined)
+                  : undefined,
+                targetAudience: hasConfirmedWebsite
+                  ? (parsed.organizationTargetAudience ?? undefined)
+                  : undefined,
+                geographicFocus: hasConfirmedWebsite
+                  ? (parsed.organizationGeographicFocus ?? undefined)
+                  : undefined,
+                activityTags: hasConfirmedWebsite
+                  ? (parsed.organizationActivities ?? undefined)
+                  : undefined,
                 reasoning: parsed.reasoning ?? undefined,
               },
             },
           );
 
           // Promote to ready only when the website was confirmed by AI.
-          if (parsed.hasCorrectWebsite && parsed.correctWebsiteUrl) {
+          if (confirmedWebsiteUrl) {
+            const websiteUrl = confirmedWebsiteUrl;
             // Validate geographicFocus is one of the allowed values
             const validGeographicFocus: GeographicFocusType[] = [
               "Global",
@@ -358,7 +379,7 @@ export const processResults = internalAction({
             // Process crawl data to extract social media URLs, logo, donation link, and emails
             const crawlExtractedData = processCrawlDataForConfirmedWebsite(
               crawlResults,
-              parsed.correctWebsiteUrl,
+              websiteUrl,
             );
 
             // Only include non-empty social media URLs object
@@ -372,9 +393,9 @@ export const processResults = internalAction({
               {
                 orgId: org._id,
                 updates: {
-                  websiteUrl: parsed.correctWebsiteUrl ?? undefined,
+                  websiteUrl,
                   mission: parsed.organizationMission ?? undefined,
-                  tagline: parsed.organizationTagline ?? undefined,
+                  tagline: sanitizeTagline(parsed.organizationTagline),
                   oneSentenceSummary:
                     parsed.organizationOneSentenceSummary ?? undefined,
                   whySupport: parsed.whySupportOrganization ?? undefined,

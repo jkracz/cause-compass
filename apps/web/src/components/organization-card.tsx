@@ -7,6 +7,7 @@ import { Heart } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
 import { api } from "@cause/backend/convex/_generated/api";
+import { sanitizeTagline } from "@cause/types";
 import { useAppSession } from "@/components/app-session-provider";
 
 type Organization = Doc<"organizations">;
@@ -36,7 +37,7 @@ export function OrganizationCard({
     viewer?.likedOrganizations?.includes(organization.slug) ?? false;
 
   const previewText =
-    organization.tagline ||
+    sanitizeTagline(organization.tagline) ||
     organization.oneSentenceSummary ||
     organization.mission ||
     organization.whySupport;
@@ -125,7 +126,7 @@ export function OrganizationCard({
           className={`absolute top-2.5 right-2.5 flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-md transition-all duration-300 hover:scale-110 hover:border-pink-400/40 hover:bg-black/70 focus-visible:opacity-100 ${
             isLiked
               ? "opacity-100"
-              : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
+              : "opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
           }`}
         >
           <Heart
