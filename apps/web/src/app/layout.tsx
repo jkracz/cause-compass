@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Archivo, Bitter } from "next/font/google";
 import { cookies } from "next/headers";
 import "./globals.css";
-import { MosaicBackground } from "@/components/mosaic-background";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Footer } from "@/components/footer";
 import { Toaster } from "@/components/ui/sonner";
@@ -37,12 +36,11 @@ export default async function RootLayout({
       <body className={`${archivo.variable} ${bitter.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
+          forcedTheme="light"
           disableTransitionOnChange
         >
           <ConvexClientProvider guestId={guestId}>
-            <MosaicBackground />
             <div className="relative z-10 flex min-h-screen flex-col">
               <TopNav />
               <div className="page-transition-wrapper flex-1">{children}</div>

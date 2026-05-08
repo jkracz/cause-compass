@@ -39,7 +39,8 @@ import { useResetPreferences } from "@/hooks/use-reset-preferences";
 export function TopNav({ className }: { className?: string }) {
   const pathname = usePathname();
   const session = useAppSession();
-  const { isAuthenticated, isPending, resetPreferences } = useResetPreferences();
+  const { isAuthenticated, isPending, resetPreferences } =
+    useResetPreferences();
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
   const [isAccountAuthOpen, setIsAccountAuthOpen] = useState(false);
 
@@ -47,7 +48,7 @@ export function TopNav({ className }: { className?: string }) {
     <>
       <nav
         className={cn(
-          "border-border/50 bg-background/80 sticky top-0 z-50 w-full border-b backdrop-blur-md",
+          "sticky top-0 z-50 w-full border-b border-[var(--rule)] bg-[color:rgba(240,230,245,0.85)] backdrop-blur-md",
           className,
         )}
       >
@@ -55,7 +56,7 @@ export function TopNav({ className }: { className?: string }) {
           <div className="flex h-16 items-center justify-between gap-4">
             <Link
               href="/"
-              className="text-foreground hover:text-foreground/80 flex items-center gap-2 transition-colors"
+              className="flex items-center gap-2 text-[var(--ink)] transition-colors hover:text-[var(--accent)]"
             >
               <div className="flex h-8 w-8 items-center justify-center">
                 <Image
@@ -66,13 +67,7 @@ export function TopNav({ className }: { className?: string }) {
                   priority
                 />
               </div>
-              <span
-                className="font-heading text-xl font-bold tracking-tight text-white"
-                style={{
-                  textShadow:
-                    "0 0 20px rgba(168, 85, 247, 0.4), 0 0 10px rgba(236, 72, 153, 0.3)",
-                }}
-              >
+              <span className="font-heading text-xl font-bold tracking-tight text-[var(--ink)]">
                 Cause Compass
               </span>
             </Link>
@@ -85,9 +80,9 @@ export function TopNav({ className }: { className?: string }) {
                       asChild
                       className={cn(
                         navigationMenuTriggerStyle(),
-                        "bg-transparent text-white/70 hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white",
+                        "bg-transparent text-[var(--ink-soft)] hover:bg-[var(--paper-deep)] hover:text-[var(--accent)] focus:bg-[var(--paper-deep)] focus:text-[var(--accent)]",
                         pathname === "/my-causes" &&
-                          "bg-white/10 font-semibold text-white shadow-sm backdrop-blur-sm",
+                          "bg-[var(--paper-deep)] font-semibold text-[var(--accent)]",
                       )}
                     >
                       <Link href="/my-causes">My Causes</Link>
@@ -98,9 +93,9 @@ export function TopNav({ className }: { className?: string }) {
                       asChild
                       className={cn(
                         navigationMenuTriggerStyle(),
-                        "bg-transparent text-white/70 hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white",
+                        "bg-transparent text-[var(--ink-soft)] hover:bg-[var(--paper-deep)] hover:text-[var(--accent)] focus:bg-[var(--paper-deep)] focus:text-[var(--accent)]",
                         pathname === "/discover" &&
-                          "bg-white/10 font-semibold text-white shadow-sm backdrop-blur-sm",
+                          "bg-[var(--paper-deep)] font-semibold text-[var(--accent)]",
                       )}
                     >
                       <Link href="/discover">Discover</Link>
@@ -113,7 +108,7 @@ export function TopNav({ className }: { className?: string }) {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/20 bg-white/10 transition hover:bg-white/20"
+                      className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-[var(--rule)] bg-white/80 transition hover:bg-white"
                       aria-label="Open account menu"
                     >
                       <AccountAvatar
@@ -121,30 +116,30 @@ export function TopNav({ className }: { className?: string }) {
                         name={session.name}
                         email={session.email}
                         size={40}
-                        textClassName="text-sm font-semibold text-white"
+                        textClassName="text-sm font-semibold text-[var(--ink)]"
                       />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="end"
-                    className="w-72 border-white/10 bg-black/85 text-white backdrop-blur-xl"
+                    className="w-72 border-[var(--rule)] bg-white text-[var(--ink)] backdrop-blur-xl"
                   >
                     <DropdownMenuLabel className="p-3">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-white/20 bg-white/10">
+                        <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-[var(--rule)] bg-[var(--paper-deep)]">
                           <AccountAvatar
                             picture={session.picture}
                             name={session.name}
                             email={session.email}
                             size={48}
-                            textClassName="text-base font-semibold text-white"
+                            textClassName="text-base font-semibold text-[var(--ink)]"
                           />
                         </div>
                         <div className="min-w-0">
-                          <p className="truncate font-semibold text-white">
+                          <p className="truncate font-semibold text-[var(--ink)]">
                             {session.name || "Signed in"}
                           </p>
-                          <p className="truncate text-xs text-white/60">
+                          <p className="truncate text-xs text-[var(--ink-mute)]">
                             {session.email}
                           </p>
                         </div>
@@ -153,14 +148,14 @@ export function TopNav({ className }: { className?: string }) {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onSelect={() => setIsResetDialogOpen(true)}
-                      className="text-white/80 focus:bg-white/10 focus:text-white"
+                      className="text-[var(--ink-soft)] focus:bg-[var(--paper-deep)] focus:text-[var(--accent)]"
                     >
                       <RotateCcw className="size-4" />
                       Start over
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onSelect={() => void session.signOut()}
-                      className="text-white/80 focus:bg-white/10 focus:text-white"
+                      className="text-[var(--ink-soft)] focus:bg-[var(--paper-deep)] focus:text-[var(--accent)]"
                     >
                       <LogOut className="size-4" />
                       Sign out
