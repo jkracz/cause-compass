@@ -14,8 +14,8 @@ import { Compass, Search } from "lucide-react";
 
 import { OrganizationModal } from "@/components/organization-modal";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useWeekKey } from "@/hooks/use-week-key";
 import { CATEGORY_ROW_TITLES } from "@/lib/ntee-labels";
-import { getWeekKey } from "@/lib/week-key";
 import { api } from "@cause/backend/convex/_generated/api";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
 import { useAppSession } from "@/components/app-session-provider";
@@ -133,7 +133,7 @@ export function DiscoveryHomeContent() {
   const debouncedQuery = useDebounce(searchQuery, 300);
   const isSearching = debouncedQuery.length > 0;
 
-  const weekKey = useMemo(() => getWeekKey(), []);
+  const weekKey = useWeekKey();
 
   useEffect(() => {
     if (viewer === undefined || sessionLocationResolved) return;

@@ -8,6 +8,7 @@ import { api } from "@cause/backend/convex/_generated/api";
 import { useAppSession } from "@/components/app-session-provider";
 import { OrgMark } from "@/components/editorial/org-mark";
 import { cn } from "@/lib/utils";
+import { sanitizeTagline } from "@cause/types";
 
 type Organization = Doc<"organizations">;
 
@@ -40,7 +41,7 @@ export function EditorialOrgCard({
     viewer?.likedOrganizations?.includes(organization.slug) ?? false;
 
   const previewText =
-    organization.tagline ||
+    sanitizeTagline(organization.tagline) ||
     organization.oneSentenceSummary ||
     organization.whySupport ||
     organization.mission;
@@ -100,7 +101,7 @@ export function EditorialOrgCard({
             "flex h-9 w-9 items-center justify-center rounded-full border bg-white/85 transition-all duration-200 hover:scale-105",
             isLiked
               ? "border-[var(--accent)]/40 text-[var(--accent)]"
-              : "border-[var(--rule)] text-[var(--ink-mute)] opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
+              : "border-[var(--rule)] text-[var(--ink-mute)] opacity-0 group-focus-within:opacity-100 group-hover:opacity-100",
           )}
         >
           <Heart
@@ -126,7 +127,9 @@ export function EditorialOrgCard({
             <>
               <span className="text-[var(--rule-strong)]">·</span>
               <span className="flex shrink-0 items-center gap-1 text-[var(--accent-2)]">
-                <span aria-hidden>{GEO_GLYPH[organization.geographicFocus]}</span>
+                <span aria-hidden>
+                  {GEO_GLYPH[organization.geographicFocus]}
+                </span>
                 {organization.geographicFocus}
               </span>
             </>
@@ -135,7 +138,7 @@ export function EditorialOrgCard({
 
         <h3
           className={cn(
-            "font-heading line-clamp-2 font-semibold leading-[1.18] text-[var(--ink)]",
+            "font-heading line-clamp-2 leading-[1.18] font-semibold text-[var(--ink)]",
             variant === "tall" ? "text-[22px]" : "text-[18px]",
           )}
         >
@@ -146,7 +149,9 @@ export function EditorialOrgCard({
           <p
             className={cn(
               "leading-[1.5] text-[var(--ink-soft)]",
-              variant === "tall" ? "line-clamp-4 text-[14px]" : "line-clamp-3 text-[13px]",
+              variant === "tall"
+                ? "line-clamp-4 text-[14px]"
+                : "line-clamp-3 text-[13px]",
             )}
           >
             {previewText}

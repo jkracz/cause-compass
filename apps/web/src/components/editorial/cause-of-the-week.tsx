@@ -7,6 +7,7 @@ import { api } from "@cause/backend/convex/_generated/api";
 import { useAppSession } from "@/components/app-session-provider";
 import { OrgMark } from "@/components/editorial/org-mark";
 import { cn } from "@/lib/utils";
+import { sanitizeTagline } from "@cause/types";
 
 type Organization = Doc<"organizations">;
 
@@ -36,7 +37,7 @@ export function CauseOfTheWeek({
   };
 
   const lead =
-    organization.tagline ||
+    sanitizeTagline(organization.tagline) ||
     organization.oneSentenceSummary ||
     organization.whySupport;
 
@@ -96,7 +97,7 @@ export function CauseOfTheWeek({
           </h1>
 
           {lead && (
-            <p className="mt-6 max-w-xl border-l-2 border-[var(--accent)]/70 pl-5 font-heading text-[clamp(1.05rem,1.5vw,1.35rem)] leading-[1.45] font-medium italic text-[var(--ink-soft)]">
+            <p className="font-heading mt-6 max-w-xl border-l-2 border-[var(--accent)]/70 pl-5 text-[clamp(1.05rem,1.5vw,1.35rem)] leading-[1.45] font-medium text-[var(--ink-soft)] italic">
               “{lead}”
             </p>
           )}
@@ -121,7 +122,7 @@ export function CauseOfTheWeek({
               className="group inline-flex items-center gap-2 rounded-full bg-[var(--ink)] px-6 py-3 text-[13px] font-semibold tracking-wide text-[var(--paper)] transition-all hover:bg-[var(--accent)] hover:shadow-[0_18px_40px_-20px_rgba(200,38,110,0.55)]"
             >
               Read the full story
-              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </button>
             <button
               type="button"
@@ -155,8 +156,9 @@ export function CauseOfTheWeek({
               />
               <div className="mb-5 flex items-center justify-between text-[10px] font-semibold tracking-[0.32em] text-[var(--ink-mute)] uppercase">
                 <span>Featured</span>
-                <span className="font-mono normal-case tracking-[0.1em]">
-                  Vol. 01 · No. {String(new Date().getUTCDate()).padStart(2, "0")}
+                <span className="font-mono tracking-[0.1em] normal-case">
+                  Vol. 01 · No.{" "}
+                  {String(new Date().getUTCDate()).padStart(2, "0")}
                 </span>
               </div>
 
@@ -175,7 +177,9 @@ export function CauseOfTheWeek({
                     {organization.city}
                     {organization.state && (
                       <>
-                        <span className="mx-1.5 text-[var(--rule-strong)]">·</span>
+                        <span className="mx-1.5 text-[var(--rule-strong)]">
+                          ·
+                        </span>
                         <span>{organization.state}</span>
                       </>
                     )}
@@ -184,7 +188,10 @@ export function CauseOfTheWeek({
               </div>
 
               <div className="mt-6 grid grid-cols-3 gap-3 border-t border-[var(--rule)] pt-5 text-center text-[11px] font-medium text-[var(--ink-soft)]">
-                <Stat label="Focus" value={organization.geographicFocus ?? "—"} />
+                <Stat
+                  label="Focus"
+                  value={organization.geographicFocus ?? "—"}
+                />
                 <Stat
                   label="Scale"
                   value={SIZE_SHORT[organization.assetBucket] ?? "—"}
