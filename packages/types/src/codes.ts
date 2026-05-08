@@ -1,5 +1,37 @@
 import * as z from "zod";
 
+export const NteeMajorCodeValueSchema = z.enum([
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "G",
+  "H",
+  "I",
+  "J",
+  "K",
+  "L",
+  "M",
+  "N",
+  "O",
+  "P",
+  "Q",
+  "R",
+  "S",
+  "T",
+  "U",
+  "V",
+  "W",
+  "X",
+  "Y",
+  "Z",
+]);
+
+export const NTEE_MAJOR_CODES = NteeMajorCodeValueSchema.options;
+export type NteeMajorCodeValue = z.infer<typeof NteeMajorCodeValueSchema>;
+
 // Activity Code Schema
 export const ActivityCodeSchema = z.object({
   code: z.string(),
