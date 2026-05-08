@@ -192,7 +192,7 @@ importers:
         version: 5.1.11
       next:
         specifier: 16.2.5
-        version: 16.2.5(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 16.2.5(@opentelemetry/api@1.9.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -290,6 +290,12 @@ importers:
       convex:
         specifier: ^1.37.0
         version: 1.37.0(react@19.2.6)
+      openai:
+        specifier: ^6.37.0
+        version: 6.37.0(ws@8.18.0)(zod@4.4.3)
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@cause/eslint-config':
         specifier: workspace:*
@@ -3214,6 +3220,18 @@ packages:
 
   one-time@1.0.0:
     resolution: {integrity: sha512-5DXOiRKwuSEcQ/l0kGCF6Q3jcADFv5tSmRaJck/OqkVFcOzutB134KRSfF0xDrL39MNnqxbHBbUUcjZIhTgb2g==}
+
+  openai@6.37.0:
+    resolution: {integrity: sha512-0H5dEGFmmLv6KSd0W1w2nyL8WsLkX6yoLeQpU+dZAOuGcany5qkYQMmj35ZrKgb6yiyYqpUzFOpR8mZQkgqeEQ==}
+    hasBin: true
+    peerDependencies:
+      ws: ^8.18.0
+      zod: ^3.25 || ^4.0
+    peerDependenciesMeta:
+      ws:
+        optional: true
+      zod:
+        optional: true
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -6622,7 +6640,7 @@ snapshots:
       react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)
 
-  next@16.2.5(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
+  next@16.2.5(@opentelemetry/api@1.9.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
     dependencies:
       '@next/env': 16.2.5
       '@swc/helpers': 0.5.15
@@ -6631,7 +6649,7 @@ snapshots:
       postcss: 8.4.31
       react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)
-      styled-jsx: 5.1.6(@babel/core@7.28.4)(react@19.2.6)
+      styled-jsx: 5.1.6(react@19.2.6)
     optionalDependencies:
       '@next/swc-darwin-arm64': 16.2.5
       '@next/swc-darwin-x64': 16.2.5
@@ -6698,6 +6716,11 @@ snapshots:
   one-time@1.0.0:
     dependencies:
       fn.name: 1.1.0
+
+  openai@6.37.0(ws@8.18.0)(zod@4.4.3):
+    optionalDependencies:
+      ws: 8.18.0
+      zod: 4.4.3
 
   optionator@0.9.4:
     dependencies:
@@ -7128,12 +7151,10 @@ snapshots:
 
   strip-json-comments@3.1.1: {}
 
-  styled-jsx@5.1.6(@babel/core@7.28.4)(react@19.2.6):
+  styled-jsx@5.1.6(react@19.2.6):
     dependencies:
       client-only: 0.0.1
       react: 19.2.6
-    optionalDependencies:
-      '@babel/core': 7.28.4
 
   supports-preserve-symlinks-flag@1.0.0: {}
 

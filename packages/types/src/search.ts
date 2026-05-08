@@ -234,7 +234,13 @@ export const BatchJobSchema = z.object({
   artifactId: z.string().optional(), // GitHub artifact ID if stored
 });
 
-const GeographicFocus = z.enum(["Global", "Local", "National", "Regional"]);
+export const GeographicFocusSchema = z.enum([
+  "Global",
+  "Local",
+  "National",
+  "Regional",
+]);
+export type GeographicFocusType = z.infer<typeof GeographicFocusSchema>;
 
 export const WebsiteConfirmationSchema = z.object({
   hasCorrectWebsite: z
@@ -277,7 +283,7 @@ export const WebsiteConfirmationSchema = z.object({
     .string()
     .nullable()
     .describe("The primary audience the organization serves"),
-  organizationGeographicFocus: GeographicFocus.nullable().describe(
+  organizationGeographicFocus: GeographicFocusSchema.nullable().describe(
     "Geographic focus: Global/Regional/National/Local",
   ),
   organizationActivities: z

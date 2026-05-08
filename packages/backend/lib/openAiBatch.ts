@@ -3,6 +3,10 @@
  * Uses native fetch for simplicity in Convex runtime (similar to googleSearch.ts).
  */
 
+import * as z from "zod";
+import { zodResponseFormat } from "openai/helpers/zod";
+import type { ResponseFormatJSONSchema } from "openai/resources";
+
 // Type declaration for environment variables in Convex actions
 declare const process: {
   env: Record<string, string | undefined>;
@@ -90,14 +94,7 @@ export interface BatchRequestLine {
       role: "system" | "user" | "assistant";
       content: string;
     }>;
-    response_format?: {
-      type: string;
-      json_schema?: {
-        name: string;
-        strict: boolean;
-        schema: Record<string, unknown>;
-      };
-    };
+    response_format?: ResponseFormatJSONSchema;
     max_tokens?: number;
     temperature?: number;
   };
@@ -249,16 +246,6 @@ export async function downloadFileContent(fileId: string): Promise<string> {
   return response.text();
 }
 
-/**
- * Get file metadata from OpenAI.
- *
- * @param fileId - The OpenAI file ID
- * @returns The file object
- */
-export async function getFile(fileId: string): Promise<OpenAIFile> {
-  return openAIRequest<OpenAIFile>(`/files/${fileId}`);
-}
-
 // ============================================================================
 // Batch Operations
 // ============================================================================
@@ -298,42 +285,6 @@ export async function getBatch(batchId: string): Promise<OpenAIBatch> {
   return openAIRequest<OpenAIBatch>(`/batches/${batchId}`);
 }
 
-/**
- * Cancel a batch job.
- *
- * @param batchId - The OpenAI batch ID
- * @returns The updated batch object
- */
-export async function cancelBatch(batchId: string): Promise<OpenAIBatch> {
-  return openAIRequest<OpenAIBatch>(`/batches/${batchId}/cancel`, {
-    method: "POST",
-  });
-}
-
-/**
- * List all batch jobs with pagination.
- *
- * @param limit - Maximum number of batches to return (default 20, max 100)
- * @param after - Cursor for pagination
- * @returns List of batch objects
- */
-export async function listBatches(
-  limit: number = 20,
-  after?: string,
-): Promise<{
-  object: "list";
-  data: OpenAIBatch[];
-  first_id: string | null;
-  last_id: string | null;
-  has_more: boolean;
-}> {
-  const params = new URLSearchParams({ limit: String(limit) });
-  if (after) {
-    params.set("after", after);
-  }
-  return openAIRequest(`/batches?${params.toString()}`);
-}
-
 // ============================================================================
 // Batch Content Generation
 // ============================================================================
@@ -355,7 +306,7 @@ export function createConfirmationRequestLine(args: {
     textContent: string;
   }>;
   model?: string;
-  responseSchema: Record<string, unknown>;
+  responseSchema: z.ZodType;
 }): BatchRequestLine {
   const {
     ein,
@@ -368,6 +319,11 @@ export function createConfirmationRequestLine(args: {
     model = "gpt-5.4-nano",
     responseSchema,
   } = args;
+
+  const responseFormat = zodResponseFormat(
+    responseSchema,
+    "website-confirmation",
+  );
 
   const systemPrompt = `You are an expert at analyzing and interpreting webpage content. You will be given unstructured text from several webpages and information about a nonprofit organization. Some of these webpages may come from the same website. Your task is to determine the base URL of the correct website for the organization using all the provided information, and generate information like mission, unique traits, and reasons to support for the organization. If you cannot find the correct website, do not make up answers for the fields that are related to the website.
 
@@ -424,14 +380,7 @@ webpage text: ${item.textContent},
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "website-confirmation",
-          strict: true,
-          schema: responseSchema,
-        },
-      },
+      response_format: responseFormat,
     },
   };
 }
@@ -459,13 +408,6 @@ export function parseJSONL(content: string): BatchResponseLine[] {
 // ============================================================================
 
 /**
- * Check if a batch is still processing (not in a terminal state).
- */
-export function isBatchProcessing(status: OpenAIBatchStatus): boolean {
-  return ["validating", "in_progress", "finalizing"].includes(status);
-}
-
-/**
  * Check if a batch completed successfully.
  */
 export function isBatchCompleted(status: OpenAIBatchStatus): boolean {
@@ -477,19 +419,4 @@ export function isBatchCompleted(status: OpenAIBatchStatus): boolean {
  */
 export function isBatchFailed(status: OpenAIBatchStatus): boolean {
   return ["failed", "expired", "cancelled"].includes(status);
-}
-
-/**
- * Map OpenAI batch status to internal batch job status.
- */
-export function mapOpenAIStatusToJobStatus(
-  status: OpenAIBatchStatus,
-): "processing" | "downloading" | "failed" {
-  if (isBatchCompleted(status)) {
-    return "downloading";
-  }
-  if (isBatchFailed(status)) {
-    return "failed";
-  }
-  return "processing";
 }

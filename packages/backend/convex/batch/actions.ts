@@ -15,16 +15,12 @@ import {
   createConfirmationRequestLine,
 } from "../../lib/openAiBatch";
 import { processCrawlDataForConfirmedWebsite } from "../../lib/batchResponseProcessing";
-import {
-  DEFAULT_BATCH_SIZE,
-  DEFAULT_MODEL,
-  WEBSITE_CONFIRMATION_SCHEMA,
-} from "./constants";
+import { DEFAULT_BATCH_SIZE, DEFAULT_MODEL } from "./constants";
 import type { OrgForAiConfirmation, OrgForAiConfirmationBase } from "./types";
 import {
   sanitizeTagline,
-  type AiConfirmationResponse,
-  type GeographicFocusType,
+  WebsiteConfirmationSchema,
+  type WebsiteConfirmation,
 } from "@cause/types";
 
 const CRAWLED_ORG_PAGE_SIZE = 250;
@@ -171,7 +167,7 @@ export const createBatchJob = internalAction({
           codeDescription: org.nteeCode ?? "",
           websiteData: org.crawlData,
           model: modelName,
-          responseSchema: WEBSITE_CONFIRMATION_SCHEMA,
+          responseSchema: WebsiteConfirmationSchema,
         }),
       );
 
@@ -300,8 +296,17 @@ export const processResults = internalAction({
             continue;
           }
 
-          // Parse the response content
-          const parsed = JSON.parse(content) as AiConfirmationResponse;
+          const parseResult = WebsiteConfirmationSchema.safeParse(
+            JSON.parse(content),
+          );
+          if (!parseResult.success) {
+            console.warn(
+              `Invalid AI confirmation payload for EIN ${ein}: ${parseResult.error.message}`,
+            );
+            errorCount++;
+            continue;
+          }
+          const parsed: WebsiteConfirmation = parseResult.data;
           const confirmedWebsiteUrl = parsed.hasCorrectWebsite
             ? parsed.correctWebsiteUrl
             : null;
@@ -357,18 +362,7 @@ export const processResults = internalAction({
           // Promote to ready only when the website was confirmed by AI.
           if (confirmedWebsiteUrl) {
             const websiteUrl = confirmedWebsiteUrl;
-            // Validate geographicFocus is one of the allowed values
-            const validGeographicFocus: GeographicFocusType[] = [
-              "Global",
-              "National",
-              "Regional",
-              "Local",
-            ];
-            const geoFocus =
-              parsed.organizationGeographicFocus &&
-              validGeographicFocus.includes(parsed.organizationGeographicFocus)
-                ? parsed.organizationGeographicFocus
-                : undefined;
+            const geoFocus = parsed.organizationGeographicFocus ?? undefined;
 
             // Fetch crawl results to extract additional data (social media, logos, donation links)
             const crawlResults = await ctx.runQuery(
