@@ -38,6 +38,7 @@ import {
 import { toast } from "sonner";
 import { useMobile } from "@/hooks/use-mobile";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
+import { sanitizeTagline } from "@cause/types";
 
 type Organization = Doc<"organizations">;
 
@@ -255,7 +256,7 @@ export function OrganizationModal({
   };
 
   const lead =
-    organization.tagline ||
+    sanitizeTagline(organization.tagline) ||
     organization.oneSentenceSummary ||
     organization.whySupport;
 
@@ -340,7 +341,12 @@ export function OrganizationModal({
               height="32"
               patternUnits="userSpaceOnUse"
             >
-              <path d="M32 0 L 0 0 0 32" fill="none" stroke="currentColor" strokeWidth="1" />
+              <path
+                d="M32 0 L 0 0 0 32"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1"
+              />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#org-grid)" />
@@ -480,7 +486,7 @@ export function OrganizationModal({
           </div>
 
           <aside className="flex flex-col gap-5">
-            <div className="order-last rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.015] p-5 shadow-lg shadow-black/20 lg:order-none lg:sticky lg:top-6">
+            <div className="order-last rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.015] p-5 shadow-lg shadow-black/20 lg:sticky lg:top-6 lg:order-none">
               <div className="mb-3 flex items-center gap-2.5">
                 <span className="h-px w-6 bg-pink-300/60" />
                 <span className="text-[10px] font-semibold tracking-[0.24em] text-pink-200/80 uppercase">

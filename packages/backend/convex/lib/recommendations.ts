@@ -1,4 +1,5 @@
 import type { Doc } from "../_generated/dataModel";
+import { sanitizeTagline } from "@cause/types";
 
 export type RecommendationReasonCode =
   | "cause_match"
@@ -321,7 +322,7 @@ function buildSearchText(organization: OrganizationDoc) {
   return normalizeText(
     [
       organization.name,
-      organization.tagline,
+      sanitizeTagline(organization.tagline),
       organization.oneSentenceSummary,
       organization.mission,
       organization.whySupport,
@@ -449,11 +450,12 @@ function scoreHelpMethod(
           organization.socialMediaUrls &&
             Object.values(organization.socialMediaUrls).some(Boolean),
         );
+        const hasShareableCopy = Boolean(
+          sanitizeTagline(organization.tagline) ||
+            organization.whySupport?.trim(),
+        );
         const methodScore =
-          (hasSocialMedia ? 6 : 0) +
-          (organization.tagline?.trim() || organization.whySupport?.trim()
-            ? 2
-            : 0);
+          (hasSocialMedia ? 6 : 0) + (hasShareableCopy ? 2 : 0);
         if (methodScore > 0) {
           score += methodScore;
           matchedMethods.push(HELP_METHOD_LABELS[method] ?? method);
@@ -607,7 +609,11 @@ export function scoreRecommendation(
     preferences,
     sessionLocationState,
   );
-  const helpMethodScore = scoreHelpMethod(organization, preferences, searchText);
+  const helpMethodScore = scoreHelpMethod(
+    organization,
+    preferences,
+    searchText,
+  );
   const profileQualityScore = getProfileQualityScore(organization);
 
   const matchedSignals: RecommendationReasonCode[] = [];

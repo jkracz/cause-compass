@@ -7,6 +7,7 @@ const app = defineApp();
 app.use(migrations);
 app.use(workflow);
 app.use(aggregate);
+app.use(aggregate, { name: "orgNteeMajorAggregate" });
 app.use(aggregate, { name: "queueStatsAggregate" });
 
 export default app;

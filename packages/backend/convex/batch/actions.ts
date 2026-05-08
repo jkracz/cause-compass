@@ -15,13 +15,13 @@ import {
   createConfirmationRequestLine,
 } from "../../lib/openAiBatch";
 import { processCrawlDataForConfirmedWebsite } from "../../lib/batchResponseProcessing";
-import {
-  DEFAULT_BATCH_SIZE,
-  DEFAULT_MODEL,
-  WEBSITE_CONFIRMATION_SCHEMA,
-} from "./constants";
+import { DEFAULT_BATCH_SIZE, DEFAULT_MODEL } from "./constants";
 import type { OrgForAiConfirmation, OrgForAiConfirmationBase } from "./types";
-import type { AiConfirmationResponse, GeographicFocusType } from "@cause/types";
+import {
+  sanitizeTagline,
+  WebsiteConfirmationSchema,
+  type WebsiteConfirmation,
+} from "@cause/types";
 
 const CRAWLED_ORG_PAGE_SIZE = 250;
 
@@ -167,7 +167,7 @@ export const createBatchJob = internalAction({
           codeDescription: org.nteeCode ?? "",
           websiteData: org.crawlData,
           model: modelName,
-          responseSchema: WEBSITE_CONFIRMATION_SCHEMA,
+          responseSchema: WebsiteConfirmationSchema,
         }),
       );
 
@@ -296,8 +296,21 @@ export const processResults = internalAction({
             continue;
           }
 
-          // Parse the response content
-          const parsed = JSON.parse(content) as AiConfirmationResponse;
+          const parseResult = WebsiteConfirmationSchema.safeParse(
+            JSON.parse(content),
+          );
+          if (!parseResult.success) {
+            console.warn(
+              `Invalid AI confirmation payload for EIN ${ein}: ${parseResult.error.message}`,
+            );
+            errorCount++;
+            continue;
+          }
+          const parsed: WebsiteConfirmation = parseResult.data;
+          const confirmedWebsiteUrl = parsed.hasCorrectWebsite
+            ? parsed.correctWebsiteUrl
+            : null;
+          const hasConfirmedWebsite = Boolean(confirmedWebsiteUrl);
 
           // Get organization from database
           const org = await ctx.runQuery(
@@ -319,35 +332,37 @@ export const processResults = internalAction({
               model: response.response?.body?.model ?? DEFAULT_MODEL,
               outputs: {
                 hasCorrectWebsite: parsed.hasCorrectWebsite,
-                correctWebsiteUrl: parsed.correctWebsiteUrl ?? undefined,
-                mission: parsed.organizationMission ?? undefined,
-                tagline: parsed.organizationTagline ?? undefined,
-                oneSentenceSummary:
-                  parsed.organizationOneSentenceSummary ?? undefined,
-                whySupport: parsed.whySupportOrganization ?? undefined,
-                targetAudience: parsed.organizationTargetAudience ?? undefined,
-                geographicFocus:
-                  parsed.organizationGeographicFocus ?? undefined,
-                activityTags: parsed.organizationActivities ?? undefined,
+                correctWebsiteUrl: confirmedWebsiteUrl ?? undefined,
+                mission: hasConfirmedWebsite
+                  ? (parsed.organizationMission ?? undefined)
+                  : undefined,
+                tagline: hasConfirmedWebsite
+                  ? sanitizeTagline(parsed.organizationTagline)
+                  : undefined,
+                oneSentenceSummary: hasConfirmedWebsite
+                  ? (parsed.organizationOneSentenceSummary ?? undefined)
+                  : undefined,
+                whySupport: hasConfirmedWebsite
+                  ? (parsed.whySupportOrganization ?? undefined)
+                  : undefined,
+                targetAudience: hasConfirmedWebsite
+                  ? (parsed.organizationTargetAudience ?? undefined)
+                  : undefined,
+                geographicFocus: hasConfirmedWebsite
+                  ? (parsed.organizationGeographicFocus ?? undefined)
+                  : undefined,
+                activityTags: hasConfirmedWebsite
+                  ? (parsed.organizationActivities ?? undefined)
+                  : undefined,
                 reasoning: parsed.reasoning ?? undefined,
               },
             },
           );
 
           // Promote to ready only when the website was confirmed by AI.
-          if (parsed.hasCorrectWebsite && parsed.correctWebsiteUrl) {
-            // Validate geographicFocus is one of the allowed values
-            const validGeographicFocus: GeographicFocusType[] = [
-              "Global",
-              "National",
-              "Regional",
-              "Local",
-            ];
-            const geoFocus =
-              parsed.organizationGeographicFocus &&
-              validGeographicFocus.includes(parsed.organizationGeographicFocus)
-                ? parsed.organizationGeographicFocus
-                : undefined;
+          if (confirmedWebsiteUrl) {
+            const websiteUrl = confirmedWebsiteUrl;
+            const geoFocus = parsed.organizationGeographicFocus ?? undefined;
 
             // Fetch crawl results to extract additional data (social media, logos, donation links)
             const crawlResults = await ctx.runQuery(
@@ -358,7 +373,7 @@ export const processResults = internalAction({
             // Process crawl data to extract social media URLs, logo, donation link, and emails
             const crawlExtractedData = processCrawlDataForConfirmedWebsite(
               crawlResults,
-              parsed.correctWebsiteUrl,
+              websiteUrl,
             );
 
             // Only include non-empty social media URLs object
@@ -372,9 +387,9 @@ export const processResults = internalAction({
               {
                 orgId: org._id,
                 updates: {
-                  websiteUrl: parsed.correctWebsiteUrl ?? undefined,
+                  websiteUrl,
                   mission: parsed.organizationMission ?? undefined,
-                  tagline: parsed.organizationTagline ?? undefined,
+                  tagline: sanitizeTagline(parsed.organizationTagline),
                   oneSentenceSummary:
                     parsed.organizationOneSentenceSummary ?? undefined,
                   whySupport: parsed.whySupportOrganization ?? undefined,

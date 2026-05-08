@@ -1,6 +1,12 @@
+import { NTEE_MAJOR_CODES } from "@cause/types";
 import { query, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
-import { orgStageAggregate } from "./aggregates";
+import {
+  MISSING_NTEE_MAJOR_NAMESPACE,
+  getNteeMajorNamespace,
+  orgNteeMajorAggregate,
+  orgStageAggregate,
+} from "./aggregates";
 import { v } from "convex/values";
 
 const ENRICHMENT_STAGES = [
@@ -13,6 +19,11 @@ const ENRICHMENT_STAGES = [
 ] as const;
 
 type EnrichmentStage = (typeof ENRICHMENT_STAGES)[number];
+
+const NTEE_MAJOR_NAMESPACES = [
+  ...NTEE_MAJOR_CODES,
+  MISSING_NTEE_MAJOR_NAMESPACE,
+] as const;
 
 // ---------------------------------------------------------------------------
 // Validators
@@ -44,6 +55,11 @@ const processingJobValidator = v.object({
   workflowId: v.optional(v.string()),
 });
 
+const nteeMajorCountValidator = v.object({
+  nteeMajor: v.union(v.string(), v.null()),
+  total: v.number(),
+});
+
 const summaryValidator = v.object({
   generatedAtIso: v.string(),
   staleHours: v.number(),
@@ -63,6 +79,7 @@ const summaryValidator = v.object({
     ai_confirmed: stageHealthValidator,
     ready: stageHealthValidator,
   }),
+  byNteeMajor: v.array(nteeMajorCountValidator),
   batchJobs: batchHealthValidator,
   activeProcessingJobs: v.array(processingJobValidator),
   notes: v.array(v.string()),
@@ -115,6 +132,11 @@ export const getSummary = query({
       })),
     ]);
 
+    const nteeMajorCounts = await orgNteeMajorAggregate.countBatch(
+      ctx,
+      NTEE_MAJOR_NAMESPACES.map((namespace) => ({ namespace })),
+    );
+
     const byStage = {} as Record<
       EnrichmentStage,
       {
@@ -163,6 +185,11 @@ export const getSummary = query({
       organizationTotals.fresh += fresh;
     }
 
+    const byNteeMajor = NTEE_MAJOR_NAMESPACES.map((namespace, index) => ({
+      nteeMajor: namespace === MISSING_NTEE_MAJOR_NAMESPACE ? null : namespace,
+      total: nteeMajorCounts[index]!,
+    }));
+
     // Batch jobs — table is small enough for direct queries
     const [processingJobs, completedJobs, failedJobs] = await Promise.all([
       ctx.db
@@ -210,6 +237,7 @@ export const getSummary = query({
       cutoffTimestamp,
       organizationTotals,
       byStage,
+      byNteeMajor,
       batchJobs: {
         total: processingJobs.length + completedJobs.length + failedJobs.length,
         processing: processingJobs.length,
@@ -252,7 +280,10 @@ export const backfillAggregate = internalMutation({
       .paginate({ numItems: 100, cursor: cursor ?? null });
 
     for (const doc of result.page) {
-      await orgStageAggregate.insertIfDoesNotExist(ctx, doc);
+      await Promise.all([
+        orgStageAggregate.insertIfDoesNotExist(ctx, doc),
+        orgNteeMajorAggregate.insertIfDoesNotExist(ctx, doc),
+      ]);
     }
 
     if (!result.isDone) {
@@ -281,6 +312,13 @@ export const resetAggregate = internalMutation({
   handler: async (ctx) => {
     for (const stage of ENRICHMENT_STAGES) {
       await orgStageAggregate.clear(ctx, { namespace: stage });
+    }
+    for (const namespace of NTEE_MAJOR_NAMESPACES) {
+      await orgNteeMajorAggregate.clear(ctx, {
+        namespace: getNteeMajorNamespace(
+          namespace === MISSING_NTEE_MAJOR_NAMESPACE ? undefined : namespace,
+        ),
+      });
     }
 
     await ctx.scheduler.runAfter(0, internal.pipelineHealth.backfillAggregate, {

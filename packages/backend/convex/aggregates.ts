@@ -17,6 +17,16 @@ export const orgStageAggregate = new TableAggregate<{
   namespace: (doc) => doc.enrichmentStage,
 });
 
+export const orgNteeMajorAggregate = new TableAggregate<{
+  Key: number;
+  DataModel: DataModel;
+  TableName: "organizations";
+  Namespace: string;
+}>(components.orgNteeMajorAggregate, {
+  sortKey: (doc) => doc.updatedAt ?? 0,
+  namespace: (doc) => getNteeMajorNamespace(doc.nteeMajor),
+});
+
 export const crawlQueueStatusAggregate = new TableAggregate<{
   Key: number;
   DataModel: DataModel;
@@ -41,8 +51,17 @@ export async function patchOrganization(
   await ctx.db.patch(orgId, updates as never);
   const newDoc = await ctx.db.get(orgId);
   if (oldDoc && newDoc) {
-    await orgStageAggregate.replaceOrInsert(ctx, oldDoc, newDoc);
+    await Promise.all([
+      orgStageAggregate.replaceOrInsert(ctx, oldDoc, newDoc),
+      orgNteeMajorAggregate.replaceOrInsert(ctx, oldDoc, newDoc),
+    ]);
   }
+}
+
+export const MISSING_NTEE_MAJOR_NAMESPACE = "__missing__";
+
+export function getNteeMajorNamespace(nteeMajor: string | undefined) {
+  return nteeMajor ?? MISSING_NTEE_MAJOR_NAMESPACE;
 }
 
 type CrawlQueueStatus = Doc<"crawlQueue">["status"];

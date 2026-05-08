@@ -5,6 +5,6 @@ export * from "./organization";
 export * from "./user";
 export * from "./activity";
 export * from "./eoFile";
-export * from "./batch";
 export * from "./worker";
 export * from "./llm";
+export * from "./text";

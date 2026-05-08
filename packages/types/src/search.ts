@@ -117,7 +117,9 @@ function hasUnwantedSubdomain(hostname: string): boolean {
   return UNWANTED_SUBDOMAIN_PARTS.some((part) => subdomain.includes(part));
 }
 
-function shouldExcludeStoredSearchResult(candidate: Record<string, unknown>): boolean {
+function shouldExcludeStoredSearchResult(
+  candidate: Record<string, unknown>,
+): boolean {
   const link = getOptionalString(candidate.link);
   const displayLink = getOptionalString(candidate.displayLink);
   const hostname = parseSearchHostname(link ?? displayLink ?? "");
@@ -232,7 +234,13 @@ export const BatchJobSchema = z.object({
   artifactId: z.string().optional(), // GitHub artifact ID if stored
 });
 
-const GeographicFocus = z.enum(["Global", "Local", "National", "Regional"]);
+export const GeographicFocusSchema = z.enum([
+  "Global",
+  "Local",
+  "National",
+  "Regional",
+]);
+export type GeographicFocusType = z.infer<typeof GeographicFocusSchema>;
 
 export const WebsiteConfirmationSchema = z.object({
   hasCorrectWebsite: z
@@ -264,7 +272,9 @@ export const WebsiteConfirmationSchema = z.object({
   organizationTagline: z
     .string()
     .nullable()
-    .describe("A tagline or slogan of the organization"),
+    .describe(
+      "A real tagline or slogan of the organization. Use null if none is present; never return punctuation, separators, placeholders, or empty text.",
+    ),
   organizationUniqueTrait: z
     .string()
     .nullable()
@@ -273,7 +283,7 @@ export const WebsiteConfirmationSchema = z.object({
     .string()
     .nullable()
     .describe("The primary audience the organization serves"),
-  organizationGeographicFocus: GeographicFocus.nullable().describe(
+  organizationGeographicFocus: GeographicFocusSchema.nullable().describe(
     "Geographic focus: Global/Regional/National/Local",
   ),
   organizationActivities: z
@@ -300,7 +310,9 @@ export interface OpenAIResponse {
 
 // Export types
 export type SearchResult = z.infer<typeof SearchResultSchema>;
-export type StoredSearchResultItem = z.infer<typeof StoredSearchResultItemSchema>;
+export type StoredSearchResultItem = z.infer<
+  typeof StoredSearchResultItemSchema
+>;
 export type StoredSearchResults = z.infer<typeof StoredSearchResultsSchema>;
 export type SocialMediaUrls = z.infer<typeof SocialMediaUrlsSchema>;
 export type CrawlItem = z.infer<typeof CrawlItemSchema>;

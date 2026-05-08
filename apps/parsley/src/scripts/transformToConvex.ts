@@ -22,7 +22,11 @@ import type {
   WebsiteConfirmation,
   GeographicFocusType,
 } from "@cause/types";
-import { normalizeStoredSearchResults } from "@cause/types";
+import {
+  normalizeStoredSearchResults,
+  sanitizeTagline,
+  WebsiteConfirmationSchema,
+} from "@cause/types";
 import type { Doc } from "@cause/backend/convex/_generated/dataModel";
 
 // Inline Convex document types - omit system fields for creation
@@ -65,24 +69,16 @@ function parseGeographicFocus(
 
 function parseAiResponse(
   response: TaxExemptOrganization["aiConfirmationResponse"],
-): Partial<WebsiteConfirmation> | null {
+): WebsiteConfirmation | null {
   try {
     const content = response?.body?.choices?.[0]?.message?.content;
     if (!content) return null;
 
     const parsed = JSON.parse(content);
-    return {
-      hasCorrectWebsite: parsed.hasCorrectWebsite ?? false,
-      correctWebsiteUrl: parsed.correctWebsiteUrl,
-      organizationMission: parsed.organizationMission,
-      organizationTagline: parsed.organizationTagline,
-      organizationOneSentenceSummary: parsed.oneSentenceOrganizationSummary,
-      whySupportOrganization: parsed.whySupportOrganization,
-      organizationTargetAudience: parsed.organizationTargetAudience,
-      organizationGeographicFocus: parsed.organizationGeographicFocus,
-      organizationActivities: parsed.organizationActivities,
-      reasoning: parsed.reasoning,
-    };
+    const parseResult = WebsiteConfirmationSchema.safeParse(parsed);
+    if (parseResult.success) return parseResult.data;
+
+    return null;
   } catch {
     return null;
   }
@@ -171,7 +167,7 @@ function transformDocument(doc: TaxExemptOrganization): TransformResult {
     // AI-populated fields (if available)
     websiteUrl: doc.websiteUrl ?? undefined,
     mission: doc.mission ?? undefined,
-    tagline: doc.tagline ?? undefined,
+    tagline: sanitizeTagline(doc.tagline),
     oneSentenceSummary: doc.oneSentenceSummary ?? undefined,
     whySupport: doc.whySupport ?? undefined,
     targetAudience: doc.targetAudience ?? undefined,
@@ -251,6 +247,10 @@ function transformDocument(doc: TaxExemptOrganization): TransformResult {
   if (doc.aiConfirmationResponse) {
     const parsed = parseAiResponse(doc.aiConfirmationResponse);
     if (parsed) {
+      const hasConfirmedWebsite = Boolean(
+        parsed.hasCorrectWebsite && parsed.correctWebsiteUrl,
+      );
+
       aiConfirmation = {
         ein: doc.ein,
         model: extractModel(doc.aiConfirmationResponse),
@@ -258,15 +258,30 @@ function transformDocument(doc: TaxExemptOrganization): TransformResult {
         inputs: {},
         outputs: {
           hasCorrectWebsite: parsed.hasCorrectWebsite ?? false,
-          correctWebsiteUrl: parsed.correctWebsiteUrl ?? undefined,
-          mission: parsed.organizationMission ?? undefined,
-          tagline: parsed.organizationTagline ?? undefined,
-          oneSentenceSummary:
-            parsed.organizationOneSentenceSummary ?? undefined,
-          whySupport: parsed.whySupportOrganization ?? undefined,
-          targetAudience: parsed.organizationTargetAudience ?? undefined,
-          geographicFocus: parsed.organizationGeographicFocus ?? undefined,
-          activityTags: parsed.organizationActivities ?? undefined,
+          correctWebsiteUrl: hasConfirmedWebsite
+            ? (parsed.correctWebsiteUrl ?? undefined)
+            : undefined,
+          mission: hasConfirmedWebsite
+            ? (parsed.organizationMission ?? undefined)
+            : undefined,
+          tagline: hasConfirmedWebsite
+            ? sanitizeTagline(parsed.organizationTagline)
+            : undefined,
+          oneSentenceSummary: hasConfirmedWebsite
+            ? (parsed.organizationOneSentenceSummary ?? undefined)
+            : undefined,
+          whySupport: hasConfirmedWebsite
+            ? (parsed.whySupportOrganization ?? undefined)
+            : undefined,
+          targetAudience: hasConfirmedWebsite
+            ? (parsed.organizationTargetAudience ?? undefined)
+            : undefined,
+          geographicFocus: hasConfirmedWebsite
+            ? (parsed.organizationGeographicFocus ?? undefined)
+            : undefined,
+          activityTags: hasConfirmedWebsite
+            ? (parsed.organizationActivities ?? undefined)
+            : undefined,
           reasoning: parsed.reasoning ?? undefined,
         },
       };

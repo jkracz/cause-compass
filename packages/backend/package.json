@@ -15,7 +15,9 @@
     "@convex-dev/aggregate": "^0.2.1",
     "@convex-dev/migrations": "^0.3.4",
     "@convex-dev/workflow": "^0.3.12",
-    "convex": "^1.37.0"
+    "convex": "^1.37.0",
+    "openai": "^6.37.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@cause/eslint-config": "workspace:*",
