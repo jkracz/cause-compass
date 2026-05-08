@@ -31,6 +31,12 @@
       "skillPath": "skill/SKILL.md",
       "computedHash": "8cdf2e788eaca3af7d02026ef9cec55b506100a00d130f938e3fb1ad669c0ad0"
     },
+    "opensrc": {
+      "source": "vercel-labs/opensrc",
+      "sourceType": "github",
+      "skillPath": "skills/opensrc/SKILL.md",
+      "computedHash": "20d4395d64cae1e0de62053e1084c0ef58fbf573326a38fbd04f4bb677f0d729"
+    },
     "vercel-react-best-practices": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
