@@ -9,6 +9,7 @@
  */
 
 import type * as aggregates from "../aggregates.js";
+import type * as auth from "../auth.js";
 import type * as batch_actions from "../batch/actions.js";
 import type * as batch_constants from "../batch/constants.js";
 import type * as batch_index from "../batch/index.js";
@@ -41,6 +42,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   aggregates: typeof aggregates;
+  auth: typeof auth;
   "batch/actions": typeof batch_actions;
   "batch/constants": typeof batch_constants;
   "batch/index": typeof batch_index;
@@ -93,6 +95,7 @@ export declare const internal: FilterApi<
 >;
 
 export declare const components: {
+  betterAuth: import("@convex-dev/better-auth/_generated/component.js").ComponentApi<"betterAuth">;
   migrations: import("@convex-dev/migrations/_generated/component.js").ComponentApi<"migrations">;
   workflow: import("@convex-dev/workflow/_generated/component.js").ComponentApi<"workflow">;
   aggregate: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"aggregate">;

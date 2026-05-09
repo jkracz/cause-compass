@@ -12,12 +12,6 @@ export async function getAuthIdentity(ctx: ViewerCtx) {
 
   return {
     userId: identity.subject,
-    profile: {
-      email: typeof identity.email === "string" ? identity.email : undefined,
-      name: typeof identity.name === "string" ? identity.name : undefined,
-      picture:
-        typeof identity.picture === "string" ? identity.picture : undefined,
-    },
   };
 }
 

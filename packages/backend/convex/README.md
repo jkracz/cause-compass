@@ -4,15 +4,18 @@ This directory contains the Convex backend functions for Cause Compass.
 
 ## Auth Setup
 
-Convex trusts Shoo as a custom JWT provider via `convex/auth.config.ts`.
+Convex trusts the Better Auth component as a custom JWT provider via `convex/auth.config.ts`.
 
-Set this environment variable in the Convex dashboard before running `convex dev` or deploying:
+Set these environment variables in the Convex dashboard before running `convex dev` or deploying:
 
 ```bash
-APP_ORIGIN=http://localhost:3000
+BETTER_AUTH_SECRET=<random-secret>
+SITE_URL=http://localhost:3000
+GOOGLE_CLIENT_ID=<google-oauth-client-id>
+GOOGLE_CLIENT_SECRET=<google-oauth-client-secret>
 ```
 
-`APP_ORIGIN` must exactly match the browser origin used by the web app because Shoo tokens use an audience of `origin:{your_origin}`.
+`SITE_URL` must exactly match the browser origin used by the web app. Google OAuth redirect URIs should point at `/api/auth/callback/google` on that origin.
 
 ## Batch Processing Workflow
 
