@@ -14,7 +14,7 @@ pnpm lint
 ## Convex Integration
 
 - `src/app/ConvexClientProvider.tsx` passes the server-read `guestId` into `src/components/app-session-provider.tsx`
-- `src/components/app-session-provider.tsx` owns the Shoo session, `ConvexProviderWithAuth`, and guest-to-account linking
+- `src/components/app-session-provider.tsx` owns the Better Auth session, `ConvexBetterAuthProvider`, and guest-to-account linking
 - Client-side reads and writes use direct `useQuery` and `useMutation` hooks from client components
 - Shared backend schema lives in `packages/backend/convex/schema.ts`
 
@@ -23,7 +23,7 @@ If a change touches Convex behavior or schema assumptions, read [packages/backen
 ## User Management
 
 - Anonymous users receive a `guestId` cookie from `src/proxy.ts`
-- Authenticated users are identified in Convex through Shoo JWT claims
+- Authenticated users are identified in Convex through Better Auth JWT claims
 - User records live in the Convex `users` table and can be linked from guest to authenticated state
 
 ## Routes

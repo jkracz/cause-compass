@@ -23,14 +23,6 @@ const userPreferencesValidator = v.object({
   ),
 });
 
-const profileValidator = v.optional(
-  v.object({
-    email: v.optional(v.string()),
-    name: v.optional(v.string()),
-    picture: v.optional(v.string()),
-  }),
-);
-
 const userValidator = v.object({
   _id: v.id("users"),
   _creationTime: v.number(),
@@ -39,28 +31,9 @@ const userValidator = v.object({
   preferences: userPreferencesValidator,
   likedOrganizations: v.array(v.string()),
   dismissedOrganizations: v.optional(v.array(v.string())),
-  profile: profileValidator,
 });
 
 type UserDoc = Doc<"users">;
-
-function cleanProfile(
-  profile?: {
-    email?: string;
-    name?: string;
-    picture?: string;
-  } | null,
-) {
-  if (!profile) {
-    return undefined;
-  }
-
-  return {
-    email: profile.email ?? undefined,
-    name: profile.name ?? undefined,
-    picture: profile.picture ?? undefined,
-  };
-}
 
 async function findGuestUser(ctx: MutationCtx, guestId?: string) {
   if (!guestId) {
@@ -77,21 +50,12 @@ async function ensureLinkedAuthenticatedUser(
   ctx: MutationCtx,
   guestId: string | undefined,
   authIdentity: NonNullable<Awaited<ReturnType<typeof getAuthIdentity>>>,
-  profileOverride?: {
-    email?: string;
-    name?: string;
-    picture?: string;
-  },
 ) {
   const accountUser = await ctx.db
     .query("users")
     .withIndex("by_userId", (q) => q.eq("userId", authIdentity.userId))
     .first();
   const guestUser = await findGuestUser(ctx, guestId);
-  const mergedProfile = cleanProfile({
-    ...authIdentity.profile,
-    ...profileOverride,
-  });
 
   if (guestUser && accountUser && guestUser._id !== accountUser._id) {
     const likedOrganizations = mergeLikedOrganizations(
@@ -111,7 +75,6 @@ async function ensureLinkedAuthenticatedUser(
       likedOrganizations,
       dismissedOrganizations,
       preferences,
-      profile: mergedProfile,
     });
     await ctx.db.delete(guestUser._id);
 
@@ -120,7 +83,6 @@ async function ensureLinkedAuthenticatedUser(
       likedOrganizations,
       dismissedOrganizations,
       preferences,
-      profile: mergedProfile,
     } satisfies UserDoc;
   }
 
@@ -128,25 +90,20 @@ async function ensureLinkedAuthenticatedUser(
     await ctx.db.patch(guestUser._id, {
       userId: authIdentity.userId,
       guestId: undefined,
-      profile: mergedProfile,
     });
 
     return {
       ...guestUser,
       userId: authIdentity.userId,
       guestId: undefined,
-      profile: mergedProfile,
     } satisfies UserDoc;
   }
 
   if (accountUser) {
-    await ctx.db.patch(accountUser._id, {
-      profile: mergedProfile,
-    });
+    await ctx.db.patch(accountUser._id, {});
 
     return {
       ...accountUser,
-      profile: mergedProfile,
     } satisfies UserDoc;
   }
 
@@ -155,7 +112,6 @@ async function ensureLinkedAuthenticatedUser(
     preferences: {},
     likedOrganizations: [],
     dismissedOrganizations: [],
-    profile: mergedProfile,
   });
 
   const user = await ctx.db.get(userId);
@@ -204,7 +160,6 @@ export const saveViewerPreferences = mutation({
 
       await ctx.db.patch(user._id, {
         preferences,
-        profile: cleanProfile(viewer.authIdentity.profile),
       });
 
       return null;
@@ -261,7 +216,10 @@ export const likeOrganization = mutation({
     if (viewer.user) {
       if (!viewer.user.likedOrganizations.includes(organizationId)) {
         await ctx.db.patch(viewer.user._id, {
-          likedOrganizations: [...viewer.user.likedOrganizations, organizationId],
+          likedOrganizations: [
+            ...viewer.user.likedOrganizations,
+            organizationId,
+          ],
           dismissedOrganizations: (
             viewer.user.dismissedOrganizations ?? []
           ).filter((id) => id !== organizationId),
@@ -313,7 +271,9 @@ export const dismissOrganization = mutation({
     }
 
     if (viewer.user) {
-      if (!(viewer.user.dismissedOrganizations ?? []).includes(organizationId)) {
+      if (
+        !(viewer.user.dismissedOrganizations ?? []).includes(organizationId)
+      ) {
         await ctx.db.patch(viewer.user._id, {
           dismissedOrganizations: [
             ...(viewer.user.dismissedOrganizations ?? []),
@@ -393,20 +353,15 @@ export const resetViewerPreferences = mutation({
 export const linkGuestToAccount = mutation({
   args: {
     guestId: v.optional(v.string()),
-    profile: v.object({
-      email: v.optional(v.string()),
-      name: v.optional(v.string()),
-      picture: v.optional(v.string()),
-    }),
   },
   returns: v.null(),
-  handler: async (ctx, { guestId, profile }) => {
+  handler: async (ctx, { guestId }) => {
     const authIdentity = await getAuthIdentity(ctx);
     if (!authIdentity) {
       throw new Error("Authentication required");
     }
 
-    await ensureLinkedAuthenticatedUser(ctx, guestId, authIdentity, profile);
+    await ensureLinkedAuthenticatedUser(ctx, guestId, authIdentity);
 
     return null;
   },

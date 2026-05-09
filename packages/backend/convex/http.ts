@@ -7,6 +7,7 @@ import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
+import { authComponent, createAuth } from "./auth";
 import {
   sanitizeOptionalUnicodeString,
   sanitizeUnicodeStringArray,
@@ -18,6 +19,10 @@ declare const process: {
 };
 
 const http = httpRouter();
+
+authComponent.registerRoutesLazy(http, createAuth, {
+  trustedOrigins: [process.env.SITE_URL],
+});
 
 // --- Worker request body types ---
 

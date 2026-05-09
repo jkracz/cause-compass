@@ -10,15 +10,16 @@ import {
   useRef,
   useState,
 } from "react";
+import { useRouter } from "next/navigation";
 import {
-  ConvexProviderWithAuth,
   ConvexReactClient,
   useConvexAuth,
   useMutation,
 } from "convex/react";
+import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 import posthog from "posthog-js";
-import { useShooAuth } from "@shoojs/react";
 import { api } from "@cause/backend/convex/_generated/api";
+import { authClient } from "@/lib/auth-client";
 
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -32,29 +33,16 @@ type SessionContextValue = {
   email?: string;
   picture?: string;
   signIn: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (
+    email: string,
+    password: string,
+    name: string,
+  ) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
 const SessionContext = createContext<SessionContextValue | null>(null);
-
-function useConvexShooAuth() {
-  const session = useAppSession();
-
-  return useMemo(
-    () => ({
-      isLoading: session.isLoading,
-      isAuthenticated: session.isAuthenticated,
-      fetchAccessToken: async () => {
-        if (!session.isAuthenticated) {
-          return null;
-        }
-
-        return session.token;
-      },
-    }),
-    [session.isAuthenticated, session.isLoading, session.token],
-  );
-}
 
 function AuthLinker() {
   const session = useAppSession();
@@ -94,13 +82,7 @@ function AuthLinker() {
       return;
     }
 
-    const linkKey = [
-      session.userId,
-      session.guestId ?? "",
-      session.email ?? "",
-      session.name ?? "",
-      session.picture ?? "",
-    ].join(":");
+    const linkKey = [session.userId, session.guestId ?? ""].join(":");
     if (lastAttemptRef.current === linkKey) {
       return;
     }
@@ -109,11 +91,6 @@ function AuthLinker() {
 
     void linkGuestToAccount({
       guestId: session.guestId,
-      profile: {
-        email: session.email,
-        name: session.name,
-        picture: session.picture,
-      },
     })
       .then(() => {
         retryCountRef.current = 0;
@@ -145,16 +122,127 @@ function AuthLinker() {
     convexAuth.isLoading,
     linkGuestToAccount,
     retryNonce,
-    session.email,
     session.guestId,
     session.isLoading,
     session.isAuthenticated,
-    session.name,
-    session.picture,
     session.userId,
   ]);
 
   return null;
+}
+
+function AppSessionInner({
+  children,
+  initialGuestId,
+}: {
+  children: ReactNode;
+  initialGuestId?: string;
+}) {
+  const { data: authSession, isPending: isSessionPending } =
+    authClient.useSession();
+  const convexAuth = useConvexAuth();
+  const router = useRouter();
+
+  const user = authSession?.user;
+  const userId = user?.id ?? null;
+  const isAuthenticated = convexAuth.isAuthenticated && Boolean(userId);
+
+  const signIn = useCallback(async () => {
+    await authClient.signIn.social({ provider: "google" });
+  }, []);
+
+  const signInWithEmail = useCallback(async (email: string, password: string) => {
+    const result = await authClient.signIn.email({
+      email,
+      password,
+    });
+    if (result.error) {
+      throw new Error(result.error.message ?? "Unable to sign in");
+    }
+  }, []);
+
+  const signUpWithEmail = useCallback(
+    async (email: string, password: string, name: string) => {
+      const result = await authClient.signUp.email({
+        email,
+        password,
+        name,
+      });
+      if (result.error) {
+        throw new Error(result.error.message ?? "Unable to create account");
+      }
+    },
+    [],
+  );
+
+  const signOut = useCallback(async () => {
+    try {
+      await authClient.signOut();
+      await fetch("/api/guest-session", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+    } catch (error) {
+      console.error("Failed to sign out cleanly", error);
+    } finally {
+      posthog.reset();
+      router.refresh();
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (!initialGuestId) {
+      return;
+    }
+
+    if (isAuthenticated && userId) {
+      posthog.identify(userId, {
+        email: user?.email,
+        name: user?.name,
+      });
+      return;
+    }
+
+    posthog.identify(initialGuestId);
+  }, [initialGuestId, isAuthenticated, user?.email, user?.name, userId]);
+
+  const value = useMemo<SessionContextValue>(
+    () => ({
+      guestId: initialGuestId,
+      userId,
+      token: null,
+      isLoading: isSessionPending || convexAuth.isLoading,
+      isAuthenticated,
+      name: user?.name,
+      email: user?.email,
+      picture: user?.image ?? undefined,
+      signIn,
+      signInWithEmail,
+      signUpWithEmail,
+      signOut,
+    }),
+    [
+      convexAuth.isLoading,
+      initialGuestId,
+      isAuthenticated,
+      isSessionPending,
+      signIn,
+      signInWithEmail,
+      signOut,
+      signUpWithEmail,
+      user?.email,
+      user?.image,
+      user?.name,
+      userId,
+    ],
+  );
+
+  return (
+    <SessionContext.Provider value={value}>
+      <AuthLinker />
+      {children}
+    </SessionContext.Provider>
+  );
 }
 
 export function AppSessionProvider({
@@ -164,93 +252,12 @@ export function AppSessionProvider({
   children: ReactNode;
   initialGuestId?: string;
 }) {
-  const auth = useShooAuth({
-    shooBaseUrl: process.env.NEXT_PUBLIC_SHOO_BASE_URL || "https://shoo.dev",
-    callbackPath: "/shoo/callback",
-    requestPii: true,
-    autoSessionMonitor: true,
-    sessionMonitorIntervalMs: 60_000,
-  });
-
-  const userId = auth.identity.userId ?? null;
-  const token = auth.identity.token ?? null;
-  const isAuthenticated = Boolean(userId);
-
-  const signIn = useCallback(async () => {
-    await auth.signIn();
-  }, [auth]);
-
-  const signOut = useCallback(async () => {
-    try {
-      await fetch("/api/guest-session", {
-        method: "POST",
-        credentials: "same-origin",
-      });
-    } catch (error) {
-      console.error("Failed to rotate guest session during sign-out", error);
-    } finally {
-      auth.clearIdentity();
-      posthog.reset();
-      window.location.reload();
-    }
-  }, [auth]);
-
-  useEffect(() => {
-    if (!initialGuestId) {
-      return;
-    }
-
-    if (isAuthenticated && userId) {
-      posthog.identify(userId, {
-        email: auth.claims?.email,
-        name: auth.claims?.name,
-      });
-      return;
-    }
-
-    posthog.identify(initialGuestId);
-  }, [
-    auth.claims?.email,
-    auth.claims?.name,
-    initialGuestId,
-    isAuthenticated,
-    userId,
-  ]);
-
-  const value = useMemo<SessionContextValue>(
-    () => ({
-      guestId: initialGuestId,
-      userId,
-      token,
-      isLoading: auth.loading,
-      isAuthenticated,
-      name: auth.claims?.name,
-      email: auth.claims?.email,
-      picture: auth.claims?.picture,
-      signIn,
-      signOut,
-    }),
-    [
-      auth.claims?.email,
-      auth.claims?.name,
-      auth.claims?.picture,
-      auth.loading,
-      initialGuestId,
-      isAuthenticated,
-      signIn,
-      signOut,
-      token,
-      userId,
-    ],
-  );
-
   return (
-    <SessionContext.Provider value={value}>
-      <ConvexProviderWithAuth client={convex} useAuth={useConvexShooAuth}>
-        <AuthLinker />
+    <ConvexBetterAuthProvider client={convex} authClient={authClient}>
+      <AppSessionInner initialGuestId={initialGuestId}>
         {children}
-      </ConvexProviderWithAuth>
-    </SessionContext.Provider>
+      </AppSessionInner>
+    </ConvexBetterAuthProvider>
   );
 }
 
