@@ -9,6 +9,7 @@ import { useAppSession } from "@/components/app-session-provider";
 import { OrgMark } from "@/components/editorial/org-mark";
 import { cn } from "@/lib/utils";
 import { sanitizeTagline } from "@cause/types";
+import { composeOrgBylineShort } from "@/lib/org-byline";
 
 type Organization = Doc<"organizations">;
 
@@ -18,13 +19,6 @@ interface EditorialOrgCardProps {
   variant?: "default" | "tall";
   className?: string;
 }
-
-const GEO_GLYPH: Record<string, string> = {
-  Global: "◐",
-  National: "◈",
-  Regional: "◇",
-  Local: "◉",
-};
 
 export function EditorialOrgCard({
   organization,
@@ -45,6 +39,11 @@ export function EditorialOrgCard({
     organization.oneSentenceSummary ||
     organization.whySupport ||
     organization.mission;
+
+  const bylineShort = composeOrgBylineShort({
+    assetBucket: organization.assetBucket,
+    geographicFocus: organization.geographicFocus,
+  });
 
   const handleLikeToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -114,27 +113,20 @@ export function EditorialOrgCard({
       </div>
 
       <div className="flex flex-1 flex-col gap-2 px-5 pt-1 pb-5">
-        <div className="flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-[var(--ink-mute)] uppercase">
-          <span className="h-px w-3 shrink-0 bg-[var(--rule-strong)]" />
-          <span className="truncate">{organization.city}</span>
-          {organization.state && (
-            <>
+        {(organization.city || organization.state) && (
+          <div className="flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-[var(--ink-mute)] uppercase">
+            <span className="h-px w-3 shrink-0 bg-[var(--rule-strong)]" />
+            {organization.city && (
+              <span className="truncate">{organization.city}</span>
+            )}
+            {organization.city && organization.state && (
               <span className="text-[var(--rule-strong)]">·</span>
+            )}
+            {organization.state && (
               <span className="shrink-0">{organization.state}</span>
-            </>
-          )}
-          {organization.geographicFocus && (
-            <>
-              <span className="text-[var(--rule-strong)]">·</span>
-              <span className="flex shrink-0 items-center gap-1 text-[var(--accent-2)]">
-                <span aria-hidden>
-                  {GEO_GLYPH[organization.geographicFocus]}
-                </span>
-                {organization.geographicFocus}
-              </span>
-            </>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         <h3
           className={cn(
@@ -158,23 +150,26 @@ export function EditorialOrgCard({
           </p>
         )}
 
-        {organization.keywords && organization.keywords.length > 0 && (
-          <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-3">
-            {organization.keywords.slice(0, 3).map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full border border-[var(--rule)] bg-white/60 px-2.5 py-0.5 text-[10.5px] font-medium tracking-wide text-[var(--ink-soft)]"
-              >
-                {tag}
-              </span>
-            ))}
-            {organization.keywords.length > 3 && (
-              <span className="text-[10.5px] font-medium tracking-wide text-[var(--ink-mute)]">
-                +{organization.keywords.length - 3}
-              </span>
-            )}
-          </div>
-        )}
+        <div className="mt-auto flex flex-col gap-2 pt-3">
+          {organization.keywords && organization.keywords.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              {organization.keywords.slice(0, 2).map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full border border-[var(--rule)] bg-white/60 px-2.5 py-0.5 text-[10.5px] font-medium tracking-wide text-[var(--ink-soft)]"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {bylineShort && (
+            <p className="font-heading text-[12.5px] leading-[1.4] text-[var(--ink-mute)] italic">
+              {bylineShort}
+            </p>
+          )}
+        </div>
       </div>
 
       <span

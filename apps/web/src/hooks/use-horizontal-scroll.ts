@@ -17,8 +17,13 @@ export function useHorizontalScroll(options: UseHorizontalScrollOptions = {}) {
     if (!container) return;
 
     const { scrollLeft, scrollWidth, clientWidth } = container;
-    setCanScrollLeft(scrollLeft > 0);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    // Absorbs the trailing flex-spacer (~24px) and any subpixel
+    // scroll positions left by smooth-scroll / momentum scroll.
+    const EDGE_TOLERANCE = 32;
+    setCanScrollLeft(scrollLeft > EDGE_TOLERANCE);
+    setCanScrollRight(
+      scrollLeft < scrollWidth - clientWidth - EDGE_TOLERANCE,
+    );
   }, []);
 
   const scrollLeft = useCallback(() => {

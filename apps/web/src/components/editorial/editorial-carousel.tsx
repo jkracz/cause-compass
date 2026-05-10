@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
 import { useHorizontalScroll } from "@/hooks/use-horizontal-scroll";
 import { EditorialOrgCard } from "@/components/editorial/editorial-org-card";
@@ -15,7 +15,7 @@ const CARD_WIDTH = 300;
 const CARD_GAP = 18;
 
 interface EditorialCarouselProps {
-  kicker: string;
+  kicker?: string;
   title: React.ReactNode;
   subtitle?: string;
   organizations: Organization[];
@@ -88,16 +88,31 @@ export function EditorialCarousel({
           browseHref ? (
             <Link
               href={browseHref}
-              className="group inline-flex items-center gap-2 rounded-full border border-[var(--rule-strong)] bg-white/70 px-4 py-2 text-[12px] font-semibold tracking-wide text-[var(--ink-soft)] transition hover:border-[var(--accent)]/40 hover:bg-white hover:text-[var(--accent)]"
+              className="group inline-flex items-center gap-1.5 rounded-sm text-[11px] font-semibold tracking-[0.22em] text-[var(--ink-mute)] uppercase transition-colors hover:text-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]/40 focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--paper)] focus-visible:outline-none"
             >
-              See the full list
-              <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              <span className="underline-offset-[6px] group-hover:underline group-hover:decoration-[var(--accent)]/60">
+                See more
+              </span>
+              <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
             </Link>
           ) : undefined
         }
       />
 
       <div className="relative -mx-4 md:-mx-8">
+        {canScrollLeft && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute top-0 bottom-4 left-0 z-[5] w-12 bg-gradient-to-r from-[var(--paper)] via-[var(--paper)]/85 to-transparent md:w-14"
+          />
+        )}
+        {canScrollRight && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute top-0 right-0 bottom-4 z-[5] w-12 bg-gradient-to-l from-[var(--paper)] via-[var(--paper)]/85 to-transparent md:w-14"
+          />
+        )}
+
         <ScrollButton
           direction="left"
           onClick={handleScrollLeft}

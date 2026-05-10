@@ -1,0 +1,342 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-08T00:00:00.000Z",
+  "title": "Design System: Cause Compass",
+  "extensions": {
+    "colorMeta": {
+      "paper": {
+        "role": "neutral",
+        "displayName": "Heliotrope Paper",
+        "canonical": "oklch(92% 0.025 320)",
+        "tonalRamp": []
+      },
+      "paper-deep": {
+        "role": "neutral",
+        "displayName": "Pressed Heliotrope",
+        "canonical": "oklch(86% 0.04 320)",
+        "tonalRamp": []
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Page White",
+        "canonical": "oklch(100% 0 0)",
+        "tonalRamp": []
+      },
+      "card-hover": {
+        "role": "neutral",
+        "displayName": "Page Wash",
+        "canonical": "oklch(94% 0.018 320)",
+        "tonalRamp": []
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Plum Ink",
+        "canonical": "oklch(15% 0.06 305)",
+        "tonalRamp": [
+          "oklch(12% 0.04 305)",
+          "oklch(20% 0.07 305)",
+          "oklch(28% 0.085 305)",
+          "oklch(38% 0.10 305)",
+          "oklch(48% 0.10 305)",
+          "oklch(60% 0.08 310)",
+          "oklch(75% 0.05 315)",
+          "oklch(90% 0.025 320)"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Soft Plum",
+        "canonical": "oklch(28% 0.085 305)",
+        "tonalRamp": []
+      },
+      "ink-mute": {
+        "role": "neutral",
+        "displayName": "Faded Plum",
+        "canonical": "oklch(52% 0.06 305)",
+        "tonalRamp": []
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Hairline Lilac",
+        "canonical": "oklch(82% 0.035 315)",
+        "tonalRamp": []
+      },
+      "rule-strong": {
+        "role": "neutral",
+        "displayName": "Ruled Mauve",
+        "canonical": "oklch(72% 0.06 315)",
+        "tonalRamp": []
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Margin-Note Magenta",
+        "canonical": "oklch(56% 0.20 0)",
+        "tonalRamp": [
+          "oklch(20% 0.10 0)",
+          "oklch(30% 0.14 0)",
+          "oklch(40% 0.17 0)",
+          "oklch(50% 0.19 0)",
+          "oklch(60% 0.20 0)",
+          "oklch(72% 0.16 0)",
+          "oklch(85% 0.10 0)",
+          "oklch(94% 0.05 0)"
+        ]
+      },
+      "accent-soft": {
+        "role": "primary",
+        "displayName": "Blush Wash",
+        "canonical": "oklch(91% 0.06 0)",
+        "tonalRamp": []
+      },
+      "accent-2": {
+        "role": "secondary",
+        "displayName": "Iris",
+        "canonical": "oklch(45% 0.13 290)",
+        "tonalRamp": [
+          "oklch(20% 0.08 290)",
+          "oklch(30% 0.10 290)",
+          "oklch(40% 0.12 290)",
+          "oklch(50% 0.13 290)",
+          "oklch(60% 0.12 290)",
+          "oklch(72% 0.10 290)",
+          "oklch(85% 0.06 290)",
+          "oklch(95% 0.025 290)"
+        ]
+      },
+      "category-arts": {
+        "role": "tertiary",
+        "displayName": "Terracotta",
+        "canonical": "oklch(67% 0.085 60)",
+        "tonalRamp": []
+      },
+      "category-education": {
+        "role": "tertiary",
+        "displayName": "Slate Blue",
+        "canonical": "oklch(56% 0.06 230)",
+        "tonalRamp": []
+      },
+      "category-health": {
+        "role": "tertiary",
+        "displayName": "Brick",
+        "canonical": "oklch(51% 0.08 35)",
+        "tonalRamp": []
+      },
+      "category-environment": {
+        "role": "tertiary",
+        "displayName": "Fern",
+        "canonical": "oklch(53% 0.06 145)",
+        "tonalRamp": []
+      },
+      "category-global": {
+        "role": "tertiary",
+        "displayName": "Plum-Iris",
+        "canonical": "oklch(43% 0.06 295)",
+        "tonalRamp": []
+      },
+      "category-community": {
+        "role": "tertiary",
+        "displayName": "Walnut",
+        "canonical": "oklch(54% 0.06 70)",
+        "tonalRamp": []
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero headlines on home and on featured causes. Used once per view."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section titles. Always paired with a small label kicker."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card titles inside the loupe and inside cardstock tabs."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Paragraphs, descriptions, summary lines on cards. Cap line length at ~70ch."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Small caps that mark what kind of thing follows: kickers, scope tags, mono identifiers."
+      }
+    },
+    "shadows": [
+      {
+        "name": "loupe-rest",
+        "value": "0 30px 70px -40px rgba(91, 75, 158, 0.45)",
+        "purpose": "Soft purple cast under the featured loupe card at rest."
+      },
+      {
+        "name": "loupe-hover",
+        "value": "0 22px 50px -28px rgba(91, 75, 158, 0.45)",
+        "purpose": "Tightens on hover — the loupe presses down toward the page."
+      },
+      {
+        "name": "action-bloom",
+        "value": "0 18px 40px -20px rgba(200, 38, 110, 0.55)",
+        "purpose": "Magenta bloom under buttons and CTAs on hover."
+      },
+      {
+        "name": "input-glow",
+        "value": "0 18px 50px -30px rgba(200, 38, 110, 0.45)",
+        "purpose": "Magenta glow under the search input on focus, paired with a 4px ring at 12% accent."
+      }
+    ],
+    "motion": [
+      {
+        "name": "editorial-fade-up",
+        "value": "cubic-bezier(0.2, 0.65, 0.25, 1)",
+        "purpose": "Section entrance reveal (0.65s). Staggered by 0.1s between adjacent sections."
+      },
+      {
+        "name": "page-fade",
+        "value": "ease-in-out",
+        "purpose": "Page transition fade-in (0.5s) on every route change."
+      },
+      {
+        "name": "hover-press",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Hover transforms on cards and buttons (0.3-0.4s). Used for loupe-press effect and button micro-jitter."
+      },
+      {
+        "name": "focus-glow",
+        "value": "ease-out",
+        "purpose": "Focus state transitions on inputs (0.3s). Border, fill, shadow, and ring all transition together."
+      },
+      {
+        "name": "carousel-scroll",
+        "value": "linear",
+        "purpose": "Continuous horizontal carousel scroll (60s loop). Pauses for prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Dark plum pill. Used for primary CTAs ('Read the full story'). Magenta on hover with a soft bloom.",
+      "html": "<button class=\"ds-btn-primary\">Read the full story <svg class=\"ds-btn-primary-arrow\" viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.25\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"7\" y1=\"17\" x2=\"17\" y2=\"7\"/><polyline points=\"7 7 17 7 17 17\"/></svg></button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 8px; background: #1a0f2c; color: #f0e6f5; font-family: Archivo, system-ui, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.05em; padding: 12px 24px; border: none; border-radius: 9999px; cursor: pointer; transition: background 0.3s ease, box-shadow 0.3s ease; } .ds-btn-primary:hover { background: #c8266e; box-shadow: 0 18px 40px -20px rgba(200, 38, 110, 0.55); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(200, 38, 110, 0.18); } .ds-btn-primary-arrow { transition: transform 0.3s ease; } .ds-btn-primary:hover .ds-btn-primary-arrow { transform: translate(2px, -2px); }"
+    },
+    {
+      "name": "Ghost Save Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Hollow pill used for the 'Add to My Causes' save toggle in its inactive state. Border and text shift to magenta on hover.",
+      "html": "<button class=\"ds-btn-ghost\"><svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z\"/></svg> Add to My Causes</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.7); color: #3d2d57; font-family: Archivo, system-ui, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.05em; padding: 12px 20px; border: 1px solid #b89cc9; border-radius: 9999px; cursor: pointer; transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease; } .ds-btn-ghost:hover { background: #ffffff; border-color: rgba(200, 38, 110, 0.4); color: #c8266e; } .ds-btn-ghost:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(200, 38, 110, 0.18); }"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "The largest pill on the page. Backdrop-blurred at rest, full white with a magenta ring on focus.",
+      "html": "<div class=\"ds-input-search-wrap\"><svg class=\"ds-input-search-icon\" viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"/></svg><input class=\"ds-input-search\" type=\"text\" placeholder=\"Search 200,000+ vetted nonprofits…\"/></div>",
+      "css": ".ds-input-search-wrap { position: relative; max-width: 720px; } .ds-input-search-icon { position: absolute; left: 22px; top: 50%; transform: translateY(-50%); color: #7c6f9a; pointer-events: none; transition: color 0.3s ease; } .ds-input-search { width: 100%; height: 64px; background: rgba(255, 255, 255, 0.8); color: #1a0f2c; font-family: Bitter, Georgia, serif; font-size: 16px; font-style: italic; padding: 0 22px 0 56px; border: 1px solid #b89cc9; border-radius: 9999px; backdrop-filter: blur(8px); transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; } .ds-input-search::placeholder { color: rgba(124, 111, 154, 0.8); } .ds-input-search:focus { outline: none; background: #ffffff; border-color: rgba(200, 38, 110, 0.5); box-shadow: 0 18px 50px -30px rgba(200, 38, 110, 0.45), 0 0 0 4px rgba(200, 38, 110, 0.12); } .ds-input-search:focus + .ds-input-search-icon, .ds-input-search-wrap:focus-within .ds-input-search-icon { color: #c8266e; }"
+    },
+    {
+      "name": "Paper Card",
+      "kind": "card",
+      "refersTo": "card-paper",
+      "description": "Default surface for content. White on heliotrope ground, hairline border, optional magenta seam at the top, color-tinted shadow when featured.",
+      "html": "<article class=\"ds-card-paper\"><span class=\"ds-card-paper-seam\" aria-hidden=\"true\"></span><p class=\"ds-card-paper-kicker\"><span class=\"ds-card-paper-kicker-rule\" aria-hidden=\"true\"></span>Featured</p><h3 class=\"ds-card-paper-title\">Berkeley Herbal Center</h3><p class=\"ds-card-paper-quote\">An education and clinical training program for Western herbalism, focused on developing practicing herbalists and herbal educators.</p><dl class=\"ds-card-paper-stats\"><div><dt>Focus</dt><dd>Local</dd></div><div><dt>Scale</dt><dd>Mid</dd></div><div><dt>Tags</dt><dd>8</dd></div></dl></article>",
+      "css": ".ds-card-paper { position: relative; background: #ffffff; color: #1a0f2c; border: 1px solid #d3c0df; border-radius: 32px; padding: 32px; box-shadow: 0 30px 70px -40px rgba(91, 75, 158, 0.45); overflow: hidden; max-width: 480px; } .ds-card-paper-seam { position: absolute; left: 0; right: 0; top: 0; height: 1px; background: linear-gradient(to right, transparent, rgba(200, 38, 110, 0.6), transparent); } .ds-card-paper-kicker { display: flex; align-items: center; gap: 12px; font-family: Archivo, system-ui, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.32em; text-transform: uppercase; color: #c8266e; margin: 0 0 16px; } .ds-card-paper-kicker-rule { display: inline-block; width: 28px; height: 1px; background: rgba(200, 38, 110, 0.7); } .ds-card-paper-title { font-family: Bitter, Georgia, serif; font-size: 28px; font-weight: 600; line-height: 1.05; color: #1a0f2c; margin: 0 0 16px; } .ds-card-paper-quote { font-family: Bitter, Georgia, serif; font-size: 15px; font-style: italic; line-height: 1.45; color: #3d2d57; border-left: 2px solid rgba(200, 38, 110, 0.7); padding-left: 16px; margin: 0 0 24px; } .ds-card-paper-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding-top: 20px; border-top: 1px solid #d3c0df; margin: 0; } .ds-card-paper-stats div { text-align: center; } .ds-card-paper-stats dt { font-family: Archivo, system-ui, sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: #7c6f9a; margin: 0 0 4px; } .ds-card-paper-stats dd { font-family: Bitter, Georgia, serif; font-size: 16px; font-weight: 500; color: #1a0f2c; margin: 0; }"
+    },
+    {
+      "name": "Loupe Card",
+      "kind": "card",
+      "refersTo": "card-loupe",
+      "description": "Glass card. The bar-magnifier sliding over the page. Used for emphasis only — never on routine grid cards.",
+      "html": "<article class=\"ds-card-loupe\"><span class=\"ds-card-loupe-sweep\" aria-hidden=\"true\"></span><p class=\"ds-card-loupe-meta\"><span>◐ Local</span><span>Arts &amp; Culture</span></p><h3 class=\"ds-card-loupe-title\">Field Notes Collective</h3><p class=\"ds-card-loupe-summary\">A small Detroit-based studio publishing chapbooks of field essays from working artists in the Great Lakes region.</p><span class=\"ds-card-loupe-rule\" aria-hidden=\"true\"></span></article>",
+      "css": ".ds-card-loupe { position: relative; background: rgba(255, 255, 255, 0.6); color: #1a0f2c; border: 1px solid rgba(91, 75, 158, 0.22); border-radius: 20px; padding: 20px; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.4s ease; overflow: hidden; max-width: 320px; } .ds-card-loupe:hover { background: rgba(255, 255, 255, 0.85); border-color: rgba(200, 38, 110, 0.45); box-shadow: 0 22px 50px -28px rgba(91, 75, 158, 0.45); } .ds-card-loupe-sweep { position: absolute; inset: 0; pointer-events: none; transform: translateX(-110%); background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.55), transparent); opacity: 0; transition: transform 1s ease-out, opacity 1s ease-out; } .ds-card-loupe:hover .ds-card-loupe-sweep { transform: translateX(110%); opacity: 1; } .ds-card-loupe-meta { display: flex; gap: 12px; font-family: Archivo, system-ui, sans-serif; font-size: 11px; font-weight: 500; color: #5b4b9e; margin: 0 0 12px; } .ds-card-loupe-title { font-family: Bitter, Georgia, serif; font-size: 22px; font-weight: 600; line-height: 1.1; color: #1a0f2c; margin: 0 0 8px; } .ds-card-loupe-summary { font-family: Archivo, system-ui, sans-serif; font-size: 14px; line-height: 1.5; color: #3d2d57; margin: 0; } .ds-card-loupe-rule { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; transform-origin: left; transform: scaleX(0); background: linear-gradient(to right, transparent, #c8266e, transparent); transition: transform 0.5s ease; } .ds-card-loupe:hover .ds-card-loupe-rule { transform: scaleX(1); }"
+    },
+    {
+      "name": "Cardstock Tab",
+      "kind": "card",
+      "refersTo": "card-cardstock",
+      "description": "Drenched category card with a diagonal hatch texture. Used only on the Browse-by-Cause mosaic.",
+      "html": "<a class=\"ds-card-cardstock\" href=\"#\"><span class=\"ds-card-cardstock-hatch\" aria-hidden=\"true\"></span><div class=\"ds-card-cardstock-top\"><span class=\"ds-card-cardstock-glyph\" aria-hidden=\"true\">◆</span><span class=\"ds-card-cardstock-index\">01</span></div><div class=\"ds-card-cardstock-bottom\"><h3 class=\"ds-card-cardstock-title\">Arts &amp; Culture</h3><span class=\"ds-card-cardstock-link\">Explore <svg viewBox=\"0 0 24 24\" width=\"12\" height=\"12\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/><polyline points=\"12 5 19 12 12 19\"/></svg></span></div><span class=\"ds-card-cardstock-rule\" aria-hidden=\"true\"></span></a>",
+      "css": ".ds-card-cardstock { position: relative; display: flex; flex-direction: column; justify-content: space-between; min-height: 240px; background: #c58f5a; color: #1a0f2c; border: 1px solid rgba(26, 15, 44, 0.1); border-radius: 24px; padding: 24px; overflow: hidden; text-decoration: none; transition: transform 0.5s ease, box-shadow 0.5s ease; max-width: 240px; } .ds-card-cardstock:hover { transform: translateY(-4px); box-shadow: 0 28px 60px -32px rgba(91, 75, 158, 0.4); } .ds-card-cardstock-hatch { position: absolute; inset: 0; pointer-events: none; opacity: 0.08; background-image: repeating-linear-gradient(135deg, rgba(26, 15, 44, 1) 0, rgba(26, 15, 44, 1) 1px, transparent 1px, transparent 6px); } .ds-card-cardstock-top { position: relative; display: flex; align-items: flex-start; justify-content: space-between; } .ds-card-cardstock-glyph { font-family: Bitter, Georgia, serif; font-size: 48px; line-height: 1; color: rgba(26, 15, 44, 0.7); transition: transform 0.7s ease; } .ds-card-cardstock:hover .ds-card-cardstock-glyph { transform: rotate(12deg) scale(1.1); } .ds-card-cardstock-index { font-family: Archivo, system-ui, sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.18em; color: rgba(26, 15, 44, 0.55); } .ds-card-cardstock-bottom { position: relative; } .ds-card-cardstock-title { font-family: Bitter, Georgia, serif; font-size: 28px; font-weight: 600; line-height: 1.05; color: #1a0f2c; margin: 0 0 12px; } .ds-card-cardstock-link { display: inline-flex; align-items: center; gap: 6px; font-family: Archivo, system-ui, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(26, 15, 44, 0.85); } .ds-card-cardstock-rule { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; transform-origin: left; transform: scaleX(0); background: rgba(26, 15, 44, 0.6); transition: transform 0.7s ease; } .ds-card-cardstock:hover .ds-card-cardstock-rule { transform: scaleX(1); }"
+    },
+    {
+      "name": "Section Header",
+      "kind": "custom",
+      "refersTo": "section-header",
+      "description": "The system's 'this is a section' mark. Hairline-prefixed kicker, Bitter headline, optional Faded Plum subtitle. The hairline prefix appears nowhere else.",
+      "html": "<header class=\"ds-section-header\"><p class=\"ds-section-header-kicker\"><span class=\"ds-section-header-rule\" aria-hidden=\"true\"></span>Browse by cause</p><h2 class=\"ds-section-header-title\">Pick a thread, follow it <em>everywhere</em>.</h2><p class=\"ds-section-header-subtitle\">Six broad lanes across the index — each opens onto a deeper, alphabetical roll of every nonprofit we've vetted.</p></header>",
+      "css": ".ds-section-header { max-width: 640px; } .ds-section-header-kicker { display: flex; align-items: center; gap: 12px; font-family: Archivo, system-ui, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.32em; text-transform: uppercase; color: #c8266e; margin: 0 0 16px; } .ds-section-header-rule { display: inline-block; width: 28px; height: 1px; background: rgba(200, 38, 110, 0.7); } .ds-section-header-title { font-family: Bitter, Georgia, serif; font-size: clamp(1.75rem, 2.5vw, 2.5rem); font-weight: 600; line-height: 1.05; letter-spacing: -0.005em; color: #1a0f2c; margin: 0 0 12px; } .ds-section-header-title em { font-style: italic; color: #c8266e; font-weight: 500; } .ds-section-header-subtitle { font-family: Archivo, system-ui, sans-serif; font-size: 15px; line-height: 1.5; color: #7c6f9a; margin: 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Field Notebook",
+    "overview": "Cause Compass is a quiet personal record of nonprofits worth noticing. Plum ink on heliotrope paper. Italic pull-quotes that read like transcribed observations. Hairline rules where margins would be. Margin-Note Magenta where the writer underlined something by hand. Pill buttons sized like rubber-stamp marks. The user is not browsing a database; they are keeping a notebook of causes that matter to them, building it page by page over time.\n\nThe system rejects the antiquated, bureaucratic aesthetic of nonprofit software — Charity Navigator's spreadsheets, GuideStar's data graveyard, GoFundMe's urgency, the generic SaaS dashboard, and the magazine-of-record affectations (volume numbers, week IDs, kickers like 'On the cultural calendar') that perform a curatorial rigor we haven't earned. We earn opinion later by doing editorial work; for now, we present discovery as discovery.\n\nThe system is built to grow into community signals — letters from organizations, neighborhood activity, a friend's saved cause — without breaking. Those land in the notebook the same way: as marginalia, not as feed chrome. Future patterns inherit the same vocabulary (paper, hairlines, margin-note magenta, pull-quotes) before they earn new ones.",
+    "keyCharacteristics": [
+      "Plum-on-paper palette, committed and unusual",
+      "Editorial typography (Bitter display + Archivo body) without the magazine-institution voice",
+      "Two-layer elevation: paper canvas + glass loupe, no third layer",
+      "Color-tinted shadows used as atmosphere, never as structure",
+      "Cardstock category tabs as the only place the system gets drenched and saturated",
+      "Calm motion: state changes only, no choreography, reduced-motion respected by default"
+    ],
+    "rules": [
+      {
+        "name": "The Plum-First Rule",
+        "body": "The page should always read more plum than magenta. Magenta is the writer's hand — sparing, deliberate. If the eye lands on pink first, redistribute.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tab-Color Rule",
+        "body": "The cardstock palette appears only on category tabs (Browse by Cause). It does not bleed into other surfaces. Category color does not flavor the content underneath the category — once a user clicks into Arts & Culture, the page returns to plum on paper.",
+        "section": "colors"
+      },
+      {
+        "name": "The Pull-Quote Rule",
+        "body": "When a tagline or summary is the most important sentence on a card, render it in Bitter italic with a 2px Margin-Note Magenta left rule, indented from the text column. This is the system's signature treatment for 'this is the cause's own voice.' Use it sparingly and never twice on one screen.",
+        "section": "typography"
+      },
+      {
+        "name": "The No-Volume Rule",
+        "body": "Editorial labels never imply a publication cadence. No 'Vol. X', no week numbers, no 'On the cultural calendar'-style affectations. Kickers describe section kind ('Browse by cause', 'Cause of the week'), not editorial calendars.",
+        "section": "typography"
+      },
+      {
+        "name": "The Loupe Rule",
+        "body": "Glass surfaces are emphasis, not decoration. One loupe per view, two at most. The loupe must sit over a paper surface; rendering it on an empty viewport breaks the metaphor. If you find yourself reaching for a third loupe, switch them all to paper and start over.",
+        "section": "elevation"
+      },
+      {
+        "name": "The No-Float Rule",
+        "body": "Cards do not stack. Surfaces are either paper or loupe; nothing is a third elevated layer. Decorative AI-style background patterns (radial-dot paper-grain, topographic line backdrops, abstract gradient meshes) are forbidden — they were the gradient era's attempt at depth and have no place in a paper system.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do lead cards with story (tagline, hook, one-sentence summary), not metadata. EIN, NTEE, deductibility, and tax codes have no place on a card.",
+      "Do use the loupe (glass card) sparingly — once or twice per view, only over paper, only for emphasis.",
+      "Do restrict the cardstock palette to category tabs. Drench is a Tab-Color signal; using saturation elsewhere dilutes it.",
+      "Do treat Margin-Note Magenta as the writer's hand: focus rings, hover blooms, pull-quote rules. Never a default surface color.",
+      "Do keep the page reading more plum than magenta. If the eye lands on pink first, redistribute.",
+      "Do honor `prefers-reduced-motion: reduce` on every motion you add. Carousel scrolls, fade-ups, hover transforms — all must resolve to no motion.",
+      "Do keep keyboard focus visible at all times. Hover-revealed save buttons must remain reachable on keyboard focus."
+    ],
+    "donts": [
+      "Don't add decorative background patterns (radial-dot paper-grain, topographic line backdrops, AI-style abstract shapes, gradient meshes). They are the gradient era's failed attempt at depth and are explicitly out of the system.",
+      "Don't use the magazine-of-record voice — no 'Vol. X', no week IDs, no kickers that imply an editorial cadence we don't have ('On the cultural calendar', 'Investing in minds', 'On the front lines'). Kickers describe section kind; they do not perform curation.",
+      "Don't stack glass cards or place a loupe over a non-paper surface. Loupe over loupe is forbidden. Loupe over empty viewport breaks the metaphor.",
+      "Don't wrap every cause in a glass card 'to make them feel premium.' Most causes deserve paper. Premium is rarity, not chrome.",
+      "Don't fall back to nonprofit-software conventions: rating scores (Charity Navigator), EIN-first identity (GuideStar / Candid), urgent donation language (GoFundMe), or KPI-grid SaaS dashboards. Each of these breaks the Field Notebook metaphor at the root.",
+      "Don't use #000 or #fff for text or icons. The system has no pure black or white. Plum Ink stands in for black; Page White stands in for white.",
+      "Don't apply gradient text (background-clip: text). Color emphasis is achieved with weight, italic, or a Margin-Note Magenta left rule, never with gradient fills.",
+      "Don't introduce side-stripe borders (border-left greater than 1px as a colored accent on cards or list items). The 2px Margin-Note Magenta rule next to a pull-quote is the only exception, and it is a typographic treatment with its own context — not a generic alert/callout pattern."
+    ]
+  }
+}

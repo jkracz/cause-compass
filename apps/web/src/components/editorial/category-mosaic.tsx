@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import {
   BROWSE_CATEGORIES,
   type BrowseCategory,
 } from "@/lib/browse-categories";
 import { SectionHeader } from "@/components/editorial/section-header";
+
+const HATCH_BACKGROUND =
+  "repeating-linear-gradient(135deg, transparent 0, transparent 5px, rgba(240, 230, 245, 0.09) 5px, rgba(240, 230, 245, 0.09) 6px)";
 
 export function CategoryMosaic() {
   return (
@@ -13,85 +15,52 @@ export function CategoryMosaic() {
         kicker="Browse by cause"
         title={
           <>
-            Pick a thread, follow it{" "}
+            Find something to{" "}
             <span className="italic text-[var(--accent)] font-medium">
-              everywhere
-            </span>
-            .
+              care
+            </span>{" "}
+            about.
           </>
         }
-        subtitle="Six broad lanes across the index — each opens onto a deeper, alphabetical roll of every nonprofit we've vetted."
+        subtitle="Six broad causes. Each opens onto every nonprofit on our list working there."
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {BROWSE_CATEGORIES.map((category, index) => (
-          <MosaicTile
-            key={category.slug}
-            category={category}
-            index={index}
-          />
+        {BROWSE_CATEGORIES.map((category) => (
+          <MosaicTile key={category.slug} category={category} />
         ))}
       </div>
     </section>
   );
 }
 
-function MosaicTile({
-  category,
-  index,
-}: {
-  category: BrowseCategory;
-  index: number;
-}) {
+function MosaicTile({ category }: { category: BrowseCategory }) {
   return (
     <Link
       href={`/browse/${category.slug}`}
-      className="group relative flex h-full min-h-[220px] flex-col justify-between overflow-hidden rounded-[1.5rem] border border-[var(--rule)] p-6 transition-all duration-500 hover:-translate-y-1 hover:border-transparent hover:shadow-[0_28px_60px_-32px_rgba(91,75,158,0.4)]"
-      style={{
-        backgroundColor: category.accentInk,
-      }}
+      className="group relative flex h-full min-h-[260px] flex-col justify-end overflow-hidden rounded-[1.5rem] p-7 transition-[transform,box-shadow] duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_30px_70px_-40px_rgba(91,75,158,0.55)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+      style={{ backgroundColor: category.accent }}
     >
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-        style={{
-          background: `linear-gradient(135deg, ${category.accent}22 0%, transparent 70%)`,
-        }}
+        className="pointer-events-none absolute inset-0"
+        style={{ backgroundImage: HATCH_BACKGROUND }}
       />
-
-      <div className="relative z-10 flex items-start justify-between">
-        <span
-          aria-hidden
-          className="font-heading text-[3.4rem] leading-none transition-transform duration-700 group-hover:rotate-12 group-hover:scale-110"
-          style={{ color: category.accent }}
-        >
-          {category.glyph}
-        </span>
-        <span className="font-mono text-[10px] font-semibold tracking-[0.18em] text-[var(--ink-mute)]">
-          0{index + 1}
-        </span>
-      </div>
-
-      <div className="relative z-10 mt-6 flex flex-col gap-2.5">
-        <h3 className="font-heading text-[22px] leading-[1.1] font-semibold text-[var(--ink)]">
-          {category.label}
-        </h3>
-        <p className="line-clamp-2 text-[13px] leading-[1.5] text-[var(--ink-soft)]">
-          {category.description}
-        </p>
-        <div className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.22em] uppercase">
-          <span style={{ color: category.accent }}>Explore</span>
-          <ArrowUpRight
-            className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-            style={{ color: category.accent }}
-          />
-        </div>
-      </div>
 
       <span
         aria-hidden
-        className="absolute right-0 bottom-0 left-0 h-px origin-left scale-x-0 transition-transform duration-700 group-hover:scale-x-100"
-        style={{ backgroundColor: category.accent }}
+        className="pointer-events-none absolute top-6 right-6 font-heading text-[18px] leading-none text-[var(--paper)]/55"
+      >
+        {category.glyph}
+      </span>
+
+      <h3 className="relative z-10 font-heading text-[clamp(1.5rem,2.1vw,2rem)] leading-[1.05] font-semibold text-[var(--paper)]">
+        {category.label}
+      </h3>
+
+      <span
+        aria-hidden
+        className="absolute right-0 bottom-0 left-0 h-px origin-left scale-x-0 bg-[var(--paper)]/65 transition-transform duration-700 ease-out group-hover:scale-x-100 motion-reduce:transition-none"
       />
     </Link>
   );

@@ -73,7 +73,7 @@ export const BROWSE_CATEGORIES: BrowseCategory[] = [
     slug: "local-community",
     label: "Your Local Community",
     description:
-      "Neighborhood-rooted nonprofits — the kind you can volunteer with on a Saturday.",
+      "Neighborhood-rooted nonprofits, the kind you can volunteer with on a Saturday.",
     glyph: "◉",
     accent: "#8E6F4F",
     accentInk: "#F4ECDF",

@@ -33,7 +33,7 @@ export default async function BrowseCategoryPage({
   }
 
   return (
-    <main className="paper-grain min-h-screen">
+    <main className="min-h-screen">
       <Suspense fallback={null}>
         <BrowseCategoryContent category={category} />
       </Suspense>

@@ -245,16 +245,6 @@
   }
 }
 
-/* Subtle paper grain — multiplied over the warm plum-paper background */
-@utility paper-grain {
-  background-image: radial-gradient(
-    circle at 1px 1px,
-    rgba(91, 75, 158, 0.06) 1px,
-    transparent 0
-  );
-  background-size: 22px 22px;
-}
-
 /* Editorial fade-up keyframe used by section reveals */
 @keyframes editorial-fade-up {
   from {

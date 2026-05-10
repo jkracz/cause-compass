@@ -46,47 +46,40 @@ type StoredCoordinates = {
 const HOMEPAGE_CAROUSELS = [
   {
     key: "artsAndCulture",
-    kicker: "On the cultural calendar",
     title: CATEGORY_ROW_TITLES.artsAndCulture,
     subtitle:
-      "Museums, theaters, archives, and the people who keep our shared culture alive.",
+      "Museums, theaters, archives, and the makers keeping culture alive.",
     filters: { nteeMajors: ["A"] },
     browseHref: "/browse/arts-culture",
     position: "upper" as const,
   },
   {
     key: "education",
-    kicker: "Investing in minds",
     title: CATEGORY_ROW_TITLES.education,
-    subtitle:
-      "Classrooms, scholarships, after-school programs — long-arc work measured in lifetimes.",
+    subtitle: "Classrooms, scholarships, and after-school programs.",
     filters: { nteeMajors: ["B"] },
     browseHref: "/browse/education",
     position: "upper" as const,
   },
   {
     key: "healthAndWellness",
-    kicker: "On the front lines",
     title: CATEGORY_ROW_TITLES.healthAndWellness,
-    subtitle:
-      "Clinics, patient services, community health workers — care delivered where it's needed.",
+    subtitle: "Clinics, patient services, and community health workers.",
     filters: { nteeMajors: ["E", "F"] },
     browseHref: "/browse/health-care",
     position: "lower" as const,
   },
   {
     key: "environmentAndAnimals",
-    kicker: "For the natural world",
     title: CATEGORY_ROW_TITLES.environmentAndAnimals,
     subtitle:
-      "Conservation, wildlife, climate, and stewards of the land we all share.",
+      "Conservation, wildlife, climate, and stewards of the land we share.",
     filters: { nteeMajors: ["C", "D"] },
     browseHref: "/browse/environment",
     position: "lower" as const,
   },
 ] satisfies {
   key: string;
-  kicker: string;
   title: string;
   subtitle: string;
   filters: { nteeMajors: string[] };
@@ -272,27 +265,16 @@ export function DiscoveryHomeContent() {
   }));
 
   return (
-    <main className="paper-grain relative min-h-screen overflow-hidden">
-      {/* soft accent backdrop */}
+    <main className="relative min-h-screen overflow-hidden">
+      {/* Atmospheric blush halo at the top of the page. */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[60vh]"
       >
         <div className="absolute -top-40 left-1/2 h-[80vh] w-[80vh] -translate-x-1/2 rounded-full bg-[var(--accent-soft)] opacity-60 blur-3xl" />
-        <div className="absolute -top-20 right-0 h-[40vh] w-[40vh] rounded-full bg-[var(--accent-2)]/15 blur-3xl" />
       </div>
 
       <div className="mx-auto max-w-6xl px-4 pt-10 pb-20 md:px-8 md:pt-14">
-        {/* Editorial masthead — small kicker above hero */}
-        <div className="mb-12 flex flex-wrap items-end justify-between gap-3 border-b border-[var(--rule)] pb-4">
-          <span className="font-heading text-[11px] font-semibold tracking-[0.32em] text-[var(--ink-mute)] uppercase">
-            The Compass · Vol. {new Date().getUTCFullYear() - 2024}
-          </span>
-          <span className="font-mono text-[10px] tracking-[0.2em] text-[var(--ink-mute)]">
-            {weekKey}
-          </span>
-        </div>
-
         {/* Hero: Cause of the Week */}
         <div className="editorial-fade-up">
           {causeOfTheWeek === undefined && <CauseOfTheWeekSkeleton />}
@@ -404,10 +386,9 @@ export function DiscoveryHomeContent() {
               {upperCarousels.map((row) => (
                 <div key={row.key} className="editorial-fade-up">
                   {row.organizations.length === 0 ? (
-                    <CarouselSkeleton title={row.title} kicker={row.kicker} />
+                    <CarouselSkeleton title={row.title} />
                   ) : (
                     <EditorialCarousel
-                      kicker={row.kicker}
                       title={row.title}
                       subtitle={row.subtitle}
                       organizations={row.organizations}
@@ -432,10 +413,9 @@ export function DiscoveryHomeContent() {
               {lowerCarousels.map((row) => (
                 <div key={row.key} className="editorial-fade-up">
                   {row.organizations.length === 0 ? (
-                    <CarouselSkeleton title={row.title} kicker={row.kicker} />
+                    <CarouselSkeleton title={row.title} />
                   ) : (
                     <EditorialCarousel
-                      kicker={row.kicker}
                       title={row.title}
                       subtitle={row.subtitle}
                       organizations={row.organizations}
@@ -483,23 +463,12 @@ function EmptyEditorialState({ message }: { message: string }) {
   );
 }
 
-function CarouselSkeleton({
-  title,
-  kicker,
-}: {
-  title: string;
-  kicker: string;
-}) {
+function CarouselSkeleton({ title }: { title: string }) {
   return (
     <div className="space-y-5">
-      <div>
-        <span className="text-[10px] font-semibold tracking-[0.32em] text-[var(--accent)] uppercase">
-          {kicker}
-        </span>
-        <h2 className="font-heading mt-2 text-[clamp(1.75rem,2.5vw,2.5rem)] font-semibold text-[var(--ink)]">
-          {title}
-        </h2>
-      </div>
+      <h2 className="font-heading text-[clamp(1.75rem,2.5vw,2.5rem)] font-semibold text-[var(--ink)]">
+        {title}
+      </h2>
       <div className="-mx-4 flex gap-[18px] overflow-hidden px-4 md:-mx-8 md:px-8">
         {Array.from({ length: 6 }).map((_, i) => (
           <div
