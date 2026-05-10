@@ -382,6 +382,246 @@ export const getByGeographicFocus = query({
   },
 });
 
+// ─── Editorial: Cause of the Week ───────────────────────────────────────────
+
+const EDITORIAL_POOL_SIZE = 200;
+
+function passesEditorialQualityGate(org: Doc<"organizations">) {
+  return Boolean(
+    org.logoUrl?.trim() &&
+      org.tagline?.trim() &&
+      org.keywords &&
+      org.keywords.length > 0,
+  );
+}
+
+async function takeReadyEditorialPool(
+  ctx: QueryCtx,
+  options: { state?: string },
+): Promise<Doc<"organizations">[]> {
+  const { state } = options;
+  if (state) {
+    const stated = await ctx.db
+      .query("organizations")
+      .withIndex("by_enrichmentStage_and_state", (q) =>
+        q.eq("enrichmentStage", "ready").eq("state", state),
+      )
+      .take(EDITORIAL_POOL_SIZE);
+    if (stated.length >= 40) return stated;
+
+    const fallback = await ctx.db
+      .query("organizations")
+      .withIndex("by_enrichmentStage", (q) => q.eq("enrichmentStage", "ready"))
+      .take(EDITORIAL_POOL_SIZE);
+
+    return uniqueById([...stated, ...fallback]).slice(0, EDITORIAL_POOL_SIZE);
+  }
+
+  return await ctx.db
+    .query("organizations")
+    .withIndex("by_enrichmentStage", (q) => q.eq("enrichmentStage", "ready"))
+    .take(EDITORIAL_POOL_SIZE);
+}
+
+export const getCauseOfTheWeek = query({
+  args: {
+    weekKey: v.string(),
+    sessionLocationState: v.optional(v.string()),
+  },
+  handler: async (ctx, { weekKey, sessionLocationState }) => {
+    const pool = await takeReadyEditorialPool(ctx, {
+      state: sessionLocationState,
+    });
+
+    const candidates = pool.filter(passesEditorialQualityGate);
+    if (candidates.length === 0) {
+      return null;
+    }
+
+    const seed = `cause-of-the-week:${weekKey}`;
+    const sorted = [...candidates].sort((left, right) => {
+      const rightScore = getSeededVariantScore(seed, right.slug);
+      const leftScore = getSeededVariantScore(seed, left.slug);
+      if (rightScore !== leftScore) return rightScore - leftScore;
+      return left.name.localeCompare(right.name);
+    });
+
+    return sorted[0] ?? null;
+  },
+});
+
+export const getEditorsPicks = query({
+  args: {
+    weekKey: v.string(),
+    excludeSlugs: v.optional(v.array(v.string())),
+  },
+  handler: async (ctx, { weekKey, excludeSlugs = [] }) => {
+    const exclude = new Set(excludeSlugs);
+    const pool = await takeReadyEditorialPool(ctx, {});
+
+    const candidates = pool.filter(
+      (org) => passesEditorialQualityGate(org) && !exclude.has(org.slug),
+    );
+    if (candidates.length === 0) return [];
+
+    const seed = `editors-picks:${weekKey}`;
+    const sorted = [...candidates].sort((left, right) => {
+      const rightScore = getSeededVariantScore(seed, right.slug);
+      const leftScore = getSeededVariantScore(seed, left.slug);
+      if (rightScore !== leftScore) return rightScore - leftScore;
+      return left.name.localeCompare(right.name);
+    });
+
+    const picks: Doc<"organizations">[] = [];
+    const seenMajors = new Set<string>();
+    for (const org of sorted) {
+      if (picks.length === 3) break;
+      const major = org.nteeMajor ?? "__unknown__";
+      if (seenMajors.has(major) && picks.length < 2) continue;
+      picks.push(org);
+      seenMajors.add(major);
+    }
+
+    if (picks.length < 3) {
+      for (const org of sorted) {
+        if (picks.length === 3) break;
+        if (!picks.includes(org)) picks.push(org);
+      }
+    }
+
+    return picks;
+  },
+});
+
+const SCALE_BUCKETS: Record<
+  "small" | "medium" | "large",
+  ("micro" | "small" | "mid" | "large" | "mega")[]
+> = {
+  small: ["micro", "small"],
+  medium: ["mid"],
+  large: ["large", "mega"],
+};
+
+async function takeByAssetBuckets(
+  ctx: QueryCtx,
+  buckets: ("micro" | "small" | "mid" | "large" | "mega")[],
+  perBucketLimit: number,
+) {
+  const batches = await Promise.all(
+    buckets.map((bucket) =>
+      ctx.db
+        .query("organizations")
+        .withIndex("by_enrichmentStage_and_assetBucket", (q) =>
+          q.eq("enrichmentStage", "ready").eq("assetBucket", bucket),
+        )
+        .take(perBucketLimit),
+    ),
+  );
+
+  return uniqueById(batches.flat()).filter(passesEditorialQualityGate);
+}
+
+export const getOrganizationsByScale = query({
+  args: {
+    weekKey: v.string(),
+    perColumn: v.optional(v.number()),
+  },
+  handler: async (ctx, { weekKey, perColumn = 4 }) => {
+    const seed = `scale-strip:${weekKey}`;
+    const result: Record<"small" | "medium" | "large", Doc<"organizations">[]> = {
+      small: [],
+      medium: [],
+      large: [],
+    };
+
+    for (const key of ["small", "medium", "large"] as const) {
+      const candidates = await takeByAssetBuckets(ctx, SCALE_BUCKETS[key], 20);
+      const sorted = [...candidates].sort((left, right) => {
+        const rightScore = getSeededVariantScore(`${seed}:${key}`, right.slug);
+        const leftScore = getSeededVariantScore(`${seed}:${key}`, left.slug);
+        if (rightScore !== leftScore) return rightScore - leftScore;
+        return left.name.localeCompare(right.name);
+      });
+      result[key] = sorted.slice(0, perColumn);
+    }
+
+    return result;
+  },
+});
+
+export const listByCategoryPaginated = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+    kind: v.union(v.literal("ntee"), v.literal("geo")),
+    nteeMajor: v.optional(v.string()),
+    geographicFocus: v.optional(geographicFocusValidator),
+    state: v.optional(v.string()),
+    hasLogo: v.optional(v.boolean()),
+  },
+  handler: async (
+    ctx,
+    { paginationOpts, kind, nteeMajor, geographicFocus, state, hasLogo },
+  ) => {
+    if (kind === "ntee") {
+      if (!nteeMajor) {
+        throw new Error("nteeMajor is required when kind is 'ntee'");
+      }
+
+      const indexed = ctx.db
+        .query("organizations")
+        .withIndex("by_enrichmentStage_and_nteeMajor_and_name", (qb) =>
+          qb.eq("enrichmentStage", "ready").eq("nteeMajor", nteeMajor),
+        );
+
+      if (!state && !hasLogo) {
+        return await indexed.paginate(paginationOpts);
+      }
+
+      return await indexed
+        .filter((qb) => {
+          if (state && hasLogo) {
+            return qb.and(
+              qb.eq(qb.field("state"), state),
+              qb.neq(qb.field("logoUrl"), undefined),
+            );
+          }
+          if (state) return qb.eq(qb.field("state"), state);
+          return qb.neq(qb.field("logoUrl"), undefined);
+        })
+        .paginate(paginationOpts);
+    }
+
+    if (!geographicFocus) {
+      throw new Error("geographicFocus is required when kind is 'geo'");
+    }
+
+    const indexed = ctx.db
+      .query("organizations")
+      .withIndex("by_enrichmentStage_and_geographicFocus_and_name", (qb) =>
+        qb
+          .eq("enrichmentStage", "ready")
+          .eq("geographicFocus", geographicFocus),
+      );
+
+    if (!state && !hasLogo) {
+      return await indexed.paginate(paginationOpts);
+    }
+
+    return await indexed
+      .filter((qb) => {
+        if (state && hasLogo) {
+          return qb.and(
+            qb.eq(qb.field("state"), state),
+            qb.neq(qb.field("logoUrl"), undefined),
+          );
+        }
+        if (state) return qb.eq(qb.field("state"), state);
+        return qb.neq(qb.field("logoUrl"), undefined);
+      })
+      .paginate(paginationOpts);
+  },
+});
+
 export const getOrganizationCollection = query({
   args: {
     collectionKey: v.string(),

@@ -13,6 +13,10 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
+    "paths": {
+      "@cause/lib": ["../../lib/src/index.ts"],
+      "@cause/lib/types": ["../../lib/src/types/index.ts"]
+    },
     "noEmit": true,
     "declaration": false,
     "declarationMap": false

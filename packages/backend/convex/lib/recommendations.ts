@@ -355,7 +355,7 @@ function hashSeed(input: string) {
 
 export function getSeededVariantScore(seed: string, organizationSlug: string) {
   const hash = hashSeed(`${seed}:${organizationSlug}`);
-  return (hash % 400) / 100;
+  return (hash / 0xffffffff) * 4;
 }
 
 function getProfileQualityScore(organization: OrganizationDoc) {

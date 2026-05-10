@@ -132,6 +132,20 @@ export default defineSchema({
       "enrichmentStage",
       "geographicFocus",
     ])
+    .index("by_enrichmentStage_and_assetBucket", [
+      "enrichmentStage",
+      "assetBucket",
+    ])
+    .index("by_enrichmentStage_and_nteeMajor_and_name", [
+      "enrichmentStage",
+      "nteeMajor",
+      "name",
+    ])
+    .index("by_enrichmentStage_and_geographicFocus_and_name", [
+      "enrichmentStage",
+      "geographicFocus",
+      "name",
+    ])
     .searchIndex("search_name", {
       searchField: "name",
       filterFields: ["enrichmentStage"],
