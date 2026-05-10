@@ -32,7 +32,7 @@ jobs:
         env:
           TURBO_TEAM: ${{ vars.TURBO_TEAM }}
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-        run: pnpm turbo run build --filter=@cause/types
+        run: pnpm turbo run build --filter=@cause/lib
 
       - name: Run lint
         env:
@@ -63,7 +63,7 @@ jobs:
         env:
           TURBO_TEAM: ${{ vars.TURBO_TEAM }}
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-        run: pnpm turbo run build --filter=@cause/types
+        run: pnpm turbo run build --filter=@cause/lib
 
       - name: Run typecheck
         env:

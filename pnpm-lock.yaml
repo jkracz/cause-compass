@@ -29,9 +29,9 @@ importers:
       '@cause/backend':
         specifier: workspace:*
         version: link:../../packages/backend
-      '@cause/types':
+      '@cause/lib':
         specifier: workspace:*
-        version: link:../../packages/types
+        version: link:../../packages/lib
       csv-parse:
         specifier: ^6.2.1
         version: 6.2.1
@@ -130,9 +130,9 @@ importers:
       '@cause/backend':
         specifier: workspace:*
         version: link:../../packages/backend
-      '@cause/types':
+      '@cause/lib':
         specifier: workspace:*
-        version: link:../../packages/types
+        version: link:../../packages/lib
       '@convex-dev/better-auth':
         specifier: ^0.12.2
         version: 0.12.2(@standard-schema/spec@1.1.0)(better-auth@1.6.9(@opentelemetry/api@1.9.0)(next@16.2.5(@opentelemetry/api@1.9.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(convex@1.37.0(react@19.2.6))(react@19.2.6)(typescript@6.0.2)
@@ -275,9 +275,9 @@ importers:
 
   packages/backend:
     dependencies:
-      '@cause/types':
+      '@cause/lib':
         specifier: workspace:*
-        version: link:../types
+        version: link:../lib
       '@convex-dev/aggregate':
         specifier: ^0.2.1
         version: 0.2.1(convex@1.37.0(react@19.2.6))
@@ -355,7 +355,7 @@ importers:
         specifier: ^8.59.2
         version: 8.59.2(eslint@10.3.0(jiti@2.6.1))(typescript@6.0.3)
 
-  packages/types:
+  packages/lib:
     dependencies:
       zod:
         specifier: ^4.4.3
@@ -372,7 +372,7 @@ importers:
         version: 10.3.0(jiti@2.6.1)
       typescript:
         specifier: latest
-        version: 6.0.2
+        version: 6.0.3
 
   packages/typescript-config: {}
 

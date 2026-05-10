@@ -1,5 +1,5 @@
 import slugify from "slugify";
-import type { TaxExemptOrganization } from "@cause/types";
+import type { TaxExemptOrganization } from "@cause/lib";
 
 // Convex amount bucket types (annual USD)
 export type AmountBucket =

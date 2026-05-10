@@ -3,7 +3,7 @@
  * This module is called by the daily cron job defined in crons.ts.
  */
 
-import { normalizeStoredSearchResults } from "@cause/types";
+import { normalizeStoredSearchResults } from "@cause/lib";
 import { v } from "convex/values";
 import {
   type ActionCtx,

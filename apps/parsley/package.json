@@ -21,7 +21,7 @@
   "homepage": "https://github.com/CauseCompass/np-data-parser#readme",
   "dependencies": {
     "@cause/backend": "workspace:*",
-    "@cause/types": "workspace:*",
+    "@cause/lib": "workspace:*",
     "csv-parse": "^6.2.1",
     "dotenv": "^17.4.2",
     "nanoid": "^5.1.11",

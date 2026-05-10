@@ -1,4 +1,4 @@
-import { NTEE_MAJOR_CODES } from "@cause/types";
+import { NTEE_MAJOR_CODES } from "@cause/lib";
 import { query, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 import {

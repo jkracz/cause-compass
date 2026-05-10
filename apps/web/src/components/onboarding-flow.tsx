@@ -13,7 +13,7 @@ import { MosaicPiece } from "@/components/mosaic-piece";
 import type { Question } from "@/lib/questions";
 import { api } from "@cause/backend/convex/_generated/api";
 import { useAppSession } from "@/components/app-session-provider";
-import type { UserPreferences } from "@cause/types";
+import type { UserPreferences } from "@cause/lib";
 
 interface OnboardingFlowProps {
   questions: Question[];

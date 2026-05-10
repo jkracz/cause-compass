@@ -1,5 +1,5 @@
 import type { Doc } from "../_generated/dataModel";
-import { sanitizeTagline } from "@cause/types";
+import { sanitizeTagline } from "@cause/lib";
 
 export type RecommendationReasonCode =
   | "cause_match"
