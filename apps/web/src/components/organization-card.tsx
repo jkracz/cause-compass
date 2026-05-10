@@ -7,7 +7,7 @@ import { Heart } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
 import { api } from "@cause/backend/convex/_generated/api";
-import { sanitizeTagline } from "@cause/types";
+import { sanitizeTagline } from "@cause/lib";
 import { useAppSession } from "@/components/app-session-provider";
 
 type Organization = Doc<"organizations">;

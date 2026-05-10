@@ -9,7 +9,7 @@ Cause Compass is a platform that helps users discover nonprofit organizations th
 - `apps/parsley` - data processing and import pipeline
 - `apps/scraper` - HTML and browser scraping workers
 - `packages/backend` - Convex backend
-- `packages/types` - shared Zod schemas and types
+- `packages/lib` - shared Zod schemas and types
 
 When working inside a package or app, read the nearest `AGENTS.md` in that directory as well as this root file.
 

@@ -10,7 +10,7 @@ import {
   extractActivityCodes,
   cleanUndefined,
 } from "@/utils/convexUtils";
-import type { TaxExemptOrganization } from "@cause/types";
+import type { TaxExemptOrganization } from "@cause/lib";
 import type { Doc } from "@cause/backend/convex/_generated/dataModel";
 
 // Inline Convex document type - omit system fields for creation

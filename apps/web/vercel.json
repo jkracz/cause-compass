@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd ../../packages/backend && pnpm dlx convex deploy --cmd 'cd ../.. && pnpm --filter @cause/types build && cd apps/web && NEXT_PUBLIC_CONVEX_URL=$NEXT_PUBLIC_CONVEX_URL pnpm run build'",
+  "buildCommand": "cd ../../packages/backend && pnpm dlx convex deploy --cmd 'cd ../.. && pnpm --filter @cause/lib build && cd apps/web && NEXT_PUBLIC_CONVEX_URL=$NEXT_PUBLIC_CONVEX_URL pnpm run build'",
   "installCommand": "pnpm install --frozen-lockfile",
   "framework": "nextjs",
   "outputDirectory": ".next"

@@ -16,7 +16,7 @@ import {
   type NteeCode,
   type OrgCode,
   type TaxExemptOrganization,
-} from "@cause/types";
+} from "@cause/lib";
 
 // importing the data dictionaries
 import * as activityCodes from "../data/dataDictionaries/ActivityCodes.json";

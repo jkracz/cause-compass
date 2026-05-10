@@ -7,7 +7,7 @@ import Image from "next/image";
 
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
-import { sanitizeTagline } from "@cause/types";
+import { sanitizeTagline } from "@cause/lib";
 
 type Organization = Doc<"organizations">;
 

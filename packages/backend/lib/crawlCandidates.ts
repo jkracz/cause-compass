@@ -1,7 +1,7 @@
 import {
   normalizeStoredSearchResults,
   type StoredSearchResultItem,
-} from "@cause/types";
+} from "@cause/lib";
 
 export const MAX_CRAWL_CANDIDATES = 5;
 const MIN_CRAWL_CANDIDATE_SCORE = 10;

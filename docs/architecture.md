@@ -18,7 +18,7 @@ The backend uses `@convex-dev/workflow` for durable batch processing:
 
 ## Shared Types
 
-The `@cause/types` package exports Zod schemas consumed by both web and parsley:
+The `@cause/lib` package exports Zod schemas consumed by both web and parsley:
 
 - Organization schemas with NTEE codes, financial buckets
 - User preference schemas

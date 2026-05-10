@@ -38,7 +38,7 @@ import {
 import { toast } from "sonner";
 import { useMobile } from "@/hooks/use-mobile";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
-import { sanitizeTagline } from "@cause/types";
+import { sanitizeTagline } from "@cause/lib";
 
 type Organization = Doc<"organizations">;
 

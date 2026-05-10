@@ -1,5 +1,5 @@
 import { Migrations } from "@convex-dev/migrations";
-import { normalizeStoredSearchResults } from "@cause/types";
+import { normalizeStoredSearchResults } from "@cause/lib";
 import { v } from "convex/values";
 import { components } from "./_generated/api.js";
 import { DataModel } from "./_generated/dataModel.js";

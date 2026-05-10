@@ -21,7 +21,7 @@ import {
   sanitizeTagline,
   WebsiteConfirmationSchema,
   type WebsiteConfirmation,
-} from "@cause/types";
+} from "@cause/lib";
 
 const CRAWLED_ORG_PAGE_SIZE = 250;
 

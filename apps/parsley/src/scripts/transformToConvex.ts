@@ -21,12 +21,12 @@ import type {
   TaxExemptOrganization,
   WebsiteConfirmation,
   GeographicFocusType,
-} from "@cause/types";
+} from "@cause/lib";
 import {
   normalizeStoredSearchResults,
   sanitizeTagline,
   WebsiteConfirmationSchema,
-} from "@cause/types";
+} from "@cause/lib";
 import type { Doc } from "@cause/backend/convex/_generated/dataModel";
 
 // Inline Convex document types - omit system fields for creation
