@@ -8,7 +8,7 @@ import { api } from "@cause/backend/convex/_generated/api";
 import { useAppSession } from "@/components/app-session-provider";
 import { OrgMark } from "@/components/editorial/org-mark";
 import { cn } from "@/lib/utils";
-import { sanitizeTagline } from "@cause/types";
+import { sanitizeTagline } from "@cause/lib";
 import { composeOrgBylineShort } from "@/lib/org-byline";
 
 type Organization = Doc<"organizations">;
