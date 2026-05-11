@@ -5,8 +5,10 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQueries, useQuery } from "convex/react";
 import { motion, AnimatePresence } from "motion/react";
 import posthog from "posthog-js";
@@ -113,6 +115,9 @@ function parseStoredCoordinates(location?: string): StoredCoordinates | null {
 }
 
 export function DiscoveryHomeContent() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { guestId } = useAppSession();
   const viewer = useQuery(api.users.getViewer, guestId ? { guestId } : {});
   const [sessionSeed] = useState(createSessionSeed);
@@ -122,9 +127,14 @@ export function DiscoveryHomeContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [closedSharedOrgSlug, setClosedSharedOrgSlug] = useState<string | null>(
+    null,
+  );
+  const trackedSharedOrgSlugRef = useRef<string | null>(null);
 
   const debouncedQuery = useDebounce(searchQuery, 300);
   const isSearching = debouncedQuery.length > 0;
+  const sharedOrgSlug = searchParams.get("org");
 
   const weekKey = useWeekKey();
 
@@ -214,6 +224,10 @@ export function DiscoveryHomeContent() {
     api.organizations.search,
     isSearching ? { query: debouncedQuery } : "skip",
   );
+  const sharedOrganization = useQuery(
+    api.organizations.getBySlug,
+    sharedOrgSlug ? { slug: sharedOrgSlug } : "skip",
+  );
 
   const isSearchLoading = isSearching && searchResults === undefined;
 
@@ -222,10 +236,48 @@ export function DiscoveryHomeContent() {
   );
   if (rowError) throw rowError;
 
+  useEffect(() => {
+    if (!sharedOrgSlug) {
+      trackedSharedOrgSlugRef.current = null;
+      return;
+    }
+    if (!sharedOrganization) return;
+    if (trackedSharedOrgSlugRef.current === sharedOrgSlug) return;
+
+    trackedSharedOrgSlugRef.current = sharedOrgSlug;
+    posthog.capture("organization_details_viewed", {
+      organization_id: sharedOrganization.slug,
+      organization_name: sharedOrganization.name,
+      organization_ein: sharedOrganization.ein,
+      organization_city: sharedOrganization.city,
+      organization_state: sharedOrganization.state,
+      source: "shared_link",
+    });
+  }, [sharedOrgSlug, sharedOrganization]);
+
+  const setOrgUrlParam = useCallback(
+    (slug?: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (slug) {
+        params.set("org", slug);
+        setClosedSharedOrgSlug(null);
+      } else {
+        params.delete("org");
+      }
+
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, {
+        scroll: false,
+      });
+    },
+    [pathname, router, searchParams],
+  );
+
   const handleCardClick = useCallback(
     (org: Organization) => {
       setSelectedOrg(org);
       setIsModalOpen(true);
+      setOrgUrlParam(org.slug);
       posthog.capture("organization_details_viewed", {
         organization_id: org.slug,
         organization_name: org.name,
@@ -236,12 +288,16 @@ export function DiscoveryHomeContent() {
         search_query: isSearching ? debouncedQuery : undefined,
       });
     },
-    [isSearching, debouncedQuery],
+    [isSearching, debouncedQuery, setOrgUrlParam],
   );
 
   const handleCloseModal = () => {
+    if (sharedOrgSlug) {
+      setClosedSharedOrgSlug(sharedOrgSlug);
+    }
     setIsModalOpen(false);
     setSelectedOrg(null);
+    setOrgUrlParam();
   };
 
   const handleSearchChange = (value: string) => {
@@ -263,6 +319,17 @@ export function DiscoveryHomeContent() {
     ...row,
     organizations: (rowResults[row.key] as Organization[] | undefined) ?? [],
   }));
+  const activeSharedOrgSlug =
+    sharedOrgSlug && sharedOrgSlug !== closedSharedOrgSlug
+      ? sharedOrgSlug
+      : null;
+  const selectedOrgMatchesSharedSlug = selectedOrg?.slug === activeSharedOrgSlug;
+  const modalOrganization =
+    (activeSharedOrgSlug ? sharedOrganization : null) ||
+    (selectedOrgMatchesSharedSlug ? selectedOrg : null);
+  const isOrganizationModalOpen = Boolean(
+    activeSharedOrgSlug ? modalOrganization : selectedOrg && isModalOpen,
+  );
 
   return (
     <main className="relative min-h-screen overflow-hidden">
@@ -443,12 +510,11 @@ export function DiscoveryHomeContent() {
         </AnimatePresence>
       </div>
 
-      {selectedOrg && (
+      {modalOrganization && (
         <OrganizationModal
-          organization={selectedOrg}
-          isOpen={isModalOpen}
+          organization={modalOrganization}
+          isOpen={isOrganizationModalOpen}
           onClose={handleCloseModal}
-          showRemoveButton={false}
         />
       )}
     </main>

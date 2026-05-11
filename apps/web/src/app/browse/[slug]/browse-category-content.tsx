@@ -312,7 +312,6 @@ export function BrowseCategoryContent({ category }: BrowseCategoryContentProps) 
           organization={selectedOrg}
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          showRemoveButton={false}
         />
       )}
     </>

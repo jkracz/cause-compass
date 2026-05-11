@@ -4,22 +4,17 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 import posthog from "posthog-js";
-import { useMutation } from "convex/react";
 
 import { Button } from "@/components/ui/button";
 import { GlassmorphicCard } from "@/components/glassmorphic-card";
 import { OrganizationCard } from "@/components/organization-card";
 import { OrganizationModal } from "@/components/organization-modal";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
-import { api } from "@cause/backend/convex/_generated/api";
-import { useAppSession } from "@/components/app-session-provider";
 
 type Organization = Doc<"organizations">;
 
 export function MyCauses({ likedOrgs }: { likedOrgs: Organization[] }) {
   const router = useRouter();
-  const { guestId } = useAppSession();
-  const unlikeOrganization = useMutation(api.users.unlikeOrganization);
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const organizations = useMemo(() => likedOrgs, [likedOrgs]);
@@ -28,7 +23,6 @@ export function MyCauses({ likedOrgs }: { likedOrgs: Organization[] }) {
     setSelectedOrg(org);
     setIsModalOpen(true);
 
-    // Track organization details viewed
     posthog.capture("organization_details_viewed", {
       organization_id: org.slug,
       organization_name: org.name,
@@ -41,23 +35,6 @@ export function MyCauses({ likedOrgs }: { likedOrgs: Organization[] }) {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-  };
-
-  const handleRemoveOrganization = async (orgSlug: string) => {
-    const orgToRemove = organizations.find((org) => org.slug === orgSlug);
-    await unlikeOrganization({
-      guestId,
-      organizationId: orgSlug,
-    });
-    setIsModalOpen(false);
-
-    // Track organization removed
-    posthog.capture("organization_removed", {
-      organization_id: orgSlug,
-      organization_name: orgToRemove?.name,
-      organization_ein: orgToRemove?.ein,
-      remaining_liked_count: Math.max(organizations.length - 1, 0),
-    });
   };
 
   return (
@@ -107,8 +84,6 @@ export function MyCauses({ likedOrgs }: { likedOrgs: Organization[] }) {
           organization={selectedOrg}
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          onRemove={() => void handleRemoveOrganization(selectedOrg.slug)}
-          showRemoveButton={true}
         />
       )}
     </div>

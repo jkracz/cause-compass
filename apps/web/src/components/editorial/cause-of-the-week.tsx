@@ -151,14 +151,6 @@ export function CauseOfTheWeek({
 
                 {byline ? (
                   <p className="font-heading max-w-[28ch] text-[clamp(0.95rem,1.15vw,1.05rem)] leading-[1.5] text-[var(--ink-soft)] italic">
-                    {byline.glyph && (
-                      <span
-                        aria-hidden
-                        className="mr-2 text-[var(--accent-2)] not-italic"
-                      >
-                        {byline.glyph}
-                      </span>
-                    )}
                     {byline.sentence}
                   </p>
                 ) : (
