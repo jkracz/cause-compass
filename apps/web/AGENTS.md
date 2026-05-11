@@ -32,4 +32,3 @@ If a change touches Convex behavior or schema assumptions, read [packages/backen
 - `/onboarding` - user preference collection
 - `/discover` - organization discovery
 - `/my-causes` - liked organizations dashboard
-- `/org/[id]` - organization detail page

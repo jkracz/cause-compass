@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import type React from "react";
 import {
   ExternalLink,
@@ -9,24 +8,18 @@ import {
   Share2,
   HandHeart,
   Users,
-  Globe2,
-  Layers,
 } from "lucide-react";
 import Image from "next/image";
 import posthog from "posthog-js";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { useMutation, useQuery } from "convex/react";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Drawer,
   DrawerContent,
@@ -36,8 +29,11 @@ import {
 } from "@/components/ui/drawer";
 import { toast } from "sonner";
 import { useMobile } from "@/hooks/use-mobile";
+import { useAppSession } from "@/components/app-session-provider";
+import { api } from "@cause/backend/convex/_generated/api";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
 import { sanitizeTagline } from "@cause/lib";
+import { cn } from "@/lib/utils";
 
 type Organization = Doc<"organizations">;
 
@@ -45,17 +41,7 @@ interface OrganizationModalProps {
   organization: Organization;
   isOpen: boolean;
   onClose: () => void;
-  onRemove?: () => void;
-  showRemoveButton?: boolean;
 }
-
-const SIZE_LABEL: Record<string, string> = {
-  micro: "Grassroots nonprofit",
-  small: "Small nonprofit",
-  mid: "Mid-size nonprofit",
-  large: "Large nonprofit",
-  mega: "Major nonprofit",
-};
 
 function formatEin(ein?: string) {
   if (!ein) return "";
@@ -159,20 +145,34 @@ export function OrganizationModal({
   organization,
   isOpen,
   onClose,
-  onRemove,
-  showRemoveButton = false,
 }: OrganizationModalProps) {
   const isMobile = useMobile();
-  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
+  const { guestId } = useAppSession();
+  const viewer = useQuery(api.users.getViewer, guestId ? { guestId } : {});
+  const likeOrganization = useMutation(api.users.likeOrganization);
+  const unlikeOrganization = useMutation(api.users.unlikeOrganization);
 
-  const handleRemoveClick = () => {
-    setIsRemoveDialogOpen(true);
-  };
+  const isLiked =
+    viewer?.likedOrganizations?.includes(organization.slug) ?? false;
 
-  const handleConfirmRemove = () => {
-    onRemove?.();
-    setIsRemoveDialogOpen(false);
-    onClose();
+  const handleSaveToggle = async () => {
+    if (isLiked) {
+      await unlikeOrganization({ guestId, organizationId: organization.slug });
+      posthog.capture("organization_removed", {
+        organization_id: organization.slug,
+        organization_name: organization.name,
+        organization_ein: organization.ein,
+        source: "modal",
+      });
+    } else {
+      await likeOrganization({ guestId, organizationId: organization.slug });
+      posthog.capture("organization_liked", {
+        organization_id: organization.slug,
+        organization_name: organization.name,
+        organization_ein: organization.ein,
+        source: "modal",
+      });
+    }
   };
 
   const handleWebsiteClick = () => {
@@ -194,10 +194,10 @@ export function OrganizationModal({
   };
 
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/org/${organization.slug}`;
+    const shareUrl = `${window.location.origin}/?org=${encodeURIComponent(
+      organization.slug,
+    )}`;
     const shareData = {
-      title: organization.name,
-      text: `Check out ${organization.name} - ${organization.whySupport?.slice(0, 100)}...`,
       url: shareUrl,
     };
 
@@ -261,10 +261,6 @@ export function OrganizationModal({
 
   const nteeLabel =
     organization.nteeMajor && NTEE_CATEGORY[organization.nteeMajor];
-
-  const sizeLabel =
-    (organization.incomeBucket && SIZE_LABEL[organization.incomeBucket]) ||
-    (organization.assetBucket && SIZE_LABEL[organization.assetBucket]);
 
   const socials = organization.socialMediaUrls;
   const socialLinks: Array<{
@@ -365,45 +361,19 @@ export function OrganizationModal({
         <div className="grid gap-x-12 gap-y-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
           <div className="flex flex-col gap-7">
             <div>
-              <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold tracking-[0.32em] text-ink-mute uppercase">
-                <span>{organization.city}</span>
-                <span className="text-rule-strong">·</span>
-                <span>{organization.state}</span>
-                {organization.geographicFocus && (
-                  <>
+              {(organization.city || organization.state) && (
+                <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold tracking-[0.32em] text-ink-mute uppercase">
+                  {organization.city && <span>{organization.city}</span>}
+                  {organization.city && organization.state && (
                     <span className="text-rule-strong">·</span>
-                    <span className="text-accent-2">
-                      {organization.geographicFocus} reach
-                    </span>
-                  </>
-                )}
-              </div>
+                  )}
+                  {organization.state && <span>{organization.state}</span>}
+                </div>
+              )}
 
               <DialogTitle className="font-heading text-[28px] leading-[1.05] font-semibold tracking-[-0.005em] text-ink sm:text-[36px]">
                 {organization.name}
               </DialogTitle>
-
-              {(nteeLabel || sizeLabel || organization.geographicFocus) && (
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {organization.geographicFocus && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-rule bg-card px-3 py-1 text-[12px] font-medium text-ink-soft">
-                      <Globe2 className="h-3 w-3 text-accent-2" />
-                      {organization.geographicFocus}
-                    </span>
-                  )}
-                  {sizeLabel && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-rule bg-card px-3 py-1 text-[12px] font-medium text-ink-soft">
-                      <Layers className="h-3 w-3 text-accent-2" />
-                      {sizeLabel}
-                    </span>
-                  )}
-                  {nteeLabel && (
-                    <span className="inline-flex items-center rounded-full border border-rule bg-card px-3 py-1 text-[12px] font-medium text-ink-soft">
-                      {nteeLabel}
-                    </span>
-                  )}
-                </div>
-              )}
             </div>
 
             {lead && (
@@ -454,57 +424,64 @@ export function OrganizationModal({
             )}
           </div>
 
-          <aside className="flex flex-col gap-6">
-            <div className="glass-card order-last p-5 shadow-[0_30px_70px_-40px_rgba(91,75,158,0.45)] lg:sticky lg:top-6 lg:order-none">
-              <div className="mb-4 flex items-center gap-3">
-                <span className="h-px w-7 bg-accent/70" aria-hidden />
-                <span className="text-[11px] font-semibold tracking-[0.32em] text-accent uppercase">
-                  Take Action
-                </span>
-              </div>
-              <div className="flex flex-col gap-2">
-                {hasDonate && (
-                  <a
-                    href={organization.donationUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={handleDonateClick}
-                  >
-                    <Button className="h-11 w-full rounded-full bg-ink px-6 text-[11px] font-semibold tracking-[0.32em] text-paper uppercase shadow-none transition-all hover:bg-accent hover:text-paper hover:shadow-[0_18px_40px_-20px_rgba(200,38,110,0.55)]">
-                      <HandHeart className="mr-2 h-4 w-4" />
-                      Donate
-                    </Button>
-                  </a>
-                )}
-                {hasWebsite && (
-                  <a
-                    href={organization.websiteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={handleWebsiteClick}
-                  >
-                    <Button className="h-11 w-full rounded-full border border-rule-strong bg-card px-5 text-[11px] font-semibold tracking-[0.32em] text-ink-soft uppercase shadow-none transition-all hover:border-accent/40 hover:bg-card hover:text-accent">
-                      Visit Website
-                      <ExternalLink className="ml-2 h-4 w-4" />
-                    </Button>
-                  </a>
-                )}
+          <aside className="flex flex-col gap-7">
+            <div className="order-last flex flex-col gap-2 lg:sticky lg:top-6 lg:order-none">
+              {hasDonate && (
+                <a
+                  href={organization.donationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={handleDonateClick}
+                >
+                  <Button className="h-11 w-full rounded-full bg-ink px-6 text-[11px] font-semibold tracking-[0.32em] text-paper uppercase shadow-none transition-all hover:bg-accent hover:text-paper hover:shadow-[0_18px_40px_-20px_rgba(200,38,110,0.55)]">
+                    <HandHeart className="mr-2 h-4 w-4" />
+                    Donate
+                  </Button>
+                </a>
+              )}
+              {hasWebsite && (
+                <a
+                  href={organization.websiteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={handleWebsiteClick}
+                >
+                  <Button className="h-11 w-full rounded-full border border-rule bg-transparent px-5 text-[11px] font-semibold tracking-[0.32em] text-ink-soft uppercase shadow-none transition-all hover:border-accent/40 hover:bg-transparent hover:text-accent">
+                    Visit Website
+                    <ExternalLink className="ml-2 h-4 w-4" />
+                  </Button>
+                </a>
+              )}
+              <div className="flex items-center gap-2">
                 <Button
-                  className="h-11 w-full rounded-full border border-rule-strong bg-card px-5 text-[11px] font-semibold tracking-[0.32em] text-ink-soft uppercase shadow-none transition-all hover:border-accent/40 hover:bg-card hover:text-accent"
+                  aria-pressed={isLiked}
+                  aria-label={
+                    isLiked ? "Remove from My Causes" : "Add to My Causes"
+                  }
+                  className={cn(
+                    "h-10 flex-1 rounded-full border px-4 text-[11px] font-medium tracking-[0.16em] uppercase shadow-none transition-colors",
+                    isLiked
+                      ? "border-accent/50 bg-accent-soft text-accent hover:bg-accent-soft hover:text-accent"
+                      : "border-rule bg-transparent text-ink-mute hover:border-accent/40 hover:bg-transparent hover:text-accent",
+                  )}
+                  onClick={() => void handleSaveToggle()}
+                >
+                  <Heart
+                    className={cn(
+                      "mr-1.5 h-3.5 w-3.5 transition-colors",
+                      isLiked && "fill-current",
+                    )}
+                  />
+                  {isLiked ? "Saved" : "Save"}
+                </Button>
+                <Button
+                  aria-label="Share organization"
+                  className="h-10 flex-1 rounded-full border border-rule bg-transparent px-4 text-[11px] font-medium tracking-[0.16em] text-ink-mute uppercase shadow-none transition-colors hover:border-accent/40 hover:bg-transparent hover:text-accent"
                   onClick={() => void handleShare()}
                 >
-                  <Share2 className="mr-2 h-4 w-4" />
+                  <Share2 className="mr-1.5 h-3.5 w-3.5" />
                   Share
                 </Button>
-                {showRemoveButton && (
-                  <Button
-                    className="h-11 w-full rounded-full border border-rule-strong bg-card px-5 text-[11px] font-semibold tracking-[0.32em] text-ink-soft uppercase shadow-none transition-all hover:border-accent/40 hover:bg-accent-soft hover:text-accent"
-                    onClick={handleRemoveClick}
-                  >
-                    <Heart className="mr-2 h-4 w-4 fill-current" />
-                    Remove
-                  </Button>
-                )}
               </div>
             </div>
 
@@ -525,7 +502,7 @@ export function OrganizationModal({
 
             {organization.keywords && organization.keywords.length > 0 && (
               <section>
-                <SectionLabel>Tags</SectionLabel>
+                <SectionLabel>Keywords</SectionLabel>
                 <div className="flex flex-wrap gap-1.5">
                   {organization.keywords.map((tag) => (
                     <span
@@ -561,31 +538,6 @@ export function OrganizationModal({
           </aside>
         </div>
       </div>
-
-      <AlertDialog
-        open={isRemoveDialogOpen}
-        onOpenChange={setIsRemoveDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remove Organization?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to remove &quot;{organization.name}&quot;
-              from your saved organizations? You can always add it back later by
-              discovering it again.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmRemove}
-              className="rounded-full bg-ink px-6 text-[11px] font-semibold tracking-[0.32em] text-paper uppercase hover:bg-accent"
-            >
-              Remove
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 
@@ -616,7 +568,20 @@ export function OrganizationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-h-[92vh] w-[calc(100vw-2rem)] !max-w-5xl overflow-auto border border-rule bg-card p-0 text-ink shadow-[0_30px_70px_-40px_rgba(91,75,158,0.55)] sm:!max-w-5xl sm:rounded-[32px]">
+      <DialogContent
+        showCloseButton={false}
+        className="max-h-[92vh] w-[calc(100vw-2rem)] !max-w-5xl overflow-auto border border-rule bg-card p-0 text-ink shadow-[0_30px_70px_-40px_rgba(91,75,158,0.55)] sm:!max-w-5xl sm:rounded-[32px]"
+      >
+        <DialogClose asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 z-50 h-10 w-10 rounded-full border border-rule bg-card/90 text-ink-soft shadow-sm backdrop-blur transition-all hover:border-accent/40 hover:bg-card hover:text-accent"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </Button>
+        </DialogClose>
         {content}
       </DialogContent>
     </Dialog>
