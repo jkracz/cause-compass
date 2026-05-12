@@ -234,8 +234,9 @@ export function selectBatchPromptCrawlData(
 ): SelectedBatchPromptCrawlItem[] {
   const seenUrls = new Set<string>();
   const selectedPages: SelectedBatchPromptCrawlItem[] = [];
-  const dedupedResults: Array<BatchPromptCrawlItem & { originalIndex: number }> =
-    [];
+  const dedupedResults: Array<
+    BatchPromptCrawlItem & { originalIndex: number }
+  > = [];
 
   for (const [originalIndex, crawlResult] of crawlResults.entries()) {
     const normalizedUrl = normalizeCrawlUrlForBatch(crawlResult.sourceUrl);
@@ -252,7 +253,8 @@ export function selectBatchPromptCrawlData(
 
   dedupedResults.sort((left, right) => {
     const priorityDifference =
-      getBatchPagePriority(left.sourceUrl) - getBatchPagePriority(right.sourceUrl);
+      getBatchPagePriority(left.sourceUrl) -
+      getBatchPagePriority(right.sourceUrl);
 
     if (priorityDifference !== 0) {
       return priorityDifference;

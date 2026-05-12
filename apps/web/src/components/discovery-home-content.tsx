@@ -35,7 +35,10 @@ import {
   SpotlightTrioSkeleton,
 } from "@/components/editorial/spotlight-trio";
 import { CategoryMosaic } from "@/components/editorial/category-mosaic";
-import { ScaleStrip, ScaleStripSkeleton } from "@/components/editorial/scale-strip";
+import {
+  ScaleStrip,
+  ScaleStripSkeleton,
+} from "@/components/editorial/scale-strip";
 import { EditorialCarousel } from "@/components/editorial/editorial-carousel";
 import { EditorialOrgCard } from "@/components/editorial/editorial-org-card";
 
@@ -323,7 +326,8 @@ export function DiscoveryHomeContent() {
     sharedOrgSlug && sharedOrgSlug !== closedSharedOrgSlug
       ? sharedOrgSlug
       : null;
-  const selectedOrgMatchesSharedSlug = selectedOrg?.slug === activeSharedOrgSlug;
+  const selectedOrgMatchesSharedSlug =
+    selectedOrg?.slug === activeSharedOrgSlug;
   const modalOrganization =
     (activeSharedOrgSlug ? sharedOrganization : null) ||
     (selectedOrgMatchesSharedSlug ? selectedOrg : null);
@@ -357,7 +361,10 @@ export function DiscoveryHomeContent() {
         </div>
 
         {/* Search bar — under hero */}
-        <div className="editorial-fade-up mt-14" style={{ animationDelay: "0.1s" }}>
+        <div
+          className="editorial-fade-up mt-14"
+          style={{ animationDelay: "0.1s" }}
+        >
           <EditorialSearch
             value={searchQuery}
             onChange={handleSearchChange}

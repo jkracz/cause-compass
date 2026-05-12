@@ -28,22 +28,22 @@ export const internalListAiCandidateOrgsPage = internalQuery({
   handler: async (ctx, { stage, paginationOpts }) => {
     const orgs = await ctx.db
       .query("organizations")
-      .withIndex("by_enrichmentStage", (q) =>
-        q.eq("enrichmentStage", stage),
-      )
+      .withIndex("by_enrichmentStage", (q) => q.eq("enrichmentStage", stage))
       .paginate(paginationOpts);
 
     return {
       ...orgs,
-      page: orgs.page.map((org): OrgForAiConfirmationBase => ({
-        _id: org._id,
-        ein: sanitizeUnicodeString(org.ein),
-        name: sanitizeUnicodeString(org.name),
-        street: sanitizeUnicodeString(org.street),
-        city: sanitizeUnicodeString(org.city),
-        state: sanitizeUnicodeString(org.state),
-        nteeCode: sanitizeOptionalUnicodeString(org.nteeCode),
-      })),
+      page: orgs.page.map(
+        (org): OrgForAiConfirmationBase => ({
+          _id: org._id,
+          ein: sanitizeUnicodeString(org.ein),
+          name: sanitizeUnicodeString(org.name),
+          street: sanitizeUnicodeString(org.street),
+          city: sanitizeUnicodeString(org.city),
+          state: sanitizeUnicodeString(org.state),
+          nteeCode: sanitizeOptionalUnicodeString(org.nteeCode),
+        }),
+      ),
     };
   },
 });

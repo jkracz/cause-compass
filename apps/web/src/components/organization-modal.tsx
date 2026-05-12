@@ -1,14 +1,7 @@
 "use client";
 
 import type React from "react";
-import {
-  ExternalLink,
-  X,
-  Heart,
-  Share2,
-  HandHeart,
-  Users,
-} from "lucide-react";
+import { ExternalLink, X, Heart, Share2, HandHeart, Users } from "lucide-react";
 import Image from "next/image";
 import posthog from "posthog-js";
 import { useMutation, useQuery } from "convex/react";
@@ -133,8 +126,8 @@ function YoutubeLogo(props: IconProps) {
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div className="mb-3 flex items-center gap-3">
-      <span className="h-px w-7 bg-accent/70" aria-hidden />
-      <span className="text-[11px] font-semibold tracking-[0.32em] text-accent uppercase">
+      <span className="bg-accent/70 h-px w-7" aria-hidden />
+      <span className="text-accent text-[11px] font-semibold tracking-[0.32em] uppercase">
         {children}
       </span>
     </div>
@@ -317,11 +310,11 @@ export function OrganizationModal({
 
   const content = (
     <div className="flex flex-col">
-      <div className="relative h-60 w-full shrink-0 overflow-hidden border-b border-rule bg-paper-deep sm:h-72">
+      <div className="border-rule bg-paper-deep relative h-60 w-full shrink-0 overflow-hidden border-b sm:h-72">
         {organization.ein && (
-          <div className="absolute top-5 left-6 z-20 flex cursor-text items-center gap-2 text-[10px] font-semibold tracking-[0.28em] text-ink-mute uppercase select-text sm:left-8">
+          <div className="text-ink-mute absolute top-5 left-6 z-20 flex cursor-text items-center gap-2 text-[10px] font-semibold tracking-[0.28em] uppercase select-text sm:left-8">
             <span>EIN</span>
-            <span className="font-mono tracking-[0.1em] text-ink-mute normal-case select-text">
+            <span className="text-ink-mute font-mono tracking-[0.1em] normal-case select-text">
               {formatEin(organization.ein)}
             </span>
           </div>
@@ -329,7 +322,7 @@ export function OrganizationModal({
 
         <div className="relative z-10 flex h-full items-center justify-center px-6">
           {organization.logoUrl ? (
-            <div className="relative h-40 w-40 overflow-hidden rounded-2xl border border-rule bg-card shadow-[0_22px_50px_-28px_rgba(91,75,158,0.45)] sm:h-48 sm:w-48">
+            <div className="border-rule bg-card relative h-40 w-40 overflow-hidden rounded-2xl border shadow-[0_22px_50px_-28px_rgba(91,75,158,0.45)] sm:h-48 sm:w-48">
               <Image
                 src={organization.logoUrl}
                 alt={organization.name}
@@ -339,8 +332,8 @@ export function OrganizationModal({
               />
             </div>
           ) : (
-            <div className="flex h-40 w-40 items-center justify-center rounded-2xl border border-rule bg-paper shadow-[0_22px_50px_-28px_rgba(91,75,158,0.45)] sm:h-48 sm:w-48">
-              <span className="font-heading text-5xl font-semibold text-ink">
+            <div className="border-rule bg-paper flex h-40 w-40 items-center justify-center rounded-2xl border shadow-[0_22px_50px_-28px_rgba(91,75,158,0.45)] sm:h-48 sm:w-48">
+              <span className="font-heading text-ink text-5xl font-semibold">
                 {organization.name
                   .split(" ")
                   .map((w) => w[0])
@@ -352,7 +345,7 @@ export function OrganizationModal({
           )}
         </div>
 
-        <div className="absolute right-6 bottom-5 text-right text-[11px] font-semibold tracking-[0.32em] text-ink-mute uppercase sm:right-8">
+        <div className="text-ink-mute absolute right-6 bottom-5 text-right text-[11px] font-semibold tracking-[0.32em] uppercase sm:right-8">
           {nteeLabel ?? "Nonprofit"}
         </div>
       </div>
@@ -362,7 +355,7 @@ export function OrganizationModal({
           <div className="flex flex-col gap-7">
             <div>
               {(organization.city || organization.state) && (
-                <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold tracking-[0.32em] text-ink-mute uppercase">
+                <div className="text-ink-mute mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold tracking-[0.32em] uppercase">
                   {organization.city && <span>{organization.city}</span>}
                   {organization.city && organization.state && (
                     <span className="text-rule-strong">·</span>
@@ -371,13 +364,13 @@ export function OrganizationModal({
                 </div>
               )}
 
-              <DialogTitle className="font-heading text-[28px] leading-[1.05] font-semibold tracking-[-0.005em] text-ink sm:text-[36px]">
+              <DialogTitle className="font-heading text-ink text-[28px] leading-[1.05] font-semibold tracking-[-0.005em] sm:text-[36px]">
                 {organization.name}
               </DialogTitle>
             </div>
 
             {lead && (
-              <p className="font-heading border-l-2 border-accent pl-5 text-[19px] leading-[1.45] font-medium text-ink italic sm:text-[21px]">
+              <p className="font-heading border-accent text-ink border-l-2 pl-5 text-[19px] leading-[1.45] font-medium italic sm:text-[21px]">
                 {lead}
               </p>
             )}
@@ -385,7 +378,7 @@ export function OrganizationModal({
             {organization.mission && (
               <section>
                 <SectionLabel>The Mission</SectionLabel>
-                <p className="text-[15px] leading-[1.65] text-ink-soft">
+                <p className="text-ink-soft text-[15px] leading-[1.65]">
                   {organization.mission}
                 </p>
               </section>
@@ -394,7 +387,7 @@ export function OrganizationModal({
             {organization.whySupport && organization.whySupport !== lead && (
               <section>
                 <SectionLabel>Why Support</SectionLabel>
-                <p className="text-[15px] leading-[1.65] text-ink-soft">
+                <p className="text-ink-soft text-[15px] leading-[1.65]">
                   {organization.whySupport}
                 </p>
               </section>
@@ -407,13 +400,13 @@ export function OrganizationModal({
                   {organization.activities.slice(0, 6).map((activity, i) => (
                     <div
                       key={`${activity.name}-${i}`}
-                      className="rounded-[14px] border border-rule bg-card p-4 transition-colors hover:border-rule-strong hover:bg-card-hover"
+                      className="border-rule bg-card hover:border-rule-strong hover:bg-card-hover rounded-[14px] border p-4 transition-colors"
                     >
-                      <h4 className="font-heading mb-1 text-[14px] font-semibold text-ink">
+                      <h4 className="font-heading text-ink mb-1 text-[14px] font-semibold">
                         {activity.name}
                       </h4>
                       {activity.description && (
-                        <p className="text-[13px] leading-[1.55] text-ink-soft">
+                        <p className="text-ink-soft text-[13px] leading-[1.55]">
                           {activity.description}
                         </p>
                       )}
@@ -433,7 +426,7 @@ export function OrganizationModal({
                   rel="noopener noreferrer"
                   onClick={handleDonateClick}
                 >
-                  <Button className="h-11 w-full rounded-full bg-ink px-6 text-[11px] font-semibold tracking-[0.32em] text-paper uppercase shadow-none transition-all hover:bg-accent hover:text-paper hover:shadow-[0_18px_40px_-20px_rgba(200,38,110,0.55)]">
+                  <Button className="bg-ink text-paper hover:bg-accent hover:text-paper h-11 w-full rounded-full px-6 text-[11px] font-semibold tracking-[0.32em] uppercase shadow-none transition-all hover:shadow-[0_18px_40px_-20px_rgba(200,38,110,0.55)]">
                     <HandHeart className="mr-2 h-4 w-4" />
                     Donate
                   </Button>
@@ -446,7 +439,7 @@ export function OrganizationModal({
                   rel="noopener noreferrer"
                   onClick={handleWebsiteClick}
                 >
-                  <Button className="h-11 w-full rounded-full border border-rule bg-transparent px-5 text-[11px] font-semibold tracking-[0.32em] text-ink-soft uppercase shadow-none transition-all hover:border-accent/40 hover:bg-transparent hover:text-accent">
+                  <Button className="border-rule text-ink-soft hover:border-accent/40 hover:text-accent h-11 w-full rounded-full border bg-transparent px-5 text-[11px] font-semibold tracking-[0.32em] uppercase shadow-none transition-all hover:bg-transparent">
                     Visit Website
                     <ExternalLink className="ml-2 h-4 w-4" />
                   </Button>
@@ -462,7 +455,7 @@ export function OrganizationModal({
                     "h-10 flex-1 rounded-full border px-4 text-[11px] font-medium tracking-[0.16em] uppercase shadow-none transition-colors",
                     isLiked
                       ? "border-accent/50 bg-accent-soft text-accent hover:bg-accent-soft hover:text-accent"
-                      : "border-rule bg-transparent text-ink-mute hover:border-accent/40 hover:bg-transparent hover:text-accent",
+                      : "border-rule text-ink-mute hover:border-accent/40 hover:text-accent bg-transparent hover:bg-transparent",
                   )}
                   onClick={() => void handleSaveToggle()}
                 >
@@ -476,7 +469,7 @@ export function OrganizationModal({
                 </Button>
                 <Button
                   aria-label="Share organization"
-                  className="h-10 flex-1 rounded-full border border-rule bg-transparent px-4 text-[11px] font-medium tracking-[0.16em] text-ink-mute uppercase shadow-none transition-colors hover:border-accent/40 hover:bg-transparent hover:text-accent"
+                  className="border-rule text-ink-mute hover:border-accent/40 hover:text-accent h-10 flex-1 rounded-full border bg-transparent px-4 text-[11px] font-medium tracking-[0.16em] uppercase shadow-none transition-colors hover:bg-transparent"
                   onClick={() => void handleShare()}
                 >
                   <Share2 className="mr-1.5 h-3.5 w-3.5" />
@@ -488,13 +481,13 @@ export function OrganizationModal({
             {organization.targetAudience && (
               <section>
                 <div className="mb-3 flex items-center gap-3">
-                  <span className="h-px w-7 bg-accent/70" aria-hidden />
-                  <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.32em] text-accent uppercase">
+                  <span className="bg-accent/70 h-px w-7" aria-hidden />
+                  <span className="text-accent inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.32em] uppercase">
                     <Users className="h-3 w-3" />
                     Who They Serve
                   </span>
                 </div>
-                <p className="text-[14px] leading-[1.6] text-ink-soft">
+                <p className="text-ink-soft text-[14px] leading-[1.6]">
                   {organization.targetAudience}
                 </p>
               </section>
@@ -507,7 +500,7 @@ export function OrganizationModal({
                   {organization.keywords.map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-full border border-rule bg-card px-3 py-1 text-[12px] font-medium text-ink-soft"
+                      className="border-rule bg-card text-ink-soft rounded-full border px-3 py-1 text-[12px] font-medium"
                     >
                       {tag}
                     </span>
@@ -527,7 +520,7 @@ export function OrganizationModal({
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={label}
-                      className="flex h-10 w-10 items-center justify-center rounded-full border border-rule bg-card text-ink-mute transition-all hover:border-accent/40 hover:bg-accent-soft hover:text-accent"
+                      className="border-rule bg-card text-ink-mute hover:border-accent/40 hover:bg-accent-soft hover:text-accent flex h-10 w-10 items-center justify-center rounded-full border transition-all"
                     >
                       <Icon className="h-[15px] w-[15px]" />
                     </a>
@@ -544,9 +537,9 @@ export function OrganizationModal({
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onClose}>
-        <DrawerContent className="max-h-[92vh] bg-card">
-          <DrawerHeader className="flex items-center justify-between border-b border-rule bg-paper-deep px-4 py-3">
-            <DrawerTitle className="text-[11px] font-semibold tracking-[0.32em] text-ink-mute uppercase">
+        <DrawerContent className="bg-card max-h-[92vh]">
+          <DrawerHeader className="border-rule bg-paper-deep flex items-center justify-between border-b px-4 py-3">
+            <DrawerTitle className="text-ink-mute text-[11px] font-semibold tracking-[0.32em] uppercase">
               Organization
             </DrawerTitle>
             <DrawerClose asChild>
@@ -560,7 +553,7 @@ export function OrganizationModal({
               </Button>
             </DrawerClose>
           </DrawerHeader>
-          <div className="overflow-y-auto bg-card">{content}</div>
+          <div className="bg-card overflow-y-auto">{content}</div>
         </DrawerContent>
       </Drawer>
     );
@@ -570,13 +563,13 @@ export function OrganizationModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         showCloseButton={false}
-        className="max-h-[92vh] w-[calc(100vw-2rem)] !max-w-5xl overflow-auto border border-rule bg-card p-0 text-ink shadow-[0_30px_70px_-40px_rgba(91,75,158,0.55)] sm:!max-w-5xl sm:rounded-[32px]"
+        className="border-rule bg-card text-ink max-h-[92vh] w-[calc(100vw-2rem)] !max-w-5xl overflow-auto border p-0 shadow-[0_30px_70px_-40px_rgba(91,75,158,0.55)] sm:!max-w-5xl sm:rounded-[32px]"
       >
         <DialogClose asChild>
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-4 right-4 z-50 h-10 w-10 rounded-full border border-rule bg-card/90 text-ink-soft shadow-sm backdrop-blur transition-all hover:border-accent/40 hover:bg-card hover:text-accent"
+            className="border-rule bg-card/90 text-ink-soft hover:border-accent/40 hover:bg-card hover:text-accent absolute top-4 right-4 z-50 h-10 w-10 rounded-full border shadow-sm backdrop-blur transition-all"
           >
             <X className="h-4 w-4" />
             <span className="sr-only">Close</span>

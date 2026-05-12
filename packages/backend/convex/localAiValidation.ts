@@ -132,9 +132,7 @@ export const commitResult = mutation({
       textContent: sanitizeOptionalUnicodeString(crawlResult.textContent),
       aboutLinks: sanitizeUnicodeStringArray(crawlResult.aboutLinks),
       donationLinks: sanitizeUnicodeStringArray(crawlResult.donationLinks),
-      socialMediaUrls: sanitizeUnicodeStringArray(
-        crawlResult.socialMediaUrls,
-      ),
+      socialMediaUrls: sanitizeUnicodeStringArray(crawlResult.socialMediaUrls),
       logoLinks: sanitizeUnicodeStringArray(crawlResult.logoLinks),
       emailAddresses: sanitizeUnicodeStringArray(crawlResult.emailAddresses),
     }));

@@ -15,10 +15,7 @@ const ABOUT_TEXT_PATTERNS =
 /**
  * Extract about/mission page links.
  */
-export function extractAboutLinks(
-  $: CheerioAPI,
-  baseUrl: string,
-): string[] {
+export function extractAboutLinks($: CheerioAPI, baseUrl: string): string[] {
   const links = new Set<string>();
 
   $("a[href]").each((_, el) => {

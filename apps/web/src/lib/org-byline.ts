@@ -62,7 +62,8 @@ export function composeOrgByline({
   if (geographicFocus === "Local" && hasPlace) {
     sentence = `${noun} rooted in ${place}.`;
   } else if (hasReach) {
-    const reach = REACH_CLAUSE[geographicFocus as Exclude<GeographicFocus, "Local">];
+    const reach =
+      REACH_CLAUSE[geographicFocus as Exclude<GeographicFocus, "Local">];
     sentence = hasPlace
       ? `${noun} ${reach}, based in ${place}.`
       : `${noun} ${reach}.`;

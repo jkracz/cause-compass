@@ -211,7 +211,9 @@ export const getPersonalizedRecommended = query({
     }
 
     if (preferences.changeScope === "local") {
-      addCandidates(await getReadyOrganizationsByGeographicFocus(ctx, "Local", 20));
+      addCandidates(
+        await getReadyOrganizationsByGeographicFocus(ctx, "Local", 20),
+      );
       addCandidates(
         await getReadyOrganizationsByGeographicFocus(ctx, "Regional", 20),
       );
@@ -220,7 +222,9 @@ export const getPersonalizedRecommended = query({
         await getReadyOrganizationsByGeographicFocus(ctx, "National", 40),
       );
     } else if (preferences.changeScope === "global") {
-      addCandidates(await getReadyOrganizationsByGeographicFocus(ctx, "Global", 20));
+      addCandidates(
+        await getReadyOrganizationsByGeographicFocus(ctx, "Global", 20),
+      );
       addCandidates(
         await getReadyOrganizationsByGeographicFocus(ctx, "National", 20),
       );
@@ -268,8 +272,8 @@ export const getPersonalizedRecommended = query({
       });
 
     return applyDiversityPass(
-      scoredRecommendations.map(({ rankScore: _rankScore, ...recommendation }) =>
-        recommendation,
+      scoredRecommendations.map(
+        ({ rankScore: _rankScore, ...recommendation }) => recommendation,
       ),
       limit,
     );
@@ -389,9 +393,9 @@ const EDITORIAL_POOL_SIZE = 200;
 function passesEditorialQualityGate(org: Doc<"organizations">) {
   return Boolean(
     org.logoUrl?.trim() &&
-      org.tagline?.trim() &&
-      org.keywords &&
-      org.keywords.length > 0,
+    org.tagline?.trim() &&
+    org.keywords &&
+    org.keywords.length > 0,
   );
 }
 
@@ -528,11 +532,12 @@ export const getOrganizationsByScale = query({
   },
   handler: async (ctx, { weekKey, perColumn = 4 }) => {
     const seed = `scale-strip:${weekKey}`;
-    const result: Record<"small" | "medium" | "large", Doc<"organizations">[]> = {
-      small: [],
-      medium: [],
-      large: [],
-    };
+    const result: Record<"small" | "medium" | "large", Doc<"organizations">[]> =
+      {
+        small: [],
+        medium: [],
+        large: [],
+      };
 
     for (const key of ["small", "medium", "large"] as const) {
       const candidates = await takeByAssetBuckets(ctx, SCALE_BUCKETS[key], 20);

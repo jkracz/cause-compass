@@ -17,7 +17,10 @@ import {
 import { buildAiConfirmationApplication } from "../../lib/aiConfirmationApplication";
 import { DEFAULT_BATCH_SIZE, DEFAULT_MODEL } from "./constants";
 import type { OrgForAiConfirmation, OrgForAiConfirmationBase } from "./types";
-import { WebsiteConfirmationSchema, type WebsiteConfirmation } from "@cause/lib";
+import {
+  WebsiteConfirmationSchema,
+  type WebsiteConfirmation,
+} from "@cause/lib";
 
 const CRAWLED_ORG_PAGE_SIZE = 250;
 

@@ -60,7 +60,7 @@ export function CompactOrgCard({
               {String(index + 1).padStart(2, "0")}
             </span>
           )}
-          <h4 className="font-heading line-clamp-1 text-[15px] font-semibold leading-[1.2] text-[var(--ink)] group-hover:text-[var(--accent)]">
+          <h4 className="font-heading line-clamp-1 text-[15px] leading-[1.2] font-semibold text-[var(--ink)] group-hover:text-[var(--accent)]">
             {organization.name}
           </h4>
         </div>

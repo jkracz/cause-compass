@@ -65,7 +65,7 @@ export function HowToReadDisclosure() {
         aria-expanded={open}
         aria-controls={contentId}
         onClick={() => setOpen((prev) => !prev)}
-        className="flex cursor-pointer items-center gap-1.5 text-[10px] font-semibold tracking-[0.32em] text-[var(--accent)] uppercase outline-none transition-colors hover:text-[var(--ink)] focus-visible:text-[var(--ink)]"
+        className="flex cursor-pointer items-center gap-1.5 text-[10px] font-semibold tracking-[0.32em] text-[var(--accent)] uppercase transition-colors outline-none hover:text-[var(--ink)] focus-visible:text-[var(--ink)]"
       >
         How to read this
         <span
@@ -97,14 +97,9 @@ export function HowToReadDisclosure() {
                   const color =
                     fam.name === "Center"
                       ? FAMILY_COLOR.Unclassified
-                      : FAMILY_COLOR[
-                          fam.name as keyof typeof FAMILY_COLOR
-                        ];
+                      : FAMILY_COLOR[fam.name as keyof typeof FAMILY_COLOR];
                   return (
-                    <div
-                      key={fam.name}
-                      className="flex items-baseline gap-2"
-                    >
+                    <div key={fam.name} className="flex items-baseline gap-2">
                       <span
                         aria-hidden
                         className="inline-block h-2 w-2 shrink-0 translate-y-[-1px] rounded-full"
@@ -128,8 +123,8 @@ export function HowToReadDisclosure() {
                 </dt>
                 <dd className="mt-0.5 text-[var(--ink-soft)]">
                   How far the org&apos;s work reaches. Closer in means one
-                  neighborhood or city; further out means across the country
-                  or the world.
+                  neighborhood or city; further out means across the country or
+                  the world.
                 </dd>
               </div>
               <div>

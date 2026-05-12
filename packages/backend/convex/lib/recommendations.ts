@@ -69,14 +69,7 @@ export const CAUSE_CONFIG: Record<string, CauseConfig> = {
   health: {
     label: "Health & Wellness",
     nteeMajors: ["E", "G", "H"],
-    keywords: [
-      "health",
-      "wellness",
-      "medical",
-      "hospital",
-      "care",
-      "research",
-    ],
+    keywords: ["health", "wellness", "medical", "hospital", "care", "research"],
   },
   poverty: {
     label: "Poverty & Housing",
@@ -105,26 +98,12 @@ export const CAUSE_CONFIG: Record<string, CauseConfig> = {
   arts: {
     label: "Arts & Culture",
     nteeMajors: ["A"],
-    keywords: [
-      "arts",
-      "culture",
-      "museum",
-      "music",
-      "theater",
-      "creative",
-    ],
+    keywords: ["arts", "culture", "museum", "music", "theater", "creative"],
   },
   animals: {
     label: "Animal Welfare",
     nteeMajors: ["D"],
-    keywords: [
-      "animal",
-      "wildlife",
-      "rescue",
-      "shelter",
-      "pet",
-      "habitat",
-    ],
+    keywords: ["animal", "wildlife", "rescue", "shelter", "pet", "habitat"],
   },
   disaster: {
     label: "Disaster Relief",
@@ -153,14 +132,7 @@ export const CAUSE_CONFIG: Record<string, CauseConfig> = {
   food: {
     label: "Food Security",
     nteeMajors: ["K", "P"],
-    keywords: [
-      "food",
-      "hunger",
-      "nutrition",
-      "meals",
-      "pantry",
-      "agriculture",
-    ],
+    keywords: ["food", "hunger", "nutrition", "meals", "pantry", "agriculture"],
   },
   technology: {
     label: "Technology & Innovation",
@@ -448,11 +420,11 @@ function scoreHelpMethod(
       case "sharing": {
         const hasSocialMedia = Boolean(
           organization.socialMediaUrls &&
-            Object.values(organization.socialMediaUrls).some(Boolean),
+          Object.values(organization.socialMediaUrls).some(Boolean),
         );
         const hasShareableCopy = Boolean(
           sanitizeTagline(organization.tagline) ||
-            organization.whySupport?.trim(),
+          organization.whySupport?.trim(),
         );
         const methodScore =
           (hasSocialMedia ? 6 : 0) + (hasShareableCopy ? 2 : 0);

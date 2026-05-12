@@ -31,7 +31,7 @@ export function EditorialSearch({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Search 200,000+ vetted nonprofits…"
-          className="font-heading h-16 w-full rounded-full border border-[var(--rule-strong)] bg-white/80 pr-14 pl-14 text-[16px] text-[var(--ink)] backdrop-blur transition-all placeholder:text-[var(--ink-mute)]/80 focus:border-[var(--accent)]/50 focus:bg-white focus:shadow-[0_18px_50px_-30px_rgba(200,38,110,0.45)] focus:outline-none focus:ring-4 focus:ring-[var(--accent)]/12"
+          className="font-heading h-16 w-full rounded-full border border-[var(--rule-strong)] bg-white/80 pr-14 pl-14 text-[16px] text-[var(--ink)] backdrop-blur transition-all placeholder:text-[var(--ink-mute)]/80 focus:border-[var(--accent)]/50 focus:bg-white focus:shadow-[0_18px_50px_-30px_rgba(200,38,110,0.45)] focus:ring-4 focus:ring-[var(--accent)]/12 focus:outline-none"
           aria-label="Search nonprofits"
         />
         {value && (

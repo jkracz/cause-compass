@@ -84,12 +84,16 @@ again.
 Crons populate/recover queue state.
 
 - `search-organizations` (daily): creates new candidates
-- `recover-stale-crawl-jobs` (every 5 min): resets stuck `processing` items
+- `recover-stale-crawl-jobs` (every hour): resets stuck `processing` items
 - `backfill-crawl-queue` (every 30 min): catches missed enqueues
 
-Crawl crons run only when:
+Crawl recovery cron runs only when:
 
 - `ENABLE_CRAWL_CRON=true`
+
+Crawl backfill cron runs only when:
+
+- `ENABLE_CRAWL_BACKFILL_CRON=true`
 
 Search cron remains separately gated by:
 

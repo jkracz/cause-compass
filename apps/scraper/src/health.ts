@@ -33,4 +33,3 @@ export function startHealthReporter(getState: () => HealthState): {
     stop: () => clearInterval(interval),
   };
 }
-

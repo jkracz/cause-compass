@@ -144,7 +144,7 @@ export function AccountAuthDialog({
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 autoComplete="name"
-                className="h-10 rounded-md border border-white/10 bg-white/10 px-3 text-white outline-none transition placeholder:text-white/35 focus:border-white/40"
+                className="h-10 rounded-md border border-white/10 bg-white/10 px-3 text-white transition outline-none placeholder:text-white/35 focus:border-white/40"
               />
             </label>
           )}
@@ -156,7 +156,7 @@ export function AccountAuthDialog({
               type="email"
               required
               autoComplete="email"
-              className="h-10 rounded-md border border-white/10 bg-white/10 px-3 text-white outline-none transition placeholder:text-white/35 focus:border-white/40"
+              className="h-10 rounded-md border border-white/10 bg-white/10 px-3 text-white transition outline-none placeholder:text-white/35 focus:border-white/40"
             />
           </label>
           <label className="grid gap-1.5 text-sm text-white/80">
@@ -170,14 +170,10 @@ export function AccountAuthDialog({
               autoComplete={
                 mode === "signup" ? "new-password" : "current-password"
               }
-              className="h-10 rounded-md border border-white/10 bg-white/10 px-3 text-white outline-none transition placeholder:text-white/35 focus:border-white/40"
+              className="h-10 rounded-md border border-white/10 bg-white/10 px-3 text-white transition outline-none placeholder:text-white/35 focus:border-white/40"
             />
           </label>
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="mt-1 h-10"
-          >
+          <Button type="submit" disabled={isSubmitting} className="mt-1 h-10">
             {isSubmitting && <Loader2 className="size-4 animate-spin" />}
             {mode === "signup" ? "Create Account" : "Sign in"}
           </Button>

@@ -87,9 +87,7 @@ function tokenizeText(value: string): string[] {
     .toLowerCase()
     .split(/[^a-z0-9]+/)
     .map((token) => token.trim())
-    .filter(
-      (token) => token.length >= 3 && !GENERIC_ORG_TOKENS.has(token),
-    );
+    .filter((token) => token.length >= 3 && !GENERIC_ORG_TOKENS.has(token));
 }
 
 function createAcronym(orgName: string): string {
@@ -97,9 +95,7 @@ function createAcronym(orgName: string): string {
     .toLowerCase()
     .split(/[^a-z0-9]+/)
     .map((token) => token.trim())
-    .filter(
-      (token) => token.length >= 3 && !GENERIC_ORG_TOKENS.has(token),
-    )
+    .filter((token) => token.length >= 3 && !GENERIC_ORG_TOKENS.has(token))
     .map((token) => token[0])
     .join("");
 }

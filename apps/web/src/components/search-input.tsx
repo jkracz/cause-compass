@@ -32,7 +32,7 @@ export function SearchInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="h-12 w-full rounded-full border border-white/20 bg-white/10 pl-12 pr-12 text-base backdrop-blur-md transition-all placeholder:text-white/50 focus:border-white/40 focus:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/20"
+        className="h-12 w-full rounded-full border border-white/20 bg-white/10 pr-12 pl-12 text-base backdrop-blur-md transition-all placeholder:text-white/50 focus:border-white/40 focus:bg-white/15 focus:ring-2 focus:ring-white/20 focus:outline-none"
         aria-label="Search nonprofits"
       />
       {value && (

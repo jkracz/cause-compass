@@ -43,14 +43,18 @@ type LocalAiCandidatePage = {
  * Applies a soft per-request timeout around the Ollama SDK call while allowing
  * the batch runner to continue processing later organizations.
  */
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+): Promise<T> {
   let timeout: NodeJS.Timeout | undefined;
   try {
     return await Promise.race([
       promise,
       new Promise<T>((_, reject) => {
         timeout = setTimeout(
-          () => reject(new Error(`Ollama request timed out after ${timeoutMs}ms`)),
+          () =>
+            reject(new Error(`Ollama request timed out after ${timeoutMs}ms`)),
           timeoutMs,
         );
       }),
@@ -162,7 +166,13 @@ async function main() {
   }
 
   const convex = new ConvexHttpClient(convexUrl);
-  const counters = { attempted: 0, committed: 0, failed: 0, ready: 0, reviewed: 0 };
+  const counters = {
+    attempted: 0,
+    committed: 0,
+    failed: 0,
+    ready: 0,
+    reviewed: 0,
+  };
   let cursor: string | null = null;
   let isDone = false;
 
@@ -171,16 +181,13 @@ async function main() {
   );
 
   while (counters.attempted < limit && !isDone) {
-    const page = (await convex.query(
-      listCandidatesRef,
-      {
-        operatorToken,
-        paginationOpts: {
-          numItems: Math.min(PAGE_SIZE, limit - counters.attempted),
-          cursor,
-        },
+    const page = (await convex.query(listCandidatesRef, {
+      operatorToken,
+      paginationOpts: {
+        numItems: Math.min(PAGE_SIZE, limit - counters.attempted),
+        cursor,
       },
-    )) as LocalAiCandidatePage;
+    })) as LocalAiCandidatePage;
     isDone = page.isDone;
     cursor = page.continueCursor;
 
@@ -192,7 +199,9 @@ async function main() {
 
       if (candidate.crawlData.length === 0) {
         counters.failed++;
-        logger.warn(`Skipping EIN ${candidate.ein}: no prompt-ready crawl data`);
+        logger.warn(
+          `Skipping EIN ${candidate.ein}: no prompt-ready crawl data`,
+        );
         continue;
       }
 

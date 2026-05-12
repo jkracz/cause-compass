@@ -313,7 +313,10 @@ export const compareResults = action({
     const avgTextRatio: number =
       comparisons.reduce((s: number, c: EinComparison) => {
         // Exclude Infinity from average (old had nothing, new has something)
-        return s + (c.textContentLengthRatio === Infinity ? 1 : c.textContentLengthRatio);
+        return (
+          s +
+          (c.textContentLengthRatio === Infinity ? 1 : c.textContentLengthRatio)
+        );
       }, 0) / n;
 
     const fieldCoverage = (
@@ -367,8 +370,7 @@ export const compareResults = action({
           (c.socialMedia.oldCount > 0 && c.socialMedia.newCount === 0) ||
           (c.donationLinks.oldCount > 0 && c.donationLinks.newCount === 0) ||
           (c.logoLinks.oldCount > 0 && c.logoLinks.newCount === 0) ||
-          (c.emailAddresses.oldCount > 0 &&
-            c.emailAddresses.newCount === 0) ||
+          (c.emailAddresses.oldCount > 0 && c.emailAddresses.newCount === 0) ||
           c.newsletterRegression,
       )
       .map((c) => ({
@@ -384,8 +386,7 @@ export const compareResults = action({
           ...(c.logoLinks.oldCount > 0 && c.logoLinks.newCount === 0
             ? ["logoLinks"]
             : []),
-          ...(c.emailAddresses.oldCount > 0 &&
-          c.emailAddresses.newCount === 0
+          ...(c.emailAddresses.oldCount > 0 && c.emailAddresses.newCount === 0
             ? ["emailAddresses"]
             : []),
           ...(c.newsletterRegression ? ["hasNewsletterSignup"] : []),
@@ -403,8 +404,7 @@ export const compareResults = action({
           (c.socialMedia.oldCount === 0 && c.socialMedia.newCount > 0) ||
           (c.donationLinks.oldCount === 0 && c.donationLinks.newCount > 0) ||
           (c.logoLinks.oldCount === 0 && c.logoLinks.newCount > 0) ||
-          (c.emailAddresses.oldCount === 0 &&
-            c.emailAddresses.newCount > 0) ||
+          (c.emailAddresses.oldCount === 0 && c.emailAddresses.newCount > 0) ||
           (!c.old.hasNewsletterSignup && c.new.hasNewsletterSignup),
       )
       .map((c) => ({
@@ -423,8 +423,7 @@ export const compareResults = action({
           ...(c.logoLinks.oldCount === 0 && c.logoLinks.newCount > 0
             ? ["logoLinks"]
             : []),
-          ...(c.emailAddresses.oldCount === 0 &&
-          c.emailAddresses.newCount > 0
+          ...(c.emailAddresses.oldCount === 0 && c.emailAddresses.newCount > 0
             ? ["emailAddresses"]
             : []),
           ...(!c.old.hasNewsletterSignup && c.new.hasNewsletterSignup
@@ -486,18 +485,25 @@ export const compareResults = action({
  * Fetch actual textContent for an EIN, split old vs new, truncated for readability.
  */
 export const inspectTextContent = action({
-  args: { ein: v.string(), cutoffTimestamp: v.number(), maxChars: v.optional(v.number()) },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handler: async (ctx, { ein, cutoffTimestamp, maxChars }): Promise<Record<string, any>> => {
+  args: {
+    ein: v.string(),
+    cutoffTimestamp: v.number(),
+    maxChars: v.optional(v.number()),
+  },
+  handler: async (
+    ctx,
+    { ein, cutoffTimestamp, maxChars },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<Record<string, any>> => {
     const limit = maxChars ?? 2000;
     const data: {
       ein: string;
       oldResults: CrawlRow[];
       newResults: CrawlRow[];
-    }[] = await ctx.runQuery(
-      internal.comparison.getComparisonDataForEins,
-      { eins: [ein], cutoffTimestamp },
-    );
+    }[] = await ctx.runQuery(internal.comparison.getComparisonDataForEins, {
+      eins: [ein],
+      cutoffTimestamp,
+    });
 
     if (data.length === 0) {
       return { error: `No comparison data for EIN ${ein}` };
