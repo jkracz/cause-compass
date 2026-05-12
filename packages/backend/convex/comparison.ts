@@ -490,10 +490,10 @@ export const inspectTextContent = action({
     cutoffTimestamp: v.number(),
     maxChars: v.optional(v.number()),
   },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handler: async (
     ctx,
     { ein, cutoffTimestamp, maxChars },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<Record<string, any>> => {
     const limit = maxChars ?? 2000;
     const data: {
