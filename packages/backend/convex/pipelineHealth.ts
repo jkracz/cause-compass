@@ -19,6 +19,7 @@ const ENRICHMENT_STAGES = [
 ] as const;
 
 type EnrichmentStage = (typeof ENRICHMENT_STAGES)[number];
+const ENRICHMENT_STAGE_COUNT = ENRICHMENT_STAGES.length;
 
 const NTEE_MAJOR_NAMESPACES = [
   ...NTEE_MAJOR_CODES,
@@ -116,10 +117,10 @@ export const getSummary = query({
     const cutoffTimestamp =
       Date.now() - normalizedStaleHours * 60 * 60 * 1000;
 
-    // Batch all 15 counts in a single call:
-    //   [0..4]   total per stage
-    //   [5..9]   missing updatedAt per stage (sortKey <= 0, the sentinel)
-    //   [10..14] stale-or-missing per stage  (sortKey < cutoff)
+    // Batch all counts in a single call:
+    //   [0..stageCount)                 total per stage
+    //   [stageCount..stageCount * 2)    missing updatedAt per stage
+    //   [stageCount * 2..stageCount * 3) stale-or-missing per stage
     const counts = await orgStageAggregate.countBatch(ctx, [
       ...ENRICHMENT_STAGES.map((stage) => ({ namespace: stage as string })),
       ...ENRICHMENT_STAGES.map((stage) => ({
@@ -160,8 +161,8 @@ export const getSummary = query({
     for (let i = 0; i < ENRICHMENT_STAGES.length; i++) {
       const stage = ENRICHMENT_STAGES[i]!;
       const total = counts[i]!;
-      const missingUpdatedAt = counts[i + 5]!;
-      const staleOrMissing = counts[i + 10]!;
+      const missingUpdatedAt = counts[i + ENRICHMENT_STAGE_COUNT]!;
+      const staleOrMissing = counts[i + ENRICHMENT_STAGE_COUNT * 2]!;
       const stale = staleOrMissing - missingUpdatedAt;
       const fresh = Math.max(0, total - staleOrMissing);
       const stalePercent =
