@@ -11,8 +11,6 @@ import { SectionHeader } from "@/components/editorial/section-header";
 import { PortraitHeader } from "@/components/my-causes/portrait-header";
 import { PortraitBlock } from "@/components/my-causes/portrait-block";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
-import { api } from "@cause/backend/convex/_generated/api";
-import { useAppSession } from "@/components/app-session-provider";
 import {
   buildPortraitSentence,
   computePortraitStats,
