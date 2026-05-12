@@ -4,26 +4,13 @@ import type { GeographicFocus } from "./browse-categories";
 
 export type Organization = Doc<"organizations">;
 
-export type AxisKey =
-  | "N"
-  | "E"
-  | "S"
-  | "W"
-  | "NE"
-  | "SE"
-  | "SW"
-  | "NW"
-  | "CENTER";
+export type AxisKey = "N" | "E" | "S" | "W" | "CENTER";
 
 export type Family =
   | "Imagination"
   | "Knowledge"
   | "Care"
   | "Stewardship"
-  | "Global Affairs"
-  | "Community"
-  | "Public Safety"
-  | "Youth & Sport"
   | "Unclassified";
 
 export type AxisDef = {
@@ -36,10 +23,6 @@ const N: AxisDef = { axis: "N", family: "Imagination", color: "#C58F5A" };
 const E_AX: AxisDef = { axis: "E", family: "Knowledge", color: "#5A7A8E" };
 const S: AxisDef = { axis: "S", family: "Care", color: "#8E5C4A" };
 const W: AxisDef = { axis: "W", family: "Stewardship", color: "#5C7A5E" };
-const NE: AxisDef = { axis: "NE", family: "Global Affairs", color: "#5E5470" };
-const SE: AxisDef = { axis: "SE", family: "Community", color: "#8E6F4F" };
-const SW: AxisDef = { axis: "SW", family: "Public Safety", color: "#5B4B9E" };
-const NW: AxisDef = { axis: "NW", family: "Youth & Sport", color: "#7B6BA8" };
 const CENTER: AxisDef = {
   axis: "CENTER",
   family: "Unclassified",
@@ -55,21 +38,21 @@ const NTEE_TO_AXIS: Record<string, AxisDef> = {
   F: S,
   G: S,
   H: S,
-  I: SW,
-  J: SE,
+  I: S,
+  J: E_AX,
   K: W,
-  L: SE,
-  M: SW,
-  N: NW,
-  O: NW,
+  L: S,
+  M: S,
+  N: N,
+  O: E_AX,
   P: S,
-  Q: NE,
-  R: NE,
-  S: SE,
-  T: SE,
+  Q: S,
+  R: S,
+  S: W,
+  T: CENTER,
   U: E_AX,
   V: E_AX,
-  W: SE,
+  W: W,
   X: CENTER,
   Y: CENTER,
   Z: CENTER,
@@ -83,13 +66,9 @@ export function getAxisForOrg(org: Organization): AxisDef {
 
 export const AXIS_ANGLES_DEG: Record<AxisKey, number> = {
   N: -90,
-  NE: -45,
   E: 0,
-  SE: 45,
   S: 90,
-  SW: 135,
   W: 180,
-  NW: -135,
   CENTER: 0,
 };
 
@@ -144,10 +123,6 @@ export const FAMILY_ORDER: Family[] = [
   "Knowledge",
   "Care",
   "Stewardship",
-  "Global Affairs",
-  "Community",
-  "Public Safety",
-  "Youth & Sport",
   "Unclassified",
 ];
 
@@ -156,10 +131,6 @@ export const FAMILY_COLOR: Record<Family, string> = {
   Knowledge: E_AX.color,
   Care: S.color,
   Stewardship: W.color,
-  "Global Affairs": NE.color,
-  Community: SE.color,
-  "Public Safety": SW.color,
-  "Youth & Sport": NW.color,
   Unclassified: CENTER.color,
 };
 
@@ -236,10 +207,6 @@ const FAMILY_PHRASE: Record<Family, string> = {
   Knowledge: "knowledge-anchored",
   Care: "care-anchored",
   Stewardship: "stewardship-minded",
-  "Global Affairs": "globally-minded",
-  Community: "community-rooted",
-  "Public Safety": "safety-minded",
-  "Youth & Sport": "youth-focused",
   Unclassified: "wide-ranging",
 };
 
