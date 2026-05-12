@@ -65,7 +65,7 @@ export const scheduledRecoverStaleJobs = internalAction({
 
 /**
  * Cron wrapper for crawl queue backfill.
- * Runs only when ENABLE_CRAWL_CRON=true.
+ * Runs only when ENABLE_CRAWL_BACKFILL_CRON=true.
  */
 export const scheduledBackfillSearchedOrgs = internalAction({
   args: {
@@ -77,14 +77,14 @@ export const scheduledBackfillSearchedOrgs = internalAction({
     reason: v.optional(v.string()),
   }),
   handler: async (ctx, { limit }): Promise<ScheduledBackfillResult> => {
-    const isEnabled = process.env.ENABLE_CRAWL_CRON === "true";
+    const isEnabled = process.env.ENABLE_CRAWL_BACKFILL_CRON === "true";
     if (!isEnabled) {
       console.log(
-        "Crawl backfill cron disabled (ENABLE_CRAWL_CRON !== 'true')",
+        "Crawl backfill cron disabled (ENABLE_CRAWL_BACKFILL_CRON !== 'true')",
       );
       return {
         skipped: true,
-        reason: "ENABLE_CRAWL_CRON not set to true",
+        reason: "ENABLE_CRAWL_BACKFILL_CRON not set to true",
       };
     }
 

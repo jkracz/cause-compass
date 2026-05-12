@@ -51,13 +51,13 @@ crons.daily(
 
 /**
  * Crawl queue: stale job recovery.
- * Every 5 minutes, finds stale processing jobs and resets them for retry.
+ * Every hour, finds stale processing jobs and resets them for retry.
  *
  * Only executes in production when ENABLE_CRAWL_CRON=true is set.
  */
 crons.interval(
   "recover-stale-crawl-jobs",
-  { minutes: 5 },
+  { hours: 1 },
   internal.crawlQueueCron.scheduledRecoverStaleJobs,
   {},
 );
@@ -66,7 +66,7 @@ crons.interval(
  * Crawl queue: backfill.
  * Every 30 minutes, finds searched orgs without active crawl jobs and enqueues them.
  *
- * Only executes in production when ENABLE_CRAWL_CRON=true is set.
+ * Only executes in production when ENABLE_CRAWL_BACKFILL_CRON=true is set.
  */
 crons.interval(
   "backfill-crawl-queue",
