@@ -14,18 +14,14 @@ import {
   toJSONL,
   createConfirmationRequestLine,
 } from "../../lib/openAiBatch";
-import { processCrawlDataForConfirmedWebsite } from "../../lib/batchResponseProcessing";
+import { buildAiConfirmationApplication } from "../../lib/aiConfirmationApplication";
 import { DEFAULT_BATCH_SIZE, DEFAULT_MODEL } from "./constants";
 import type { OrgForAiConfirmation, OrgForAiConfirmationBase } from "./types";
-import {
-  sanitizeTagline,
-  WebsiteConfirmationSchema,
-  type WebsiteConfirmation,
-} from "@cause/lib";
+import { WebsiteConfirmationSchema, type WebsiteConfirmation } from "@cause/lib";
 
 const CRAWLED_ORG_PAGE_SIZE = 250;
 
-type CrawledOrgsPage = {
+type AiCandidateOrgsPage = {
   page: OrgForAiConfirmationBase[];
   isDone: boolean;
   continueCursor: string;
@@ -42,54 +38,57 @@ async function collectOrgsForAiConfirmation(
   const orgs: OrgForAiConfirmation[] = [];
   let scannedCount = 0;
   let skippedCount = 0;
-  let cursor: string | null = null;
-  let isDone = false;
+  for (const stage of ["crawled", "local_ai_reviewed"] as const) {
+    let cursor: string | null = null;
+    let isDone = false;
 
-  while (orgs.length < batchSize && !isDone) {
-    const crawledOrgs = (await ctx.runQuery(
-      internal.batch.queries.internalListCrawledOrgsPage,
-      {
-        paginationOpts: {
-          numItems: Math.max(batchSize, CRAWLED_ORG_PAGE_SIZE),
-          cursor,
+    while (orgs.length < batchSize && !isDone) {
+      const candidateOrgs = (await ctx.runQuery(
+        internal.batch.queries.internalListAiCandidateOrgsPage,
+        {
+          stage,
+          paginationOpts: {
+            numItems: Math.max(batchSize, CRAWLED_ORG_PAGE_SIZE),
+            cursor,
+          },
         },
-      },
-    )) as CrawledOrgsPage;
+      )) as AiCandidateOrgsPage;
 
-    for (const org of crawledOrgs.page) {
-      if (orgs.length >= batchSize) {
-        break;
-      }
-
-      scannedCount++;
-
-      try {
-        const crawlData = await ctx.runQuery(
-          internal.batch.queries.internalGetSelectedCrawlDataForEin,
-          { ein: org.ein },
-        );
-
-        if (crawlData.length === 0) {
-          skippedCount++;
-          continue;
+      for (const org of candidateOrgs.page) {
+        if (orgs.length >= batchSize) {
+          break;
         }
 
-        orgs.push({
-          ...org,
-          crawlData,
-        });
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
-        console.warn(
-          `Skipping EIN ${org.ein} while preparing batch prompt data: ${errorMessage}`,
-        );
-        skippedCount++;
-      }
-    }
+        scannedCount++;
 
-    isDone = crawledOrgs.isDone;
-    cursor = crawledOrgs.continueCursor;
+        try {
+          const crawlData = await ctx.runQuery(
+            internal.batch.queries.internalGetSelectedCrawlDataForEin,
+            { ein: org.ein },
+          );
+
+          if (crawlData.length === 0) {
+            skippedCount++;
+            continue;
+          }
+
+          orgs.push({
+            ...org,
+            crawlData,
+          });
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          console.warn(
+            `Skipping EIN ${org.ein} while preparing batch prompt data: ${errorMessage}`,
+          );
+          skippedCount++;
+        }
+      }
+
+      isDone = candidateOrgs.isDone;
+      cursor = candidateOrgs.continueCursor;
+    }
   }
 
   return {
@@ -307,11 +306,6 @@ export const processResults = internalAction({
             continue;
           }
           const parsed: WebsiteConfirmation = parseResult.data;
-          const confirmedWebsiteUrl = parsed.hasCorrectWebsite
-            ? parsed.correctWebsiteUrl
-            : null;
-          const hasConfirmedWebsite = Boolean(confirmedWebsiteUrl);
-
           // Get organization from database
           const org = await ctx.runQuery(
             internal.batch.queries.internalGetOrgByEin,
@@ -323,105 +317,32 @@ export const processResults = internalAction({
             continue;
           }
 
-          // Insert AI confirmation record
+          const crawlResults = await ctx.runQuery(
+            internal.batch.queries.internalGetCrawlResultsByEin,
+            { ein },
+          );
+          const application = buildAiConfirmationApplication({
+            confirmation: parsed,
+            crawlResults,
+            fallbackStage: "ai_confirmed",
+          });
+
           await ctx.runMutation(
             internal.batch.mutations.internalInsertAiConfirmation,
             {
               ein,
               orgId: org._id,
               model: response.response?.body?.model ?? DEFAULT_MODEL,
-              outputs: {
-                hasCorrectWebsite: parsed.hasCorrectWebsite,
-                correctWebsiteUrl: confirmedWebsiteUrl ?? undefined,
-                mission: hasConfirmedWebsite
-                  ? (parsed.organizationMission ?? undefined)
-                  : undefined,
-                tagline: hasConfirmedWebsite
-                  ? sanitizeTagline(parsed.organizationTagline)
-                  : undefined,
-                oneSentenceSummary: hasConfirmedWebsite
-                  ? (parsed.organizationOneSentenceSummary ?? undefined)
-                  : undefined,
-                whySupport: hasConfirmedWebsite
-                  ? (parsed.whySupportOrganization ?? undefined)
-                  : undefined,
-                targetAudience: hasConfirmedWebsite
-                  ? (parsed.organizationTargetAudience ?? undefined)
-                  : undefined,
-                geographicFocus: hasConfirmedWebsite
-                  ? (parsed.organizationGeographicFocus ?? undefined)
-                  : undefined,
-                activityTags: hasConfirmedWebsite
-                  ? (parsed.organizationActivities ?? undefined)
-                  : undefined,
-                reasoning: parsed.reasoning ?? undefined,
-              },
+              outputs: application.outputs,
             },
           );
-
-          // Promote to ready only when the website was confirmed by AI.
-          if (confirmedWebsiteUrl) {
-            const websiteUrl = confirmedWebsiteUrl;
-            const geoFocus = parsed.organizationGeographicFocus ?? undefined;
-
-            // Fetch crawl results to extract additional data (social media, logos, donation links)
-            const crawlResults = await ctx.runQuery(
-              internal.batch.queries.internalGetCrawlResultsByEin,
-              { ein },
-            );
-
-            // Process crawl data to extract social media URLs, logo, donation link, and emails
-            const crawlExtractedData = processCrawlDataForConfirmedWebsite(
-              crawlResults,
-              websiteUrl,
-            );
-
-            // Only include non-empty social media URLs object
-            const socialMediaUrls =
-              Object.keys(crawlExtractedData.socialMediaUrls).length > 0
-                ? crawlExtractedData.socialMediaUrls
-                : undefined;
-
-            await ctx.runMutation(
-              internal.batch.mutations.internalUpdateOrgWithAiResults,
-              {
-                orgId: org._id,
-                updates: {
-                  websiteUrl,
-                  mission: parsed.organizationMission ?? undefined,
-                  tagline: sanitizeTagline(parsed.organizationTagline),
-                  oneSentenceSummary:
-                    parsed.organizationOneSentenceSummary ?? undefined,
-                  whySupport: parsed.whySupportOrganization ?? undefined,
-                  targetAudience:
-                    parsed.organizationTargetAudience ?? undefined,
-                  geographicFocus: geoFocus,
-                  activities: parsed.organizationActivities ?? undefined,
-                  keywords: parsed.organizationKeywords ?? undefined,
-                  // Crawl-extracted fields
-                  socialMediaUrls,
-                  donationUrl: crawlExtractedData.donationUrl,
-                  logoUrl: crawlExtractedData.logoUrl,
-                  emailAddresses:
-                    crawlExtractedData.emailAddresses.length > 0
-                      ? crawlExtractedData.emailAddresses
-                      : undefined,
-                  enrichmentStage: "ready",
-                },
-              },
-            );
-          } else {
-            // Even without website confirmation, update stage
-            await ctx.runMutation(
-              internal.batch.mutations.internalUpdateOrgWithAiResults,
-              {
-                orgId: org._id,
-                updates: {
-                  enrichmentStage: "ai_confirmed",
-                },
-              },
-            );
-          }
+          await ctx.runMutation(
+            internal.batch.mutations.internalUpdateOrgWithAiResults,
+            {
+              orgId: org._id,
+              updates: application.updates,
+            },
+          );
 
           processedCount++;
           console.log(`Processed EIN ${ein}`);

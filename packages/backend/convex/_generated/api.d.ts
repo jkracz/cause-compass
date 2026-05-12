@@ -28,6 +28,7 @@ import type * as crons from "../crons.js";
 import type * as http from "../http.js";
 import type * as lib_recommendations from "../lib/recommendations.js";
 import type * as lib_viewer from "../lib/viewer.js";
+import type * as localAiValidation from "../localAiValidation.js";
 import type * as migrations from "../migrations.js";
 import type * as organizations from "../organizations.js";
 import type * as pipelineHealth from "../pipelineHealth.js";
@@ -61,6 +62,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   "lib/recommendations": typeof lib_recommendations;
   "lib/viewer": typeof lib_viewer;
+  localAiValidation: typeof localAiValidation;
   migrations: typeof migrations;
   organizations: typeof organizations;
   pipelineHealth: typeof pipelineHealth;
