@@ -5,11 +5,16 @@ import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 import posthog from "posthog-js";
 
-import { Button } from "@/components/ui/button";
-import { GlassmorphicCard } from "@/components/glassmorphic-card";
-import { OrganizationCard } from "@/components/organization-card";
+import { EditorialOrgCard } from "@/components/editorial/editorial-org-card";
 import { OrganizationModal } from "@/components/organization-modal";
+import { SectionHeader } from "@/components/editorial/section-header";
+import { PortraitHeader } from "@/components/my-causes/portrait-header";
+import { PortraitBlock } from "@/components/my-causes/portrait-block";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
+import {
+  buildPortraitSentence,
+  computePortraitStats,
+} from "@/lib/compass-axes";
 
 type Organization = Doc<"organizations">;
 
@@ -18,8 +23,15 @@ export function MyCauses({ likedOrgs }: { likedOrgs: Organization[] }) {
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const organizations = useMemo(() => likedOrgs, [likedOrgs]);
+  const count = organizations.length;
 
-  const handleOpenModal = (org: Organization) => {
+  const stats = useMemo(
+    () => computePortraitStats(organizations),
+    [organizations],
+  );
+  const portraitSentence = useMemo(() => buildPortraitSentence(stats), [stats]);
+
+  const handleOpenModal = (org: Organization, source: string) => {
     setSelectedOrg(org);
     setIsModalOpen(true);
 
@@ -29,7 +41,7 @@ export function MyCauses({ likedOrgs }: { likedOrgs: Organization[] }) {
       organization_ein: org.ein,
       organization_city: org.city,
       organization_state: org.state,
-      source: "my_causes",
+      source,
     });
   };
 
@@ -38,45 +50,54 @@ export function MyCauses({ likedOrgs }: { likedOrgs: Organization[] }) {
   };
 
   return (
-    <div className="w-full">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-white">Liked Causes</h2>
-        <p className="mt-2 text-sm text-white/70">
-          Your curated collection of organizations making a difference
-        </p>
-      </div>
+    <div className="space-y-12 md:space-y-16">
+      <PortraitHeader sentence={portraitSentence} />
 
-      {organizations.length === 0 ? (
-        <GlassmorphicCard className="mx-auto max-w-md text-center">
-          <div className="mb-4 flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500/20 to-purple-600/20 ring-1 ring-white/20">
-              <Heart className="h-8 w-8 fill-pink-400/20 text-pink-400" />
-            </div>
+      {count > 0 && (
+        <PortraitBlock
+          liked={organizations}
+          stats={stats}
+          onSelect={(org) => handleOpenModal(org, "my_causes_constellation")}
+        />
+      )}
+
+      {count === 0 ? (
+        <div className="mx-auto flex max-w-md flex-col items-center rounded-[var(--rounded-hero,2rem)] border border-[var(--rule)] bg-white/70 px-8 py-12 text-center backdrop-blur-sm">
+          <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-[var(--accent)]/30 bg-[var(--accent-soft)]">
+            <Heart className="h-6 w-6 fill-[var(--accent)]/20 text-[var(--accent)]" />
           </div>
-          <h2 className="mb-4 text-xl font-semibold text-white">
-            No organizations yet
-          </h2>
-          <p className="mb-6 text-white/70">
-            You haven&apos;t liked any organizations yet. Go to the discover
-            page to find organizations that match your interests.
+          <h3 className="font-heading mb-2 text-[22px] leading-[1.15] font-semibold text-[var(--ink)]">
+            Nothing saved yet
+          </h3>
+          <p className="mb-6 max-w-sm text-[14px] leading-[1.55] text-[var(--ink-soft)]">
+            Wander through Discover and tap the heart on anything that catches
+            your eye. They&apos;ll collect here.
           </p>
-          <Button
+          <button
+            type="button"
             onClick={() => router.push("/discover")}
-            className="w-full sm:w-auto"
+            className="rounded-full bg-[var(--ink)] px-6 py-3 text-[11px] font-semibold tracking-[0.32em] text-[var(--paper)] uppercase transition-all duration-200 hover:bg-[var(--accent)] hover:shadow-[0_18px_40px_-20px_rgba(200,38,110,0.55)]"
           >
-            Discover Organizations
-          </Button>
-        </GlassmorphicCard>
-      ) : (
-        <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {organizations.map((org) => (
-            <OrganizationCard
-              key={org.slug}
-              organization={org}
-              onClick={() => handleOpenModal(org)}
-            />
-          ))}
+            Go to Discover
+          </button>
         </div>
+      ) : (
+        <section className="w-full">
+          <SectionHeader
+            kicker="Your collection"
+            title="Liked Causes"
+            className="mb-8"
+          />
+          <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {organizations.map((org) => (
+              <EditorialOrgCard
+                key={org.slug}
+                organization={org}
+                onClick={() => handleOpenModal(org, "my_causes")}
+              />
+            ))}
+          </div>
+        </section>
       )}
 
       {selectedOrg && (
