@@ -215,7 +215,8 @@ export const promoteConfirmedOrgsToReady = migrations.define({
       return;
     }
 
-    const confirmedWebsiteUrl = latestConfirmedWebsite.outputs.correctWebsiteUrl;
+    const confirmedWebsiteUrl =
+      latestConfirmedWebsite.outputs.correctWebsiteUrl;
 
     if (
       organization.enrichmentStage === "ready" &&

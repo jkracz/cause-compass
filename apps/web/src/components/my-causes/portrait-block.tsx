@@ -83,7 +83,7 @@ export function PortraitBlock({
               <div className="text-[9.5px] font-semibold tracking-[0.18em] text-[var(--ink-mute)] uppercase">
                 {cell.label}
               </div>
-              <div className="font-heading mt-0.5 text-[24px] leading-none font-semibold tabular-nums text-[var(--ink)]">
+              <div className="font-heading mt-0.5 text-[24px] leading-none font-semibold text-[var(--ink)] tabular-nums">
                 {cell.value}
               </div>
             </div>
@@ -125,8 +125,7 @@ export function PortraitBlock({
                   .join(", ")}
               >
                 {rankedFamilies.map((f) => {
-                  const pct =
-                    ((stats.families[f] ?? 0) / familyTotal) * 100;
+                  const pct = ((stats.families[f] ?? 0) / familyTotal) * 100;
                   return (
                     <div
                       key={f}
@@ -176,7 +175,7 @@ export function PortraitBlock({
                   <div key={f}>
                     <div className="flex items-baseline justify-between text-[12.5px]">
                       <span className="text-[var(--ink-soft)]">{f}</span>
-                      <span className="font-semibold tabular-nums text-[var(--ink)]">
+                      <span className="font-semibold text-[var(--ink)] tabular-nums">
                         {stats.focusCounts[f]}
                       </span>
                     </div>
@@ -205,7 +204,7 @@ export function PortraitBlock({
                   <div key={k}>
                     <div className="flex items-baseline justify-between text-[12.5px]">
                       <span className="text-[var(--ink-soft)]">{k}</span>
-                      <span className="font-semibold tabular-nums text-[var(--ink)]">
+                      <span className="font-semibold text-[var(--ink)] tabular-nums">
                         {stats.scaleCounts[k]}
                       </span>
                     </div>

@@ -54,7 +54,12 @@ type EnqueueBody = {
   orgId: Id<"organizations">;
   ein: string;
   url: string;
-  fallbackReason?: "LOW_TEXT" | "JS_APP_SHELL" | "HTTP_403_OR_429" | "CLOUDFLARE_CHALLENGE" | "OTHER";
+  fallbackReason?:
+    | "LOW_TEXT"
+    | "JS_APP_SHELL"
+    | "HTTP_403_OR_429"
+    | "CLOUDFLARE_CHALLENGE"
+    | "OTHER";
   maxAttempts?: number;
 };
 

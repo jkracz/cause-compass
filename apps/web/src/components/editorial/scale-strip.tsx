@@ -46,8 +46,7 @@ const COLUMNS: {
 ];
 
 export function ScaleStrip({ data, onCardClick }: ScaleStripProps) {
-  const hasAny =
-    data.small.length + data.medium.length + data.large.length > 0;
+  const hasAny = data.small.length + data.medium.length + data.large.length > 0;
   if (!hasAny) return null;
 
   return (
@@ -57,7 +56,7 @@ export function ScaleStrip({ data, onCardClick }: ScaleStripProps) {
         title={
           <>
             Where do you{" "}
-            <span className="italic font-medium text-[var(--accent)]">
+            <span className="font-medium text-[var(--accent)] italic">
               show up
             </span>{" "}
             best?
@@ -96,7 +95,7 @@ function ScaleColumn({
           <p className="text-[10px] font-semibold tracking-[0.32em] text-[var(--ink-mute)] uppercase">
             {column.caption}
           </p>
-          <h3 className="font-heading mt-1 text-[24px] font-semibold leading-none text-[var(--ink)]">
+          <h3 className="font-heading mt-1 text-[24px] leading-none font-semibold text-[var(--ink)]">
             {column.label}
           </h3>
         </div>

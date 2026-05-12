@@ -21,7 +21,10 @@ export function extractEmails($: CheerioAPI): string[] {
   $('a[href^="mailto:"]').each((_, el) => {
     const href = $(el).attr("href");
     if (!href) return;
-    const email = href.replace(/^mailto:/i, "").split("?")[0]?.trim();
+    const email = href
+      .replace(/^mailto:/i, "")
+      .split("?")[0]
+      ?.trim();
     if (email) emails.add(email.toLowerCase());
   });
 

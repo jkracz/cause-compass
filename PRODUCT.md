@@ -16,25 +16,27 @@ Secondary use cases (logged-in users revisiting their saved causes, deeper profi
 
 Cause Compass helps people **discover nonprofits that match their values, save the ones that resonate, and eventually build a connection with those causes that extends beyond the platform.**
 
-The arc we care about is *discover → save → relationship*. The platform is the introduction; the relationship lives in the user's ongoing engagement with the cause itself (donations, volunteering, attention, advocacy). Success is not screen time, return visits, or transactions inside our walls. Success is that someone leaves with a few names they hadn't heard of and a reason to remember them.
+The arc we care about is _discover → save → relationship_. The platform is the introduction; the relationship lives in the user's ongoing engagement with the cause itself (donations, volunteering, attention, advocacy). Success is not screen time, return visits, or transactions inside our walls. Success is that someone leaves with a few names they hadn't heard of and a reason to remember them.
 
 **Primary success metric:** saves to "My Causes" per session.
 
 **Secondary signal:** time on page, as a proxy for whether browsing actually feels worth doing.
 
-We are not a rating service. We are not a giving platform. We are not a research tool. We are a place to *find something you might care about* in a directory of 200,000+ vetted nonprofits, most of whom no one would ever encounter without help.
+We are not a rating service. We are not a giving platform. We are not a research tool. We are a place to _find something you might care about_ in a directory of 200,000+ vetted nonprofits, most of whom no one would ever encounter without help.
 
 ## Brand Personality
 
-**Exploratory. Calm. Community.** With a quiet undercurrent of *discoverability* — the sense that there is always more here than you can see at once, and you are welcome to wander.
+**Exploratory. Calm. Community.** With a quiet undercurrent of _discoverability_ — the sense that there is always more here than you can see at once, and you are welcome to wander.
 
 **Voice and tone:**
+
 - Confident but unhurried. Willing to write a real sentence. Doesn't fill every cell with metadata to look thorough.
 - Anti-bureaucratic. We have NTEE codes, EINs, and tax classifications, and we will mostly hide them. Those are facts about a record, not reasons to care.
 - Minimal performance. We don't pretend to curate what we haven't curated. If "Cause of the Week" is currently random, it's presented as a featured cause, not an editorial pick. We can earn a more opinionated voice later by doing the editorial work; we don't get to skip ahead by stamping a masthead on the directory.
 - Respects the reader's casualness. No urgency, no donation pressure, no FOMO. The user can come back next week.
 
 **Emotional goals:**
+
 - A small spark of "oh, that's interesting"
 - The feeling of being introduced to something, not sold to
 - A budding sense of caring about a specific cause, even one the user would never have searched for
@@ -50,7 +52,7 @@ We are reacting against **the antiquated, bureaucratic, transactional aesthetic 
 - **Generic SaaS dashboards** — Cards-in-a-grid, KPIs at the top, sidebar nav. The tell of a tool that doesn't know what it's for. This is not a dashboard.
 - **Magazine-as-institution affectations** — "Vol. X", week numbers in the header, kickers like "On the cultural calendar" that imply an editorial cadence we don't have. Performing curation we haven't earned is worse than presenting discovery honestly.
 
-What unites these failures: they all treat a nonprofit as a *record* (a row, a score, a transaction, a feature slot) instead of a *cause someone might care about*.
+What unites these failures: they all treat a nonprofit as a _record_ (a row, a score, a transaction, a feature slot) instead of a _cause someone might care about_.
 
 ## Design Principles
 

@@ -413,7 +413,9 @@ export const complete = internalMutation({
           ),
           logoLinks: sanitizeUnicodeStringArray(crawlResult.logoLinks),
           hasNewsletterSignup: crawlResult.hasNewsletterSignup,
-          emailAddresses: sanitizeUnicodeStringArray(crawlResult.emailAddresses),
+          emailAddresses: sanitizeUnicodeStringArray(
+            crawlResult.emailAddresses,
+          ),
         })
       : undefined;
 
@@ -653,11 +655,7 @@ export async function runBackfillSearchedOrgs(
   let isDone = false;
   const skipped = createBackfillSkippedCounts();
 
-  while (
-    enqueued < targetEnqueueCount &&
-    scanned < maxScannedOrgs &&
-    !isDone
-  ) {
+  while (enqueued < targetEnqueueCount && scanned < maxScannedOrgs && !isDone) {
     const searchedOrgs = (await ctx.runQuery(
       internal.crawlQueue.listSearchedOrgsPage,
       {

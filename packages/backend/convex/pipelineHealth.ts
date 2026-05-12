@@ -116,8 +116,7 @@ export const getSummary = query({
   returns: summaryValidator,
   handler: async (ctx, { staleHours = 24 }) => {
     const normalizedStaleHours = Math.max(1, Math.floor(staleHours));
-    const cutoffTimestamp =
-      Date.now() - normalizedStaleHours * 60 * 60 * 1000;
+    const cutoffTimestamp = Date.now() - normalizedStaleHours * 60 * 60 * 1000;
 
     // Batch all counts in a single call:
     //   [0..stageCount)                 total per stage
@@ -168,9 +167,7 @@ export const getSummary = query({
       const stale = staleOrMissing - missingUpdatedAt;
       const fresh = Math.max(0, total - staleOrMissing);
       const stalePercent =
-        total === 0
-          ? 0
-          : Math.round((staleOrMissing / total) * 1000) / 10;
+        total === 0 ? 0 : Math.round((staleOrMissing / total) * 1000) / 10;
 
       byStage[stage] = {
         total,

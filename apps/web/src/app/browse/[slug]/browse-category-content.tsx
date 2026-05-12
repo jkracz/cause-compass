@@ -78,7 +78,9 @@ interface BrowseCategoryContentProps {
   category: BrowseCategory;
 }
 
-export function BrowseCategoryContent({ category }: BrowseCategoryContentProps) {
+export function BrowseCategoryContent({
+  category,
+}: BrowseCategoryContentProps) {
   const [stateFilter, setStateFilter] = useState<string>("");
   const [hasLogoFilter, setHasLogoFilter] = useState<boolean>(false);
   const [geoFilter, setGeoFilter] = useState<
@@ -275,7 +277,8 @@ export function BrowseCategoryContent({ category }: BrowseCategoryContentProps) 
               No nonprofits matched these filters.
             </p>
             <p className="mt-2 text-[14px] text-[var(--ink-soft)]">
-              Try widening the state or clearing the &quot;with logos only&quot; toggle.
+              Try widening the state or clearing the &quot;with logos only&quot;
+              toggle.
             </p>
           </div>
         )}

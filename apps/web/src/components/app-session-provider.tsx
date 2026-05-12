@@ -11,11 +11,7 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ConvexReactClient,
-  useConvexAuth,
-  useMutation,
-} from "convex/react";
+import { ConvexReactClient, useConvexAuth, useMutation } from "convex/react";
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 import posthog from "posthog-js";
 import { api } from "@cause/backend/convex/_generated/api";
@@ -151,15 +147,18 @@ function AppSessionInner({
     await authClient.signIn.social({ provider: "google" });
   }, []);
 
-  const signInWithEmail = useCallback(async (email: string, password: string) => {
-    const result = await authClient.signIn.email({
-      email,
-      password,
-    });
-    if (result.error) {
-      throw new Error(result.error.message ?? "Unable to sign in");
-    }
-  }, []);
+  const signInWithEmail = useCallback(
+    async (email: string, password: string) => {
+      const result = await authClient.signIn.email({
+        email,
+        password,
+      });
+      if (result.error) {
+        throw new Error(result.error.message ?? "Unable to sign in");
+      }
+    },
+    [],
+  );
 
   const signUpWithEmail = useCallback(
     async (email: string, password: string, name: string) => {

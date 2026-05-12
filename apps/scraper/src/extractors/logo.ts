@@ -4,10 +4,7 @@ import type { CheerioAPI } from "cheerio";
  * Extract logo image URLs.
  * Looks at og:image, img tags with logo-related class/alt/id, and link[rel=icon].
  */
-export function extractLogoLinks(
-  $: CheerioAPI,
-  baseUrl: string,
-): string[] {
+export function extractLogoLinks($: CheerioAPI, baseUrl: string): string[] {
   const logos = new Set<string>();
 
   function addUrl(src: string | undefined) {

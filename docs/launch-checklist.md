@@ -28,6 +28,7 @@ This checklist focuses on must-have work before a Product Hunt launch.
 - [ ] Verify no stage backlog grows day-over-day.
 
 Success criteria:
+
 - [ ] `created` and `searched` counts trend down after each run window.
 - [ ] `ready` count trends up consistently.
 
@@ -40,6 +41,7 @@ Success criteria:
 - [ ] Add fail reason fields for crawl diagnostics.
 
 Success criteria:
+
 - [ ] Worker can run continuously without manual script execution.
 - [ ] Crawl failures are visible and retryable.
 - [ ] Mean crawl completion time is measurable.
@@ -54,6 +56,7 @@ Success criteria:
 - [ ] Return "why this match" explanation per result.
 
 Success criteria:
+
 - [ ] Personalized feed differs by user profile.
 - [ ] Like rate improves vs current baseline.
 
@@ -67,6 +70,7 @@ Success criteria:
 - [ ] Keep current fast name search as fallback.
 
 Success criteria:
+
 - [ ] Users can discover unknown orgs via intent phrases.
 - [ ] Fewer "no results" searches on meaningful queries.
 
@@ -79,6 +83,7 @@ Success criteria:
 - [ ] Flag stale records for refresh workflows.
 
 Success criteria:
+
 - [ ] Users can understand why profile data is trustworthy.
 - [ ] Stale data percentage decreases over time.
 
@@ -89,6 +94,7 @@ Success criteria:
 - [ ] Add friendly empty states when recommendations are unavailable.
 
 Success criteria:
+
 - [ ] No broken loop in primary user journey.
 - [ ] No misleading state after reset.
 
@@ -104,6 +110,7 @@ Success criteria:
 - [ ] Define launch readiness thresholds.
 
 Suggested launch gates:
+
 - [ ] Pipeline running continuously for 7 days.
 - [ ] `ready` inventory above minimum target.
 - [ ] No critical blocker in onboarding/discovery/action flow.
@@ -115,4 +122,5 @@ Suggested launch gates:
 - [ ] Use skill for exceptional/manual operations only.
 
 Success criteria:
+
 - [ ] Skill reduces ops time without becoming production dependency.

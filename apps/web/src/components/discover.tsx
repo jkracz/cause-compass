@@ -59,9 +59,8 @@ export default function Discover() {
       ? crypto.randomUUID()
       : String(Date.now()),
   );
-  const [sessionLocation, setSessionLocation] = useState<SessionLocation | null>(
-    null,
-  );
+  const [sessionLocation, setSessionLocation] =
+    useState<SessionLocation | null>(null);
   const [sessionLocationResolved, setSessionLocationResolved] = useState(false);
   const recommendations = useQuery(
     api.organizations.getPersonalizedRecommended,
@@ -115,19 +114,20 @@ export default function Discover() {
         let coordinates = storedCoordinates;
 
         if (!coordinates && storedLocation === "granted") {
-          coordinates = await new Promise<StoredCoordinates>((resolve, reject) =>
-            navigator.geolocation.getCurrentPosition(
-              (position) =>
-                resolve({
-                  latitude: position.coords.latitude,
-                  longitude: position.coords.longitude,
-                }),
-              reject,
-              {
-                timeout: 10000,
-                enableHighAccuracy: true,
-              },
-            ),
+          coordinates = await new Promise<StoredCoordinates>(
+            (resolve, reject) =>
+              navigator.geolocation.getCurrentPosition(
+                (position) =>
+                  resolve({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                  }),
+                reject,
+                {
+                  timeout: 10000,
+                  enableHighAccuracy: true,
+                },
+              ),
           );
         }
 
@@ -300,7 +300,7 @@ export default function Discover() {
             <h2 className="mb-4 text-2xl font-bold">
               No recommendations are available right now.
             </h2>
-            <p className="mb-8 text-lg text-muted-foreground">
+            <p className="text-muted-foreground mb-8 text-lg">
               Try again shortly or revisit onboarding to refresh your
               preferences.
             </p>
@@ -313,7 +313,9 @@ export default function Discover() {
             <h2 className="mb-4 text-2xl font-bold">
               You&apos;ve seen all organizations for this session!
             </h2>
-            <p className="mb-8 text-lg">You liked {likedCount} organizations.</p>
+            <p className="mb-8 text-lg">
+              You liked {likedCount} organizations.
+            </p>
             <Button size="lg" onClick={handleViewMyCauses}>
               View My Causes
             </Button>

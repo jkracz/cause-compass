@@ -149,11 +149,14 @@ async function processJob(job: ClaimedJob): Promise<void> {
         redirect: "follow",
       });
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Fetch failed";
+      const message = err instanceof Error ? err.message : "Fetch failed";
       // Network errors or timeouts — retry via fail
       await failJob(job.jobId, message);
-      log("warn", "Fetch error", { ein: job.ein, url: job.url, error: message });
+      log("warn", "Fetch error", {
+        ein: job.ein,
+        url: job.url,
+        error: message,
+      });
       return;
     } finally {
       clearTimeout(timeout);

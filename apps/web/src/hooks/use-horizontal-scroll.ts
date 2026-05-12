@@ -21,9 +21,7 @@ export function useHorizontalScroll(options: UseHorizontalScrollOptions = {}) {
     // scroll positions left by smooth-scroll / momentum scroll.
     const EDGE_TOLERANCE = 32;
     setCanScrollLeft(scrollLeft > EDGE_TOLERANCE);
-    setCanScrollRight(
-      scrollLeft < scrollWidth - clientWidth - EDGE_TOLERANCE,
-    );
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - EDGE_TOLERANCE);
   }, []);
 
   const scrollLeft = useCallback(() => {

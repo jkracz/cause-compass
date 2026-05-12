@@ -1,7 +1,6 @@
 import type { CheerioAPI } from "cheerio";
 
-const DONATION_KEYWORDS =
-  /\b(donat|give|support|contribut|fundrais|pledge)/i;
+const DONATION_KEYWORDS = /\b(donat|give|support|contribut|fundrais|pledge)/i;
 
 const DONATION_HREF_PATTERNS = [
   /donat/i,
@@ -15,10 +14,7 @@ const DONATION_HREF_PATTERNS = [
  * Extract donation-related links from anchors.
  * Matches on both href path and link text.
  */
-export function extractDonationLinks(
-  $: CheerioAPI,
-  baseUrl: string,
-): string[] {
+export function extractDonationLinks($: CheerioAPI, baseUrl: string): string[] {
   const links = new Set<string>();
 
   $("a[href]").each((_, el) => {

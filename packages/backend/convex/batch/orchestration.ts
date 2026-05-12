@@ -24,9 +24,7 @@ declare const process: {
  * Used by the manual poller and the daily workflow starter as a fallback when
  * webhooks are delayed or missed.
  */
-async function reconcileProcessingJobs(
-  ctx: ActionCtx,
-): Promise<{
+async function reconcileProcessingJobs(ctx: ActionCtx): Promise<{
   checked: number;
   notified: number;
 }> {

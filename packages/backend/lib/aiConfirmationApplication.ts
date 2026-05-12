@@ -110,8 +110,7 @@ export function buildAiConfirmationApplication(args: {
         confirmation.organizationOneSentenceSummary ?? undefined,
       whySupport: confirmation.whySupportOrganization ?? undefined,
       targetAudience: confirmation.organizationTargetAudience ?? undefined,
-      geographicFocus:
-        confirmation.organizationGeographicFocus ?? undefined,
+      geographicFocus: confirmation.organizationGeographicFocus ?? undefined,
       activities: confirmation.organizationActivities ?? undefined,
       keywords: confirmation.organizationKeywords ?? undefined,
       socialMediaUrls,

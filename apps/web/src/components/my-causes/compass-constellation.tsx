@@ -122,7 +122,13 @@ export function CompassConstellation({
       anchor: "end" as const,
     },
     { id: "S", text: "Care", x: cx, y: VIEW - 8, anchor: "middle" as const },
-    { id: "W", text: "Stewardship", x: 12, y: cy + 4, anchor: "start" as const },
+    {
+      id: "W",
+      text: "Stewardship",
+      x: 12,
+      y: cy + 4,
+      anchor: "start" as const,
+    },
   ];
 
   const focusRings = [
@@ -231,47 +237,47 @@ export function CompassConstellation({
             return 0;
           })
           .map((d) => {
-          const isHovered = hovered === d.org.slug;
-          const focusLabel = d.org.geographicFocus ?? "scope unknown";
-          return (
-            <g
-              key={d.org.slug}
-              onMouseEnter={() => setHovered(d.org.slug)}
-              onMouseLeave={() => setHovered(null)}
-              onFocus={() => setHovered(d.org.slug)}
-              onBlur={() => setHovered(null)}
-              onClick={() => onSelect(d.org)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onSelect(d.org);
-                }
-              }}
-              tabIndex={0}
-              role="button"
-              aria-label={`${d.org.name}, ${d.family}, ${focusLabel}`}
-              style={{ cursor: "pointer", outline: "none" }}
-            >
-              {isHovered && (
+            const isHovered = hovered === d.org.slug;
+            const focusLabel = d.org.geographicFocus ?? "scope unknown";
+            return (
+              <g
+                key={d.org.slug}
+                onMouseEnter={() => setHovered(d.org.slug)}
+                onMouseLeave={() => setHovered(null)}
+                onFocus={() => setHovered(d.org.slug)}
+                onBlur={() => setHovered(null)}
+                onClick={() => onSelect(d.org)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onSelect(d.org);
+                  }
+                }}
+                tabIndex={0}
+                role="button"
+                aria-label={`${d.org.name}, ${d.family}, ${focusLabel}`}
+                style={{ cursor: "pointer", outline: "none" }}
+              >
+                {isHovered && (
+                  <circle
+                    cx={d.x}
+                    cy={d.y}
+                    r={d.dotR + 6}
+                    fill={d.color}
+                    opacity={0.18}
+                  />
+                )}
                 <circle
                   cx={d.x}
                   cy={d.y}
-                  r={d.dotR + 6}
+                  r={d.dotR}
                   fill={d.color}
-                  opacity={0.18}
+                  stroke="var(--paper)"
+                  strokeWidth={1.5}
                 />
-              )}
-              <circle
-                cx={d.x}
-                cy={d.y}
-                r={d.dotR}
-                fill={d.color}
-                stroke="var(--paper)"
-                strokeWidth={1.5}
-              />
-            </g>
-          );
-        })}
+              </g>
+            );
+          })}
       </svg>
 
       {hoveredDot && (

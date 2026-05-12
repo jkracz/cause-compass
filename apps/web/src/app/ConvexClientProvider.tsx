@@ -10,5 +10,7 @@ export function ConvexClientProvider({
   children: ReactNode;
   guestId?: string;
 }) {
-  return <AppSessionProvider initialGuestId={guestId}>{children}</AppSessionProvider>;
+  return (
+    <AppSessionProvider initialGuestId={guestId}>{children}</AppSessionProvider>
+  );
 }

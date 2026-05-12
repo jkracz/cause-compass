@@ -180,8 +180,7 @@ export function computePortraitStats(orgs: Organization[]): PortraitStats {
   const topFocusEntry = focusEntries.sort((a, b) => b[1] - a[1])[0];
 
   const total = orgs.length;
-  const localishCount =
-    (focusCounts.Local ?? 0) + (focusCounts.Regional ?? 0);
+  const localishCount = (focusCounts.Local ?? 0) + (focusCounts.Regional ?? 0);
 
   return {
     count: total,

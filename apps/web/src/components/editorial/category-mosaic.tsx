@@ -16,7 +16,7 @@ export function CategoryMosaic() {
         title={
           <>
             Find something to{" "}
-            <span className="italic text-[var(--accent)] font-medium">
+            <span className="font-medium text-[var(--accent)] italic">
               care
             </span>{" "}
             about.
@@ -49,12 +49,12 @@ function MosaicTile({ category }: { category: BrowseCategory }) {
 
       <span
         aria-hidden
-        className="pointer-events-none absolute top-6 right-6 font-heading text-[18px] leading-none text-[var(--paper)]/55"
+        className="font-heading pointer-events-none absolute top-6 right-6 text-[18px] leading-none text-[var(--paper)]/55"
       >
         {category.glyph}
       </span>
 
-      <h3 className="relative z-10 font-heading text-[clamp(1.5rem,2.1vw,2rem)] leading-[1.05] font-semibold text-[var(--paper)]">
+      <h3 className="font-heading relative z-10 text-[clamp(1.5rem,2.1vw,2rem)] leading-[1.05] font-semibold text-[var(--paper)]">
         {category.label}
       </h3>
 

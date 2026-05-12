@@ -32,8 +32,7 @@ export function getWeekKey(date: Date = new Date()): string {
   const week =
     1 +
     Math.round(
-      (target.getTime() - firstThursday.getTime()) /
-        (7 * 24 * 60 * 60 * 1000),
+      (target.getTime() - firstThursday.getTime()) / (7 * 24 * 60 * 60 * 1000),
     );
   return `${target.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
 }
