@@ -20,13 +20,16 @@ import {
 /**
  * List a page of crawled organizations that are candidates for AI confirmation.
  */
-export const internalListCrawledOrgsPage = internalQuery({
-  args: { paginationOpts: paginationOptsValidator },
-  handler: async (ctx, { paginationOpts }) => {
+export const internalListAiCandidateOrgsPage = internalQuery({
+  args: {
+    stage: v.union(v.literal("crawled"), v.literal("local_ai_reviewed")),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, { stage, paginationOpts }) => {
     const orgs = await ctx.db
       .query("organizations")
       .withIndex("by_enrichmentStage", (q) =>
-        q.eq("enrichmentStage", "crawled"),
+        q.eq("enrichmentStage", stage),
       )
       .paginate(paginationOpts);
 

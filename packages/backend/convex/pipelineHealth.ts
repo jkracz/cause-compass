@@ -14,6 +14,7 @@ const ENRICHMENT_STAGES = [
   "searched",
   "uncrawlable",
   "crawled",
+  "local_ai_reviewed",
   "ai_confirmed",
   "ready",
 ] as const;
@@ -77,6 +78,7 @@ const summaryValidator = v.object({
     searched: stageHealthValidator,
     uncrawlable: stageHealthValidator,
     crawled: stageHealthValidator,
+    local_ai_reviewed: stageHealthValidator,
     ai_confirmed: stageHealthValidator,
     ready: stageHealthValidator,
   }),
@@ -226,6 +228,11 @@ export const getSummary = query({
     if (byStage.ai_confirmed.total > 0) {
       notes.push(
         `Backlog in 'ai_confirmed': ${byStage.ai_confirmed.total} orgs need finalization to 'ready'.`,
+      );
+    }
+    if (byStage.local_ai_reviewed.total > 0) {
+      notes.push(
+        `Backlog in 'local_ai_reviewed': ${byStage.local_ai_reviewed.total} orgs are queued for OpenAI fallback.`,
       );
     }
     if (processingJobs.length === 0) {

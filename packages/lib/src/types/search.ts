@@ -1,7 +1,5 @@
 import * as z from "zod";
 
-import { ActivitySchema } from "./activity";
-
 // Search Result Schema
 export const SearchResultSchema = z.object({
   kind: z.string(),
@@ -234,70 +232,6 @@ export const BatchJobSchema = z.object({
   artifactId: z.string().optional(), // GitHub artifact ID if stored
 });
 
-export const GeographicFocusSchema = z.enum([
-  "Global",
-  "Local",
-  "National",
-  "Regional",
-]);
-export type GeographicFocusType = z.infer<typeof GeographicFocusSchema>;
-
-export const WebsiteConfirmationSchema = z.object({
-  hasCorrectWebsite: z
-    .boolean()
-    .describe(
-      "Whether the model determined the provided URL is the correct website",
-    ),
-  correctWebsiteUrl: z
-    .string()
-    .nullable()
-    .describe("The correct website URL if found, otherwise null"),
-  reasoning: z
-    .string()
-    .describe(
-      "Explanation of how the correct website was identified or why none matched",
-    ),
-  organizationOneSentenceSummary: z
-    .string()
-    .nullable()
-    .describe("A brief summary of the organization"),
-  whySupportOrganization: z
-    .string()
-    .nullable()
-    .describe("Why one should consider supporting the organization"),
-  organizationMission: z
-    .string()
-    .nullable()
-    .describe("The mission statement of the organization"),
-  organizationTagline: z
-    .string()
-    .nullable()
-    .describe(
-      "A real tagline or slogan of the organization. Use null if none is present; never return punctuation, separators, placeholders, or empty text.",
-    ),
-  organizationUniqueTrait: z
-    .string()
-    .nullable()
-    .describe("What makes the organization unique"),
-  organizationTargetAudience: z
-    .string()
-    .nullable()
-    .describe("The primary audience the organization serves"),
-  organizationGeographicFocus: GeographicFocusSchema.nullable().describe(
-    "Geographic focus: Global/Regional/National/Local",
-  ),
-  organizationActivities: z
-    .array(ActivitySchema)
-    .nullable()
-    .describe("Key organizational activities (name and description)"),
-  organizationKeywords: z
-    .array(z.string())
-    .nullable()
-    .describe(
-      "Key words or labels that give quick insight into what the organization does, who they help, and how they help",
-    ),
-});
-
 export interface OpenAIResponse {
   body?: {
     choices?: Array<{
@@ -317,4 +251,3 @@ export type StoredSearchResults = z.infer<typeof StoredSearchResultsSchema>;
 export type SocialMediaUrls = z.infer<typeof SocialMediaUrlsSchema>;
 export type CrawlItem = z.infer<typeof CrawlItemSchema>;
 export type BatchJob = z.infer<typeof BatchJobSchema>;
-export type WebsiteConfirmation = z.infer<typeof WebsiteConfirmationSchema>;

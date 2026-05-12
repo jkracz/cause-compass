@@ -16,6 +16,7 @@ const enrichmentStageValidator = v.union(
   v.literal("searched"),
   v.literal("uncrawlable"),
   v.literal("crawled"),
+  v.literal("local_ai_reviewed"),
   v.literal("ai_confirmed"),
   v.literal("ready"),
 );
