@@ -437,7 +437,11 @@ export const getCauseOfTheWeek = query({
       state: sessionLocationState,
     });
 
-    const candidates = pool.filter(passesEditorialQualityGate);
+    // Keep the hero populated even when an environment's ready data has not
+    // fully cleared the stricter editorial completeness bar yet.
+    const qualityCandidates = pool.filter(passesEditorialQualityGate);
+    const candidates =
+      qualityCandidates.length > 0 ? qualityCandidates : pool;
     if (candidates.length === 0) {
       return null;
     }
