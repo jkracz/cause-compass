@@ -22,7 +22,6 @@ export function SpotlightTrio({ picks, onCardClick }: SpotlightTrioProps) {
   return (
     <section className="space-y-7">
       <SectionHeader
-        kicker="Editor's picks"
         title={
           <>
             Worth a closer{" "}

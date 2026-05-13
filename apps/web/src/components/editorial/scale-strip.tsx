@@ -52,7 +52,6 @@ export function ScaleStrip({ data, onCardClick }: ScaleStripProps) {
   return (
     <section className="space-y-7">
       <SectionHeader
-        kicker="Find your scale"
         title={
           <>
             Where do you{" "}
