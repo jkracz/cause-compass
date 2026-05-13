@@ -21,6 +21,8 @@ const listCandidatesRef = anyApi.localAiValidation!
   .listCandidates as FunctionReference<"query">;
 const commitResultRef = anyApi.localAiValidation!
   .commitResult as FunctionReference<"mutation">;
+const markUnverifiableRef = anyApi.localAiValidation!
+  .markUnverifiable as FunctionReference<"mutation">;
 
 type LocalAiCandidate = {
   _id: Id<"organizations">;
@@ -172,6 +174,7 @@ async function main() {
     failed: 0,
     ready: 0,
     reviewed: 0,
+    unverifiable: 0,
   };
   let cursor: string | null = null;
   let isDone = false;
@@ -198,10 +201,23 @@ async function main() {
       counters.attempted++;
 
       if (candidate.crawlData.length === 0) {
-        counters.failed++;
-        logger.warn(
-          `Skipping EIN ${candidate.ein}: no prompt-ready crawl data`,
-        );
+        try {
+          await convex.mutation(markUnverifiableRef, {
+            operatorToken,
+            orgId: candidate._id,
+          });
+          counters.unverifiable++;
+          logger.warn(
+            `Marked EIN ${candidate.ein} unverifiable: no prompt-ready crawl data`,
+          );
+        } catch (error) {
+          counters.failed++;
+          logger.error(
+            `Failed to mark EIN ${candidate.ein} unverifiable: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        }
         continue;
       }
 
@@ -234,7 +250,7 @@ async function main() {
   }
 
   logger.info(
-    `Local AI confirmation complete: attempted=${counters.attempted}, committed=${counters.committed}, ready=${counters.ready}, local_ai_reviewed=${counters.reviewed}, failed=${counters.failed}`,
+    `Local AI confirmation complete: attempted=${counters.attempted}, committed=${counters.committed}, ready=${counters.ready}, local_ai_reviewed=${counters.reviewed}, unverifiable=${counters.unverifiable}, failed=${counters.failed}`,
   );
 }
 

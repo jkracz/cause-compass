@@ -15,6 +15,7 @@ export type EnrichmentStage =
   | "searched"
   | "uncrawlable"
   | "crawled"
+  | "unverifiable"
   | "local_ai_reviewed"
   | "ai_confirmed"
   | "ready";

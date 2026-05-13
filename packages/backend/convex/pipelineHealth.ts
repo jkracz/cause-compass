@@ -14,6 +14,7 @@ const ENRICHMENT_STAGES = [
   "searched",
   "uncrawlable",
   "crawled",
+  "unverifiable",
   "local_ai_reviewed",
   "ai_confirmed",
   "ready",
@@ -78,6 +79,7 @@ const summaryValidator = v.object({
     searched: stageHealthValidator,
     uncrawlable: stageHealthValidator,
     crawled: stageHealthValidator,
+    unverifiable: stageHealthValidator,
     local_ai_reviewed: stageHealthValidator,
     ai_confirmed: stageHealthValidator,
     ready: stageHealthValidator,
@@ -220,6 +222,11 @@ export const getSummary = query({
     if (byStage.uncrawlable.total > 0) {
       notes.push(
         `Backlog in 'uncrawlable': ${byStage.uncrawlable.total} orgs need manual review or future crawl logic.`,
+      );
+    }
+    if (byStage.unverifiable.total > 0) {
+      notes.push(
+        `Backlog in 'unverifiable': ${byStage.unverifiable.total} orgs have no prompt-ready crawl content for website validation.`,
       );
     }
     if (byStage.ai_confirmed.total > 0) {
