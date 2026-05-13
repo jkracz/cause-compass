@@ -103,6 +103,40 @@ export const listCandidates = query({
 });
 
 /**
+ * Moves crawled organizations out of the local AI queue when their stored crawl
+ * results cannot produce prompt-ready validation text.
+ */
+export const markUnverifiable = mutation({
+  args: {
+    operatorToken: v.string(),
+    orgId: v.id("organizations"),
+  },
+  handler: async (ctx, { operatorToken, orgId }) => {
+    requireLocalAiToken(operatorToken);
+
+    const org = await ctx.db.get(orgId);
+    if (!org || org.enrichmentStage !== "crawled") {
+      throw new Error("Local AI target is no longer eligible");
+    }
+
+    const crawlResults = await getCrawlResultsForEin(ctx, org.ein);
+    if (selectBatchPromptCrawlData(crawlResults).length > 0) {
+      throw new Error("Local AI target still has prompt-ready crawl data");
+    }
+
+    await patchOrganization(ctx, orgId, {
+      enrichmentStage: "unverifiable",
+      updatedAt: Date.now(),
+    });
+
+    return {
+      success: true,
+      enrichmentStage: "unverifiable" as const,
+    };
+  },
+});
+
+/**
  * Persists one validated local AI result, records provenance, and advances the
  * organization to `ready` or `local_ai_reviewed`.
  */

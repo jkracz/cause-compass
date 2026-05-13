@@ -358,6 +358,7 @@ async function main() {
     searched: 0,
     uncrawlable: 0,
     crawled: 0,
+    unverifiable: 0,
     local_ai_reviewed: 0,
     ai_confirmed: 0,
     ready: 0,
@@ -446,6 +447,7 @@ async function main() {
   logger.info(`  searched: ${stageCounts.searched}`);
   logger.info(`  uncrawlable: ${stageCounts.uncrawlable}`);
   logger.info(`  crawled: ${stageCounts.crawled}`);
+  logger.info(`  unverifiable: ${stageCounts.unverifiable}`);
   logger.info(`  local_ai_reviewed: ${stageCounts.local_ai_reviewed}`);
   logger.info(`  ai_confirmed: ${stageCounts.ai_confirmed}`);
   logger.info(`  ready: ${stageCounts.ready}`);
