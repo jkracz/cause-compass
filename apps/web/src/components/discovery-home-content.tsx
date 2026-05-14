@@ -29,6 +29,7 @@ import {
 } from "@/components/editorial/scale-strip";
 import { EditorialCarousel } from "@/components/editorial/editorial-carousel";
 import { EditorialOrgCard } from "@/components/editorial/editorial-org-card";
+import { SectionHeader } from "@/components/editorial/section-header";
 
 type Organization = Doc<"organizations">;
 const HOMEPAGE_CAROUSELS = [
@@ -269,17 +270,32 @@ export function DiscoveryHomeContent() {
           )}
         </div>
 
-        {/* Search bar — under hero */}
-        <div
-          className="editorial-fade-up mt-14"
+        {/* Unified search & browse module — heading carries both affordances. */}
+        <section
+          className="editorial-fade-up mt-20 md:mt-24"
+          aria-labelledby="search-browse-heading"
           style={{ animationDelay: "0.1s" }}
         >
-          <EditorialSearch
-            value={searchQuery}
-            onChange={handleSearchChange}
-            isLoading={isSearchLoading}
+          <SectionHeader
+            title={
+              <span id="search-browse-heading">
+                Find something to{" "}
+                <span className="font-medium text-[var(--accent)] italic">
+                  care
+                </span>{" "}
+                about.
+              </span>
+            }
+            subtitle="Type what you're curious about, or pick a cause and wander."
           />
-        </div>
+          <div className="mt-7">
+            <EditorialSearch
+              value={searchQuery}
+              onChange={handleSearchChange}
+              isLoading={isSearchLoading}
+            />
+          </div>
+        </section>
 
         <AnimatePresence mode="wait">
           {isSearching ? (
@@ -346,8 +362,13 @@ export function DiscoveryHomeContent() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25 }}
-              className="mt-20 space-y-20"
+              className="mt-10 space-y-20"
             >
+              {/* Browse tiles — second affordance inside the search module above. */}
+              <div className="editorial-fade-up">
+                <CategoryMosaic />
+              </div>
+
               {/* Editor's Picks */}
               <div className="editorial-fade-up">
                 {editorsPicks === undefined ? (
@@ -358,11 +379,6 @@ export function DiscoveryHomeContent() {
                     onCardClick={handleCardClick}
                   />
                 )}
-              </div>
-
-              {/* Browse by Cause */}
-              <div className="editorial-fade-up">
-                <CategoryMosaic />
               </div>
 
               {/* Upper carousels */}
