@@ -1,17 +1,20 @@
 "use client";
 
-import { startTransition, useEffect, useRef, useState } from "react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
-import { Heart, X } from "lucide-react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import posthog from "posthog-js";
 import { useMutation, useQuery } from "convex/react";
 
 import { SwipeableCard } from "@/components/swipeable-card";
-import { Button } from "@/components/ui/button";
+import { OrganizationModal } from "@/components/organization-modal";
 import { DiscoverSkeleton } from "@/app/discover/discover-skeleton";
-import type { SessionLocation } from "@/app/discover/actions";
-import { reverseGeocodeForSession } from "@/app/discover/actions";
 import { api } from "@cause/backend/convex/_generated/api";
 import { useAppSession } from "@/components/app-session-provider";
 import {
@@ -19,65 +22,16 @@ import {
   RecommendationResult,
 } from "@/lib/recommendations";
 
-type StoredCoordinates = {
-  latitude: number;
-  longitude: number;
-};
-
-function parseStoredCoordinates(location?: string): StoredCoordinates | null {
-  if (!location?.trim()) {
-    return null;
-  }
-
-  try {
-    const parsed = JSON.parse(location) as {
-      latitude?: unknown;
-      longitude?: unknown;
-    };
-
-    if (
-      typeof parsed.latitude === "number" &&
-      typeof parsed.longitude === "number"
-    ) {
-      return {
-        latitude: parsed.latitude,
-        longitude: parsed.longitude,
-      };
-    }
-  } catch {
-    return null;
-  }
-
-  return null;
-}
-
 export default function Discover() {
   const { guestId } = useAppSession();
-  const viewer = useQuery(api.users.getViewer, guestId ? { guestId } : {});
   const [sessionSeed] = useState(() =>
     typeof crypto !== "undefined" && "randomUUID" in crypto
       ? crypto.randomUUID()
       : String(Date.now()),
   );
-  const [sessionLocation, setSessionLocation] =
-    useState<SessionLocation | null>(null);
-  const [sessionLocationResolved, setSessionLocationResolved] = useState(false);
   const recommendations = useQuery(
     api.organizations.getPersonalizedRecommended,
-    sessionLocationResolved
-      ? guestId
-        ? {
-            guestId,
-            limit: 10,
-            sessionLocationState: sessionLocation?.state,
-            sessionSeed,
-          }
-        : {
-            limit: 10,
-            sessionLocationState: sessionLocation?.state,
-            sessionSeed,
-          }
-      : "skip",
+    guestId ? { guestId, limit: 10, sessionSeed } : { limit: 10, sessionSeed },
   );
   const likeOrganization = useMutation(api.users.likeOrganization);
   const dismissOrganization = useMutation(api.users.dismissOrganization);
@@ -89,74 +43,7 @@ export default function Discover() {
   >(null);
   const hasTrackedCompletionRef = useRef(false);
   const trackedImpressionsRef = useRef<Set<string>>(new Set());
-
-  useEffect(() => {
-    if (viewer === undefined || sessionLocationResolved) {
-      return;
-    }
-
-    const storedLocation = viewer?.preferences.location;
-    if (
-      !storedLocation ||
-      storedLocation === "skipped" ||
-      storedLocation === "denied" ||
-      storedLocation === "unavailable"
-    ) {
-      startTransition(() => {
-        setSessionLocationResolved(true);
-      });
-      return;
-    }
-
-    const resolveSessionLocation = async () => {
-      try {
-        const storedCoordinates = parseStoredCoordinates(storedLocation);
-        let coordinates = storedCoordinates;
-
-        if (!coordinates && storedLocation === "granted") {
-          coordinates = await new Promise<StoredCoordinates>(
-            (resolve, reject) =>
-              navigator.geolocation.getCurrentPosition(
-                (position) =>
-                  resolve({
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude,
-                  }),
-                reject,
-                {
-                  timeout: 10000,
-                  enableHighAccuracy: true,
-                },
-              ),
-          );
-        }
-
-        if (!coordinates) {
-          startTransition(() => {
-            setSessionLocationResolved(true);
-          });
-          return;
-        }
-
-        const location = await reverseGeocodeForSession(coordinates);
-        if (!location) {
-          startTransition(() => {
-            setSessionLocationResolved(true);
-          });
-          return;
-        }
-
-        setSessionLocation(location);
-      } catch (error) {
-        console.error("Error resolving session location:", error);
-        posthog.captureException(error);
-      } finally {
-        setSessionLocationResolved(true);
-      }
-    };
-
-    void resolveSessionLocation();
-  }, [sessionLocationResolved, viewer]);
+  const [detailsOrgSlug, setDetailsOrgSlug] = useState<string | null>(null);
 
   useEffect(() => {
     if (recommendations !== undefined && sessionRecommendations === null) {
@@ -219,14 +106,10 @@ export default function Discover() {
     }
   }, [activeRecommendations, isFinished, likedCount]);
 
-  if (!activeRecommendations) {
-    return <DiscoverSkeleton />;
-  }
+  const currentRecommendation = activeRecommendations?.[currentIndex];
+  const peekRecommendation = activeRecommendations?.[currentIndex + 1];
 
-  const currentRecommendation = activeRecommendations[currentIndex];
-  const hasNoRecommendations = activeRecommendations.length === 0;
-
-  const handleLike = async () => {
+  const handleLike = useCallback(async () => {
     if (!currentRecommendation) {
       return;
     }
@@ -245,7 +128,7 @@ export default function Discover() {
       organization_city: currentRecommendation.organization.city,
       organization_state: currentRecommendation.organization.state,
       position_in_stack: currentIndex,
-      total_causes: activeRecommendations.length,
+      total_causes: activeRecommendations?.length ?? 0,
       total_liked_so_far: likedCount + 1,
       recommendation_version: RECOMMENDATION_VERSION,
       recommendation_score: currentRecommendation.score,
@@ -255,9 +138,16 @@ export default function Discover() {
     });
 
     setCurrentIndex((index) => index + 1);
-  };
+  }, [
+    activeRecommendations,
+    currentIndex,
+    currentRecommendation,
+    guestId,
+    likeOrganization,
+    likedCount,
+  ]);
 
-  const handleSkip = async () => {
+  const handleSkip = useCallback(async () => {
     if (!currentRecommendation) {
       return;
     }
@@ -277,7 +167,7 @@ export default function Discover() {
       organization_name: currentRecommendation.organization.name,
       organization_ein: currentRecommendation.organization.ein,
       position_in_stack: currentIndex,
-      total_causes: activeRecommendations.length,
+      total_causes: activeRecommendations?.length ?? 0,
       recommendation_version: RECOMMENDATION_VERSION,
       recommendation_score: currentRecommendation.score,
       matched_signals: currentRecommendation.matchedSignals,
@@ -286,118 +176,304 @@ export default function Discover() {
     });
 
     setCurrentIndex((index) => index + 1);
-  };
+  }, [
+    activeRecommendations,
+    currentIndex,
+    currentRecommendation,
+    dismissOrganization,
+    guestId,
+  ]);
 
   const handleViewMyCauses = () => {
     router.push("/my-causes");
   };
 
+  const handleBrowseByCause = () => {
+    router.push("/");
+  };
+
+  const handleOpenDetails = useCallback(() => {
+    if (!currentRecommendation) return;
+    setDetailsOrgSlug(currentRecommendation.organization.slug);
+    posthog.capture("organization_details_viewed", {
+      organization_id: currentRecommendation.organization.slug,
+      organization_name: currentRecommendation.organization.name,
+      organization_ein: currentRecommendation.organization.ein,
+      organization_city: currentRecommendation.organization.city,
+      organization_state: currentRecommendation.organization.state,
+      source: "discover_swipe",
+      position_in_stack: currentIndex,
+      recommendation_version: RECOMMENDATION_VERSION,
+    });
+  }, [currentIndex, currentRecommendation]);
+
+  const handleCloseDetails = () => setDetailsOrgSlug(null);
+
+  const detailsOrg =
+    detailsOrgSlug &&
+    currentRecommendation?.organization.slug === detailsOrgSlug
+      ? currentRecommendation.organization
+      : null;
+
+  // Keyboard shortcuts: ← turn, → clip
+  useEffect(() => {
+    if (!currentRecommendation) return;
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName?.toLowerCase();
+      if (tag === "input" || tag === "textarea" || target?.isContentEditable) {
+        return;
+      }
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        void handleLike();
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        void handleSkip();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [currentRecommendation, handleLike, handleSkip]);
+
+  if (!activeRecommendations) {
+    return <DiscoverSkeleton />;
+  }
+
+  const hasNoRecommendations = activeRecommendations.length === 0;
+  const total = activeRecommendations.length;
+
   return (
-    <>
-      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-12">
-        {hasNoRecommendations ? (
-          <div className="max-w-md text-center">
-            <h2 className="mb-4 text-2xl font-bold">
-              No recommendations are available right now.
-            </h2>
-            <p className="text-muted-foreground mb-8 text-lg">
-              Try again shortly or revisit onboarding to refresh your
-              preferences.
-            </p>
-            <Button size="lg" onClick={() => router.push("/onboarding")}>
-              Update Preferences
-            </Button>
-          </div>
-        ) : isFinished ? (
-          <div className="text-center">
-            <h2 className="mb-4 text-2xl font-bold">
-              You&apos;ve seen all organizations for this session!
-            </h2>
-            <p className="mb-8 text-lg">
-              You liked {likedCount} organizations.
-            </p>
-            <Button size="lg" onClick={handleViewMyCauses}>
-              View My Causes
-            </Button>
-          </div>
-        ) : (
-          <div className="mx-auto flex w-full max-w-md flex-col items-center">
-            <div className="mb-8 text-center">
-              <h1 className="text-2xl font-bold">Discover Organizations</h1>
-              <p className="text-muted-foreground">
-                Swipe right to like, left to skip
-              </p>
-            </div>
-
-            <div className="relative mb-8 h-[560px] w-full">
-              {activeRecommendations
-                .slice(currentIndex, currentIndex + 2)
-                .map((recommendation, stackIndex) => {
-                  return (
-                    <motion.div
-                      key={recommendation.organization.ein}
-                      className="absolute inset-0"
-                      initial={{
-                        scale: 1 - stackIndex * 0.02,
-                        y: stackIndex * 4,
-                        opacity: stackIndex === 0 ? 1 : 0,
-                      }}
-                      animate={{
-                        scale: 1 - stackIndex * 0.02,
-                        y: stackIndex * 4,
-                        opacity: stackIndex === 0 ? 1 : 0,
-                      }}
-                      transition={{
-                        duration: 0.3,
-                        ease: "easeOut",
-                      }}
-                      style={{
-                        zIndex: 3 - stackIndex,
-                      }}
-                    >
-                      <SwipeableCard
-                        organization={recommendation.organization}
-                        onSwipeLeft={
-                          stackIndex === 0 ? () => void handleSkip() : () => {}
-                        }
-                        onSwipeRight={stackIndex === 0 ? handleLike : () => {}}
-                      />
-                    </motion.div>
-                  );
-                })}
-            </div>
-
-            <div className="mb-8 flex gap-4">
-              <Button
-                size="lg"
-                variant="outline"
-                className="h-14 w-14 rounded-full p-0"
-                onClick={() => void handleSkip()}
-              >
-                <X className="h-6 w-6" />
-                <span className="sr-only">Skip</span>
-              </Button>
-
-              <Button
-                size="lg"
-                className="h-14 w-14 rounded-full bg-pink-600 p-0 hover:bg-pink-700"
-                onClick={() => void handleLike()}
-              >
-                <Heart className="h-6 w-6" />
-                <span className="sr-only">Like</span>
-              </Button>
-            </div>
-
-            <div className="flex h-10 items-center justify-center">
-              {likedCount > 0 && (
-                <Button variant="outline" onClick={handleViewMyCauses}>
-                  View My Causes
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
+    <div className="relative min-h-screen w-full overflow-hidden">
+      {/* Atmospheric blush halo */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[50vh]"
+      >
+        <div className="absolute -top-40 left-1/2 h-[70vh] w-[70vh] -translate-x-1/2 rounded-full bg-[var(--accent-soft)] opacity-50 blur-3xl" />
       </div>
-    </>
+
+      <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-xl flex-col px-5 pt-6 pb-10 sm:px-8 sm:pt-8">
+        {hasNoRecommendations ? (
+          <EmptyState onBrowse={handleBrowseByCause} />
+        ) : isFinished ? (
+          <FinishedState
+            likedCount={likedCount}
+            onOpenNotebook={handleViewMyCauses}
+            onBrowse={handleBrowseByCause}
+          />
+        ) : (
+          <>
+            <DiscoverHeader total={total} currentIndex={currentIndex} />
+
+            <div className="relative mx-auto mt-5 mb-6 h-[520px] w-full max-w-md sm:h-[560px]">
+              {/* Paper card peeking behind */}
+              {peekRecommendation && (
+                <div
+                  aria-hidden
+                  className="absolute inset-x-3 top-3 bottom-[-6px] rounded-[1.25rem] border border-[var(--rule)] bg-white/65"
+                  style={{ zIndex: 1 }}
+                />
+              )}
+
+              {/* Active loupe card */}
+              <AnimatePresence mode="popLayout" initial={false}>
+                {currentRecommendation && (
+                  <motion.div
+                    key={currentRecommendation.organization.slug}
+                    className="absolute inset-0"
+                    initial={{ opacity: 0, scale: 0.98, y: 8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{
+                      duration: 0.32,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                    style={{ zIndex: 2 }}
+                  >
+                    <SwipeableCard
+                      organization={currentRecommendation.organization}
+                      onSwipeLeft={() => void handleSkip()}
+                      onSwipeRight={() => void handleLike()}
+                      onOpen={handleOpenDetails}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="flex flex-col items-center gap-5">
+              <div className="flex w-full max-w-md flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
+                <button
+                  type="button"
+                  onClick={() => void handleSkip()}
+                  className="order-2 inline-flex items-center justify-center rounded-full border border-[var(--rule-strong)] bg-white/70 px-7 py-3.5 text-[11px] font-semibold tracking-[0.28em] text-[var(--ink-soft)] uppercase transition-colors duration-200 ease-out hover:border-[var(--accent)]/45 hover:text-[var(--accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)] sm:order-1"
+                >
+                  Skip
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleLike()}
+                  className="order-1 inline-flex items-center justify-center rounded-full bg-[var(--ink)] px-7 py-3.5 text-[11px] font-semibold tracking-[0.28em] text-[var(--paper)] uppercase shadow-[0_10px_24px_-18px_rgba(26,15,44,0.55)] transition-all duration-200 ease-out hover:bg-[var(--accent)] hover:shadow-[0_18px_40px_-20px_rgba(200,38,110,0.55)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)] sm:order-2"
+                >
+                  Add to my causes
+                </button>
+              </div>
+
+              <div className="flex h-6 items-center justify-center">
+                {likedCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleViewMyCauses}
+                    className="text-[12px] tracking-[0.04em] text-[var(--ink-mute)] underline decoration-[var(--rule-strong)] decoration-1 underline-offset-[6px] transition-colors hover:text-[var(--accent)] hover:decoration-[var(--accent)]/60"
+                  >
+                    View my causes
+                    <span aria-hidden> →</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </main>
+
+      {detailsOrg && (
+        <OrganizationModal
+          organization={detailsOrg}
+          isOpen={Boolean(detailsOrgSlug)}
+          onClose={handleCloseDetails}
+        />
+      )}
+    </div>
+  );
+}
+
+function DiscoverHeader({
+  total,
+  currentIndex,
+}: {
+  total: number;
+  currentIndex: number;
+}) {
+  return (
+    <header className="flex flex-col items-center gap-3 text-center">
+      <h1 className="font-heading text-[clamp(1.5rem,4vw,2rem)] leading-[1.1] font-semibold text-balance text-[var(--ink)]">
+        A few causes to wander through
+      </h1>
+      <ProgressStrip total={total} currentIndex={currentIndex} />
+      <p className="text-[12px] leading-none tracking-[0.04em] text-[var(--ink-mute)]">
+        Swipe right to add to your causes. Left to skip. Tap to learn more.
+      </p>
+    </header>
+  );
+}
+
+function ProgressStrip({
+  total,
+  currentIndex,
+}: {
+  total: number;
+  currentIndex: number;
+}) {
+  return (
+    <div
+      className="mt-2 flex w-full max-w-[280px] items-center gap-1.5"
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={total}
+      aria-valuenow={Math.min(currentIndex, total)}
+      aria-label={`Page ${Math.min(currentIndex + 1, total)} of ${total}`}
+    >
+      {Array.from({ length: total }).map((_, i) => {
+        const state =
+          i < currentIndex ? "done" : i === currentIndex ? "active" : "future";
+        return (
+          <span
+            key={i}
+            aria-hidden
+            className={
+              "h-[3px] flex-1 rounded-full transition-colors duration-300 ease-out " +
+              (state === "done"
+                ? "bg-[var(--ink-mute)]"
+                : state === "active"
+                  ? "bg-[var(--accent)]"
+                  : "bg-[var(--rule)]")
+            }
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+function FinishedState({
+  likedCount,
+  onOpenNotebook,
+  onBrowse,
+}: {
+  likedCount: number;
+  onOpenNotebook: () => void;
+  onBrowse: () => void;
+}) {
+  const headline =
+    likedCount === 0 ? "Nothing saved today." : "You're all caught up.";
+  const body =
+    likedCount === 0
+      ? "Come back tomorrow for a fresh set, or browse by cause to find one now."
+      : `You added ${likedCount} ${likedCount === 1 ? "cause" : "causes"} to your collection. Come back tomorrow for a fresh set.`;
+
+  return (
+    <section className="flex flex-1 flex-col items-center justify-center py-12 text-center">
+      <article className="w-full max-w-md rounded-[1.5rem] border border-[var(--rule)] bg-white/85 p-9 shadow-[0_24px_50px_-40px_rgba(91,75,158,0.4)]">
+        <h2 className="font-heading text-[clamp(1.65rem,3.5vw,2rem)] leading-[1.08] font-semibold text-balance text-[var(--ink)]">
+          {headline}
+        </h2>
+        <p className="mt-4 text-[15px] leading-[1.55] text-[var(--ink-soft)]">
+          {body}
+        </p>
+        <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
+          {likedCount > 0 && (
+            <button
+              type="button"
+              onClick={onOpenNotebook}
+              className="inline-flex items-center justify-center rounded-full bg-[var(--ink)] px-7 py-3.5 text-[11px] font-semibold tracking-[0.28em] text-[var(--paper)] uppercase transition-all duration-200 ease-out hover:bg-[var(--accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)]"
+            >
+              View my causes
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onBrowse}
+            className="inline-flex items-center justify-center rounded-full border border-[var(--rule-strong)] bg-white/70 px-7 py-3.5 text-[11px] font-semibold tracking-[0.28em] text-[var(--ink-soft)] uppercase transition-colors duration-200 ease-out hover:border-[var(--accent)]/45 hover:text-[var(--accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)]"
+          >
+            Browse by cause
+          </button>
+        </div>
+      </article>
+    </section>
+  );
+}
+
+function EmptyState({ onBrowse }: { onBrowse: () => void }) {
+  return (
+    <section className="flex flex-1 flex-col items-center justify-center py-12 text-center">
+      <article className="w-full max-w-md rounded-[1.5rem] border border-[var(--rule)] bg-white/85 p-9">
+        <h2 className="font-heading text-[clamp(1.65rem,3.5vw,2rem)] leading-[1.08] font-semibold text-balance text-[var(--ink)]">
+          No causes to show right now.
+        </h2>
+        <p className="mt-4 text-[15px] leading-[1.55] text-[var(--ink-soft)]">
+          We couldn&apos;t put together a set for you right now. Try browsing by
+          cause and we&apos;ll find a few more tomorrow.
+        </p>
+        <div className="mt-7 flex justify-center">
+          <button
+            type="button"
+            onClick={onBrowse}
+            className="inline-flex items-center justify-center rounded-full bg-[var(--ink)] px-7 py-3.5 text-[11px] font-semibold tracking-[0.28em] text-[var(--paper)] uppercase transition-all duration-200 ease-out hover:bg-[var(--accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)]"
+          >
+            Browse by cause
+          </button>
+        </div>
+      </article>
+    </section>
   );
 }

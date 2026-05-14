@@ -29,6 +29,5 @@ If a change touches Convex behavior or schema assumptions, read [packages/backen
 ## Routes
 
 - `/` - landing page
-- `/onboarding` - user preference collection
 - `/discover` - organization discovery
 - `/my-causes` - liked organizations dashboard

@@ -2,8 +2,6 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
 
 type ViewerCtx = QueryCtx | MutationCtx;
 
-export const LOCATION_SENTINELS = new Set(["skipped", "denied", "unavailable"]);
-
 export async function getAuthIdentity(ctx: ViewerCtx) {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity?.subject) {
@@ -63,57 +61,4 @@ export function mergeDismissedOrganizations(
   incomingDismissed: string[] = [],
 ) {
   return Array.from(new Set([...existingDismissed, ...incomingDismissed]));
-}
-
-export function mergePreferences(
-  existing: {
-    causes?: string[];
-    helpMethod?: string[];
-    changeScope?: string;
-    location?: string;
-    openEnded?: {
-      question: string;
-      answer?: string;
-    };
-  },
-  incoming: {
-    causes?: string[];
-    helpMethod?: string[];
-    changeScope?: string;
-    location?: string;
-    openEnded?: {
-      question: string;
-      answer?: string;
-    };
-  },
-) {
-  const merged = { ...existing };
-
-  if (incoming.causes && incoming.causes.length > 0) {
-    merged.causes = incoming.causes;
-  }
-
-  if (incoming.helpMethod && incoming.helpMethod.length > 0) {
-    merged.helpMethod = incoming.helpMethod;
-  }
-
-  if (incoming.changeScope?.trim()) {
-    merged.changeScope = incoming.changeScope.trim();
-  }
-
-  if (
-    incoming.location?.trim() &&
-    !LOCATION_SENTINELS.has(incoming.location.trim())
-  ) {
-    merged.location = incoming.location.trim();
-  }
-
-  if (incoming.openEnded?.answer?.trim()) {
-    merged.openEnded = {
-      question: incoming.openEnded.question,
-      answer: incoming.openEnded.answer.trim(),
-    };
-  }
-
-  return merged;
 }

@@ -25,7 +25,6 @@ export default function PrivacyPage() {
                   when you:
                 </p>
                 <ul className="text-muted-foreground list-inside list-disc space-y-1">
-                  <li>Complete our mirror check questionnaire</li>
                   <li>Create an account or profile</li>
                   <li>Contact us for support</li>
                   <li>Interact with nonprofits through our platform</li>
@@ -74,29 +73,17 @@ export default function PrivacyPage() {
 
               <section>
                 <h2 className="mb-3 text-xl font-semibold">
-                  5. Location Information
-                </h2>
-                <p className="text-muted-foreground">
-                  If you choose to share your location, we use this information
-                  solely to show you local nonprofit opportunities. Location
-                  sharing is entirely optional and can be disabled at any time.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="mb-3 text-xl font-semibold">
-                  6. Cookies and Tracking
+                  5. Cookies and Tracking
                 </h2>
                 <p className="text-muted-foreground">
                   We use cookies and similar technologies to enhance your
-                  experience, remember your preferences, and analyze how our
-                  service is used. You can control cookie settings through your
-                  browser.
+                  experience and analyze how our service is used. You can
+                  control cookie settings through your browser.
                 </p>
               </section>
 
               <section>
-                <h2 className="mb-3 text-xl font-semibold">7. Your Rights</h2>
+                <h2 className="mb-3 text-xl font-semibold">6. Your Rights</h2>
                 <p className="text-muted-foreground mb-3">
                   You have the right to:
                 </p>

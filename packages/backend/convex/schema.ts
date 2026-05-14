@@ -49,18 +49,6 @@ export default defineSchema({
   users: defineTable({
     userId: v.optional(v.string()),
     guestId: v.optional(v.string()),
-    preferences: v.object({
-      causes: v.optional(v.array(v.string())),
-      helpMethod: v.optional(v.array(v.string())),
-      changeScope: v.optional(v.string()),
-      location: v.optional(v.string()),
-      openEnded: v.optional(
-        v.object({
-          question: v.string(),
-          answer: v.optional(v.string()),
-        }),
-      ),
-    }),
     likedOrganizations: v.array(v.string()),
     dismissedOrganizations: v.optional(v.array(v.string())),
   })
