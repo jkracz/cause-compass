@@ -21,10 +21,10 @@ export function Footer() {
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
             <Link
-              href="/faq"
+              href="/about"
               className="text-[var(--ink-soft)] transition-colors hover:text-[var(--accent)]"
             >
-              FAQ
+              About
             </Link>
             <Link
               href="/terms"
