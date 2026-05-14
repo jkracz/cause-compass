@@ -64,7 +64,7 @@ export function OrgMark({
     return (
       <div
         className={cn(
-          "relative shrink-0 overflow-hidden border border-[var(--rule)] bg-white",
+          "relative shrink-0 overflow-hidden border border-[var(--rule)] bg-[var(--paper)]",
           sizeClass,
           className,
         )}
@@ -73,7 +73,7 @@ export function OrgMark({
           src={logoUrl}
           alt={name}
           fill
-          className="object-contain p-2"
+          className="object-contain p-2 drop-shadow-[0_1px_1px_rgba(26,15,44,0.45)]"
           unoptimized
           loading="eager"
           onError={() => {
