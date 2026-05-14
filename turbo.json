@@ -43,8 +43,7 @@
     "CODEX_API_KEY",
     "CODEX_MODEL",
     "CODEX_TIMEOUT_MS",
-    "CODEX_CONCURRENCY",
-    "MAPBOX_ACCESS_TOKEN"
+    "CODEX_CONCURRENCY"
   ],
   "tasks": {
     "build": {
