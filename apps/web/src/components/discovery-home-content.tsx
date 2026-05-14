@@ -18,10 +18,6 @@ import {
   CauseOfTheWeekSkeleton,
 } from "@/components/editorial/cause-of-the-week";
 import { EditorialSearch } from "@/components/editorial/editorial-search";
-import {
-  SpotlightTrio,
-  SpotlightTrioSkeleton,
-} from "@/components/editorial/spotlight-trio";
 import { CategoryMosaic } from "@/components/editorial/category-mosaic";
 import {
   ScaleStrip,
@@ -101,13 +97,9 @@ export function DiscoveryHomeContent() {
 
   const weekKey = useWeekKey();
 
-  // Cause of the Week + Editor's Picks
+  // Cause of the Week
   const causeOfTheWeek = useQuery(api.organizations.getCauseOfTheWeek, {
     weekKey,
-  });
-  const editorsPicks = useQuery(api.organizations.getEditorsPicks, {
-    weekKey,
-    excludeSlugs: causeOfTheWeek ? [causeOfTheWeek.slug] : [],
   });
   const scaleData = useQuery(api.organizations.getOrganizationsByScale, {
     weekKey,
@@ -369,18 +361,6 @@ export function DiscoveryHomeContent() {
                 <CategoryMosaic />
               </div>
 
-              {/* Editor's Picks */}
-              <div className="editorial-fade-up">
-                {editorsPicks === undefined ? (
-                  <SpotlightTrioSkeleton />
-                ) : (
-                  <SpotlightTrio
-                    picks={editorsPicks}
-                    onCardClick={handleCardClick}
-                  />
-                )}
-              </div>
-
               {/* Upper carousels */}
               {upperCarousels.map((row) => (
                 <div key={row.key} className="editorial-fade-up">
@@ -428,7 +408,6 @@ export function DiscoveryHomeContent() {
 
               {/* Empty state */}
               {causeOfTheWeek === null &&
-                editorsPicks?.length === 0 &&
                 upperCarousels.every((r) => r.organizations.length === 0) && (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
                     <Compass className="mb-4 h-12 w-12 text-[var(--ink-mute)]" />

@@ -20,28 +20,24 @@ const COLUMNS: {
   label: string;
   caption: string;
   hint: string;
-  glyph: string;
 }[] = [
   {
     key: "small",
     label: "Grassroots",
     caption: "Under $250K assets",
-    hint: "Lean teams, neighborhood reach, every dollar a needle-mover.",
-    glyph: "·",
+    hint: "Small teams close to the work, where modest help can be felt quickly.",
   },
   {
     key: "medium",
     label: "Established",
     caption: "$250K – $1M assets",
-    hint: "Past the founding crunch. Real programs, real proof, room to grow.",
-    glyph: "◇",
+    hint: "Proven programs with room for more people, funding, and attention.",
   },
   {
     key: "large",
     label: "Institutional",
     caption: "$1M+ assets",
-    hint: "Recognizable names, deep playbooks, capacity to move at scale.",
-    glyph: "◈",
+    hint: "Larger organizations with the staff and systems to work at scale.",
   },
 ];
 
@@ -54,14 +50,14 @@ export function ScaleStrip({ data, onCardClick }: ScaleStripProps) {
       <SectionHeader
         title={
           <>
-            Where do you{" "}
+            What size cause{" "}
             <span className="font-medium text-[var(--accent)] italic">
-              show up
+              fits
             </span>{" "}
-            best?
+            you?
           </>
         }
-        subtitle="Different sized nonprofits ask for different kinds of help. Pick the bracket that matches what you can actually give."
+        subtitle="Browse by organization size, from small teams to larger institutions with more resources."
       />
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
@@ -89,21 +85,13 @@ function ScaleColumn({
 }) {
   return (
     <div className="relative flex flex-col gap-4 rounded-[1.5rem] border border-[var(--rule)] bg-white/50 p-5 backdrop-blur md:p-6">
-      <div className="flex items-baseline justify-between">
-        <div>
-          <p className="text-[10px] font-semibold tracking-[0.32em] text-[var(--ink-mute)] uppercase">
-            {column.caption}
-          </p>
-          <h3 className="font-heading mt-1 text-[24px] leading-none font-semibold text-[var(--ink)]">
-            {column.label}
-          </h3>
-        </div>
-        <span
-          className="font-heading text-[2rem] leading-none text-[var(--accent-2)]/40"
-          aria-hidden
-        >
-          {column.glyph}
-        </span>
+      <div>
+        <p className="text-[10px] font-semibold tracking-[0.32em] text-[var(--ink-mute)] uppercase">
+          {column.caption}
+        </p>
+        <h3 className="font-heading mt-1 text-[24px] leading-none font-semibold text-[var(--ink)]">
+          {column.label}
+        </h3>
       </div>
       <p className="text-[12.5px] leading-[1.5] text-[var(--ink-soft)]">
         {column.hint}
