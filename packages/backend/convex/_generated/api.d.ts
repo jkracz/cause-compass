@@ -12,7 +12,6 @@ import type * as aggregates from "../aggregates.js";
 import type * as auth from "../auth.js";
 import type * as batch_actions from "../batch/actions.js";
 import type * as batch_constants from "../batch/constants.js";
-import type * as batch_index from "../batch/index.js";
 import type * as batch_manual from "../batch/manual.js";
 import type * as batch_mutations from "../batch/mutations.js";
 import type * as batch_orchestration from "../batch/orchestration.js";
@@ -46,7 +45,6 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   "batch/actions": typeof batch_actions;
   "batch/constants": typeof batch_constants;
-  "batch/index": typeof batch_index;
   "batch/manual": typeof batch_manual;
   "batch/mutations": typeof batch_mutations;
   "batch/orchestration": typeof batch_orchestration;

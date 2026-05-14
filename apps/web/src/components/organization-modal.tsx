@@ -10,11 +10,13 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Drawer,
   DrawerContent,
+  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
   DrawerClose,
@@ -527,6 +529,9 @@ export function OrganizationModal({
             <DrawerTitle className="text-ink-mute text-[11px] font-semibold tracking-[0.32em] uppercase">
               Organization
             </DrawerTitle>
+            <DrawerDescription className="sr-only">
+              Details about {organization.name}
+            </DrawerDescription>
             <DrawerClose asChild>
               <Button
                 variant="ghost"
@@ -550,6 +555,9 @@ export function OrganizationModal({
         showCloseButton={false}
         className="border-rule bg-card text-ink max-h-[92vh] w-[calc(100vw-2rem)] !max-w-5xl overflow-auto border p-0 shadow-[0_30px_70px_-40px_rgba(91,75,158,0.55)] sm:!max-w-5xl sm:rounded-[32px]"
       >
+        <DialogDescription className="sr-only">
+          Details about {organization.name}
+        </DialogDescription>
         <DialogClose asChild>
           <Button
             variant="ghost"

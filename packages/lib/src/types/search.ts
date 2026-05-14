@@ -206,43 +206,6 @@ export const CrawlItemSchema = z.object({
   aboutLinks: z.array(z.string()).optional(),
 });
 
-// Batch Job Schema
-export const BatchJobSchema = z.object({
-  id: z.string(),
-  status: z.enum([
-    "pending",
-    "generating",
-    "uploading",
-    "processing",
-    "downloading",
-    "completed",
-    "failed",
-  ]),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-  batchSize: z.number(),
-  fileId: z.string().optional(), // OpenAI input file ID
-  batchId: z.string().optional(), // OpenAI batch job ID
-  outputFileId: z.string().optional(), // OpenAI output file ID
-  inputFile: z.string().optional(),
-  outputFile: z.string().optional(),
-  error: z.string().optional(),
-  processedCount: z.number().optional(),
-  totalCount: z.number().optional(),
-  artifactId: z.string().optional(), // GitHub artifact ID if stored
-});
-
-export interface OpenAIResponse {
-  body?: {
-    choices?: Array<{
-      message?: {
-        content?: string;
-      };
-    }>;
-  };
-}
-
-// Export types
 export type SearchResult = z.infer<typeof SearchResultSchema>;
 export type StoredSearchResultItem = z.infer<
   typeof StoredSearchResultItemSchema
@@ -250,4 +213,3 @@ export type StoredSearchResultItem = z.infer<
 export type StoredSearchResults = z.infer<typeof StoredSearchResultsSchema>;
 export type SocialMediaUrls = z.infer<typeof SocialMediaUrlsSchema>;
 export type CrawlItem = z.infer<typeof CrawlItemSchema>;
-export type BatchJob = z.infer<typeof BatchJobSchema>;
