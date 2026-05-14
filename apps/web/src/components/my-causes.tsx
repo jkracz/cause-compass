@@ -6,7 +6,7 @@ import { Heart } from "lucide-react";
 import posthog from "posthog-js";
 
 import { EditorialOrgCard } from "@/components/editorial/editorial-org-card";
-import { OrganizationModal } from "@/components/organization-modal";
+import { DynamicOrganizationModal } from "@/components/dynamic-organization-modal";
 import { PortraitHeader } from "@/components/my-causes/portrait-header";
 import { PortraitBlock } from "@/components/my-causes/portrait-block";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
@@ -95,7 +95,7 @@ export function MyCauses({ likedOrgs }: { likedOrgs: Organization[] }) {
       )}
 
       {selectedOrg && (
-        <OrganizationModal
+        <DynamicOrganizationModal
           organization={selectedOrg}
           isOpen={isModalOpen}
           onClose={handleCloseModal}

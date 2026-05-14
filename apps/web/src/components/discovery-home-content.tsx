@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "motion/react";
 import posthog from "posthog-js";
 import { Compass, Search } from "lucide-react";
 
-import { OrganizationModal } from "@/components/organization-modal";
+import { DynamicOrganizationModal } from "@/components/dynamic-organization-modal";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useWeekKey } from "@/hooks/use-week-key";
 import { api } from "@cause/backend/convex/_generated/api";
@@ -382,7 +382,7 @@ export function DiscoveryHomeContent() {
       </div>
 
       {modalOrganization && (
-        <OrganizationModal
+        <DynamicOrganizationModal
           organization={modalOrganization}
           isOpen={isOrganizationModalOpen}
           onClose={handleCloseModal}

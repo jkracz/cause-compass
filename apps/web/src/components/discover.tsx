@@ -13,7 +13,7 @@ import posthog from "posthog-js";
 import { useMutation, useQuery } from "convex/react";
 
 import { SwipeableCard } from "@/components/swipeable-card";
-import { OrganizationModal } from "@/components/organization-modal";
+import { DynamicOrganizationModal } from "@/components/dynamic-organization-modal";
 import { DiscoverSkeleton } from "@/app/discover/discover-skeleton";
 import { api } from "@cause/backend/convex/_generated/api";
 import { useAppSession } from "@/components/app-session-provider";
@@ -337,7 +337,7 @@ export default function Discover() {
       </main>
 
       {detailsOrg && (
-        <OrganizationModal
+        <DynamicOrganizationModal
           organization={detailsOrg}
           isOpen={Boolean(detailsOrgSlug)}
           onClose={handleCloseDetails}

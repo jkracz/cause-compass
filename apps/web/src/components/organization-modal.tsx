@@ -32,7 +32,7 @@ import { cn } from "@/lib/utils";
 
 type Organization = Doc<"organizations">;
 
-interface OrganizationModalProps {
+export interface OrganizationModalProps {
   organization: Organization;
   isOpen: boolean;
   onClose: () => void;
