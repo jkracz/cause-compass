@@ -40,6 +40,12 @@ type SessionContextValue = {
 
 const SessionContext = createContext<SessionContextValue | null>(null);
 
+function getCurrentUrlWithParam(key: string, value: string) {
+  const url = new URL(window.location.href);
+  url.searchParams.set(key, value);
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
 function AuthLinker() {
   const session = useAppSession();
   const convexAuth = useConvexAuth();
@@ -144,7 +150,11 @@ function AppSessionInner({
   const isAuthenticated = convexAuth.isAuthenticated && Boolean(userId);
 
   const signIn = useCallback(async () => {
-    await authClient.signIn.social({ provider: "google" });
+    await authClient.signIn.social({
+      provider: "google",
+      callbackURL: window.location.href,
+      newUserCallbackURL: getCurrentUrlWithParam("account_created", "google"),
+    });
   }, []);
 
   const signInWithEmail = useCallback(
@@ -170,8 +180,13 @@ function AppSessionInner({
       if (result.error) {
         throw new Error(result.error.message ?? "Unable to create account");
       }
+
+      posthog.capture("account_created", {
+        method: "email_password",
+        guest_id: initialGuestId,
+      });
     },
-    [],
+    [initialGuestId],
   );
 
   const signOut = useCallback(async () => {
@@ -204,6 +219,30 @@ function AppSessionInner({
 
     posthog.identify(initialGuestId);
   }, [initialGuestId, isAuthenticated, user?.email, user?.name, userId]);
+
+  useEffect(() => {
+    if (!isAuthenticated || typeof window === "undefined") {
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    const accountCreatedMethod = url.searchParams.get("account_created");
+    if (accountCreatedMethod !== "google") {
+      return;
+    }
+
+    posthog.capture("account_created", {
+      method: accountCreatedMethod,
+      guest_id: initialGuestId,
+    });
+
+    url.searchParams.delete("account_created");
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `${url.pathname}${url.search}${url.hash}`,
+    );
+  }, [initialGuestId, isAuthenticated]);
 
   const value = useMemo<SessionContextValue>(
     () => ({

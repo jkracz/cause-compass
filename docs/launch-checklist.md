@@ -90,7 +90,7 @@ Success criteria:
 ## 6. Launch-Critical UX and Reliability Fixes
 
 - [ ] Fix full reset flow so "Start Over" clears backend user data.
-- [ ] Ensure onboarding -> discover -> save causes -> revisit flow is stable.
+- [ ] Ensure sign up -> discover/browse -> save causes -> revisit flow is stable.
 - [ ] Add friendly empty states when recommendations are unavailable.
 
 Success criteria:
@@ -101,7 +101,8 @@ Success criteria:
 ## 7. Measurement and Launch Guardrails
 
 - [ ] Track north-star metric:
-  - `organization_website_clicked / onboarding_completed`
+  - `organization_liked / account_created`
+  - `organization_website_clicked / organization_liked`
 - [ ] Add operational metrics:
   - stage backlog by day
   - crawl success rate
@@ -113,7 +114,7 @@ Suggested launch gates:
 
 - [ ] Pipeline running continuously for 7 days.
 - [ ] `ready` inventory above minimum target.
-- [ ] No critical blocker in onboarding/discovery/action flow.
+- [ ] No critical blocker in account/discovery/action flow.
 
 ## 8. Claude Code Skill (Optional Accelerator, Not Primary Pipeline)
 
