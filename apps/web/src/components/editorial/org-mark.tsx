@@ -19,6 +19,13 @@ const SIZE_CLASS: Record<NonNullable<OrgMarkProps["size"]>, string> = {
   xl: "h-40 w-40 rounded-[1.75rem] text-4xl sm:h-48 sm:w-48",
 };
 
+const IMAGE_PADDING_CLASS: Record<NonNullable<OrgMarkProps["size"]>, string> = {
+  sm: "p-1",
+  md: "p-1.5",
+  lg: "p-2",
+  xl: "p-2.5",
+};
+
 const PALETTE = [
   ["#C8266E", "#5B4B9E"],
   ["#5B4B9E", "#1A0F2C"],
@@ -55,6 +62,7 @@ export function OrgMark({
   className,
 }: OrgMarkProps) {
   const sizeClass = SIZE_CLASS[size];
+  const imagePaddingClass = IMAGE_PADDING_CLASS[size];
   const [failedLogoUrl, setFailedLogoUrl] = useState<string | null>(() => {
     if (!logoUrl) return null;
     return FAILED_LOGO_URLS.has(logoUrl) ? logoUrl : null;
@@ -73,7 +81,10 @@ export function OrgMark({
           src={logoUrl}
           alt={name}
           fill
-          className="object-contain p-2 drop-shadow-[0_1px_1px_rgba(26,15,44,0.45)]"
+          className={cn(
+            "object-contain drop-shadow-[0_1px_1px_rgba(26,15,44,0.45)]",
+            imagePaddingClass,
+          )}
           unoptimized
           loading="eager"
           onError={() => {
