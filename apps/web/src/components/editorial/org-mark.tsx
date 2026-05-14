@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface OrgMarkProps {
@@ -25,6 +28,8 @@ const PALETTE = [
   ["#8E6F4F", "#4A3624"],
 ];
 
+const FAILED_LOGO_URLS = new Set<string>();
+
 function hashSlug(slug: string) {
   let h = 0;
   for (let i = 0; i < slug.length; i += 1) {
@@ -50,8 +55,12 @@ export function OrgMark({
   className,
 }: OrgMarkProps) {
   const sizeClass = SIZE_CLASS[size];
+  const [failedLogoUrl, setFailedLogoUrl] = useState<string | null>(() => {
+    if (!logoUrl) return null;
+    return FAILED_LOGO_URLS.has(logoUrl) ? logoUrl : null;
+  });
 
-  if (logoUrl) {
+  if (logoUrl && failedLogoUrl !== logoUrl) {
     return (
       <div
         className={cn(
@@ -67,6 +76,10 @@ export function OrgMark({
           className="object-contain p-2"
           unoptimized
           loading="eager"
+          onError={() => {
+            FAILED_LOGO_URLS.add(logoUrl);
+            setFailedLogoUrl(logoUrl);
+          }}
         />
       </div>
     );

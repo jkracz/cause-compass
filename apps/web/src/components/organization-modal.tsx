@@ -2,7 +2,6 @@
 
 import type React from "react";
 import { ExternalLink, X, Heart, Share2, HandHeart, Users } from "lucide-react";
-import Image from "next/image";
 import posthog from "posthog-js";
 import { useMutation, useQuery } from "convex/react";
 
@@ -23,6 +22,7 @@ import {
 import { toast } from "sonner";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAppSession } from "@/components/app-session-provider";
+import { OrgMark } from "@/components/editorial/org-mark";
 import { api } from "@cause/backend/convex/_generated/api";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
 import { sanitizeTagline } from "@cause/lib";
@@ -321,28 +321,13 @@ export function OrganizationModal({
         )}
 
         <div className="relative z-10 flex h-full items-center justify-center px-6">
-          {organization.logoUrl ? (
-            <div className="border-rule bg-card relative h-40 w-40 overflow-hidden rounded-2xl border shadow-[0_22px_50px_-28px_rgba(91,75,158,0.45)] sm:h-48 sm:w-48">
-              <Image
-                src={organization.logoUrl}
-                alt={organization.name}
-                fill
-                className="object-contain p-3"
-                unoptimized
-              />
-            </div>
-          ) : (
-            <div className="border-rule bg-paper flex h-40 w-40 items-center justify-center rounded-2xl border shadow-[0_22px_50px_-28px_rgba(91,75,158,0.45)] sm:h-48 sm:w-48">
-              <span className="font-heading text-ink text-5xl font-semibold">
-                {organization.name
-                  .split(" ")
-                  .map((w) => w[0])
-                  .join("")
-                  .slice(0, 3)
-                  .toUpperCase()}
-              </span>
-            </div>
-          )}
+          <OrgMark
+            name={organization.name}
+            logoUrl={organization.logoUrl}
+            slug={organization.slug}
+            size="xl"
+            className="border-rule bg-card shadow-[0_22px_50px_-28px_rgba(91,75,158,0.45)]"
+          />
         </div>
 
         <div className="text-ink-mute absolute right-6 bottom-5 text-right text-[11px] font-semibold tracking-[0.32em] uppercase sm:right-8">
