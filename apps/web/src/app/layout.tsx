@@ -52,20 +52,11 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
-    images: [
-      {
-        url: "/ocean-conservation-awareness.png",
-        width: 1024,
-        height: 526,
-        alt: "Volunteers working together on a conservation cause",
-      },
-    ],
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
-    images: ["/ocean-conservation-awareness.png"],
   },
   icons: {
     icon: "/favicon.ico",
