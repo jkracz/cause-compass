@@ -338,9 +338,10 @@ export const getByGeographicFocus = query({
   },
 });
 
-// ─── Editorial: Cause of the Week ───────────────────────────────────────────
+// ─── Editorial: Featured Causes ─────────────────────────────────────────────
 
 const EDITORIAL_POOL_SIZE = 200;
+const FEATURED_CAUSES_COUNT = 5;
 
 function passesEditorialQualityGate(org: Doc<"organizations">) {
   return Boolean(org.logoUrl?.trim() && org.tagline?.trim());
@@ -374,7 +375,7 @@ async function takeReadyEditorialPool(
     .take(EDITORIAL_POOL_SIZE);
 }
 
-export const getCauseOfTheWeek = query({
+export const getFeaturedCauses = query({
   args: { weekKey: v.string() },
   handler: async (ctx, { weekKey }) => {
     const pool = await takeReadyEditorialPool(ctx, {});
@@ -384,10 +385,10 @@ export const getCauseOfTheWeek = query({
     const qualityCandidates = pool.filter(passesEditorialQualityGate);
     const candidates = qualityCandidates.length > 0 ? qualityCandidates : pool;
     if (candidates.length === 0) {
-      return null;
+      return [];
     }
 
-    const seed = `cause-of-the-week:${weekKey}`;
+    const seed = `featured-causes:${weekKey}`;
     const sorted = [...candidates].sort((left, right) => {
       const rightScore = getSeededVariantScore(seed, right.slug);
       const leftScore = getSeededVariantScore(seed, left.slug);
@@ -395,7 +396,7 @@ export const getCauseOfTheWeek = query({
       return left.name.localeCompare(right.name);
     });
 
-    return sorted[0] ?? null;
+    return sorted.slice(0, FEATURED_CAUSES_COUNT);
   },
 });
 

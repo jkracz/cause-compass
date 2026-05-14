@@ -13,9 +13,9 @@ import { useWeekKey } from "@/hooks/use-week-key";
 import { api } from "@cause/backend/convex/_generated/api";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
 import {
-  CauseOfTheWeek,
-  CauseOfTheWeekSkeleton,
-} from "@/components/editorial/cause-of-the-week";
+  FeaturedCauses,
+  FeaturedCausesSkeleton,
+} from "@/components/editorial/featured-causes";
 import { EditorialSearch } from "@/components/editorial/editorial-search";
 import { CategoryMosaic } from "@/components/editorial/category-mosaic";
 import {
@@ -76,8 +76,8 @@ export function DiscoveryHomeContent() {
 
   const weekKey = useWeekKey();
 
-  // Cause of the Week
-  const causeOfTheWeek = useQuery(api.organizations.getCauseOfTheWeek, {
+  // Featured Causes
+  const featuredCauses = useQuery(api.organizations.getFeaturedCauses, {
     weekKey,
   });
   const scaleData = useQuery(api.organizations.getOrganizationsByScale, {
@@ -223,15 +223,15 @@ export function DiscoveryHomeContent() {
       </div>
 
       <div className="mx-auto max-w-6xl px-4 pt-10 pb-20 md:px-8 md:pt-14">
-        {/* Hero: Cause of the Week */}
+        {/* Hero: Featured Causes */}
         <div className="editorial-fade-up">
-          {causeOfTheWeek === undefined && <CauseOfTheWeekSkeleton />}
-          {causeOfTheWeek === null && (
-            <EmptyEditorialState message="No featured organization available this week." />
+          {featuredCauses === undefined && <FeaturedCausesSkeleton />}
+          {featuredCauses && featuredCauses.length === 0 && (
+            <EmptyEditorialState message="No featured organizations available this week." />
           )}
-          {causeOfTheWeek && (
-            <CauseOfTheWeek
-              organization={causeOfTheWeek}
+          {featuredCauses && featuredCauses.length > 0 && (
+            <FeaturedCauses
+              organizations={featuredCauses}
               onLearnMore={handleCardClick}
             />
           )}
@@ -365,7 +365,7 @@ export function DiscoveryHomeContent() {
               </div>
 
               {/* Empty state */}
-              {causeOfTheWeek === null &&
+              {featuredCauses?.length === 0 &&
                 reachCarousels.every(
                   (r) => !r.isLoading && r.organizations.length === 0,
                 ) && (
