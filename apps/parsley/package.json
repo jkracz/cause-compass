@@ -8,7 +8,9 @@
     "typecheck": "tsc --noEmit",
     "create-profiles-convex": "tsx src/scripts/createOrgsByStateConvex.ts",
     "transform-to-convex": "tsx src/scripts/transformToConvex.ts",
-    "local-ai-confirm": "tsx src/scripts/localAiConfirm.ts"
+    "local-ai-confirm": "tsx src/scripts/localAiConfirm.ts",
+    "claude-ai-confirm": "tsx src/scripts/claudeAiConfirm.ts",
+    "codex-ai-confirm": "tsx src/scripts/codexAiConfirm.ts"
   },
   "repository": {
     "type": "git",
@@ -21,8 +23,10 @@
   },
   "homepage": "https://github.com/CauseCompass/np-data-parser#readme",
   "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.141",
     "@cause/backend": "workspace:*",
     "@cause/lib": "workspace:*",
+    "@openai/codex-sdk": "^0.130.0",
     "convex": "^1.38.0",
     "csv-parse": "^6.2.1",
     "dotenv": "^17.4.2",

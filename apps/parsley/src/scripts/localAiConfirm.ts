@@ -3,43 +3,25 @@ import ollama from "ollama";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { ConvexHttpClient } from "convex/browser";
-import { anyApi, type FunctionReference } from "convex/server";
 import { toJSONSchema } from "zod";
 import {
   WebsiteConfirmationSchema,
   buildWebsiteConfirmationMessages,
   type WebsiteConfirmation,
 } from "@cause/lib";
-import type { Id } from "@cause/backend/convex/_generated/dataModel";
+import {
+  commitResultRef,
+  listCandidatesRef,
+  markUnverifiableRef,
+  type LocalAiCandidate,
+  type LocalAiCandidatePage,
+} from "@/utils/aiConfirmation";
 import { logger } from "@/utils/logger";
 
 const DEFAULT_MODEL = "qwen3.6:35b-a3b-coding-nvfp4";
 const DEFAULT_LIMIT = 1000;
 const DEFAULT_TIMEOUT_MS = 120_000;
 const PAGE_SIZE = 25;
-const listCandidatesRef = anyApi.localAiValidation!
-  .listCandidates as FunctionReference<"query">;
-const commitResultRef = anyApi.localAiValidation!
-  .commitResult as FunctionReference<"mutation">;
-const markUnverifiableRef = anyApi.localAiValidation!
-  .markUnverifiable as FunctionReference<"mutation">;
-
-type LocalAiCandidate = {
-  _id: Id<"organizations">;
-  ein: string;
-  name: string;
-  street: string;
-  city: string;
-  state: string;
-  nteeCode: string | undefined;
-  crawlData: Array<{ url: string; title: string; textContent: string }>;
-};
-
-type LocalAiCandidatePage = {
-  page: LocalAiCandidate[];
-  isDone: boolean;
-  continueCursor: string;
-};
 
 /**
  * Applies a soft per-request timeout around the Ollama SDK call while allowing

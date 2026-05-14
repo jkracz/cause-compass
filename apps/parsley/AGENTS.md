@@ -13,7 +13,7 @@ pnpm lint
 
 ## Key Areas
 
-- `src/scripts/` - entry points such as `createOrgsByStateConvex.ts` and `transformToConvex.ts`
+- `src/scripts/` - entry points such as `createOrgsByStateConvex.ts`, `transformToConvex.ts`, `localAiConfirm.ts` (Ollama runner), `claudeAiConfirm.ts` (Claude Agent SDK runner), and `codexAiConfirm.ts` (Codex SDK runner)
 - `src/services/` - parsing services such as `parseEoFile.ts`
 - `src/utils/` - Convex helpers, text parsing, file writing, logging, and ID generation
 - `src/data/dataDictionaries/` - IRS reference data including NTEE and activity code dictionaries
