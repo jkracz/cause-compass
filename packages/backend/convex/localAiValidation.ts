@@ -138,7 +138,11 @@ export const markUnverifiable = mutation({
 
 /**
  * Persists one validated local AI result, records provenance, and advances the
- * organization to `ready` or `local_ai_reviewed`.
+ * organization. Confirmed-website results always advance to `ready`. Negative
+ * or partial results advance to the caller-supplied `fallbackStage`: the
+ * Ollama runner uses `local_ai_reviewed` (so OpenAI batch can retry), while
+ * trusted frontier-model runners (e.g. Claude) pass `ai_confirmed` to bypass
+ * further review.
  */
 export const commitResult = mutation({
   args: {
@@ -146,8 +150,14 @@ export const commitResult = mutation({
     orgId: v.id("organizations"),
     model: v.string(),
     result: localAiResultValidator,
+    fallbackStage: v.optional(
+      v.union(v.literal("ai_confirmed"), v.literal("local_ai_reviewed")),
+    ),
   },
-  handler: async (ctx, { operatorToken, orgId, model, result }) => {
+  handler: async (
+    ctx,
+    { operatorToken, orgId, model, result, fallbackStage },
+  ) => {
     requireLocalAiToken(operatorToken);
 
     const org = await ctx.db.get(orgId);
@@ -173,7 +183,7 @@ export const commitResult = mutation({
     const application = buildAiConfirmationApplication({
       confirmation: parseResult.data,
       crawlResults,
-      fallbackStage: "local_ai_reviewed",
+      fallbackStage: fallbackStage ?? "local_ai_reviewed",
     });
 
     await ctx.db.insert("aiConfirmations", {
