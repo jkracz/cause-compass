@@ -282,6 +282,9 @@ function transformDocument(doc: TaxExemptOrganization): TransformResult {
           activityTags: hasConfirmedWebsite
             ? (parsed.organizationActivities ?? undefined)
             : undefined,
+          keywords: hasConfirmedWebsite
+            ? (parsed.organizationKeywords ?? undefined)
+            : undefined,
           reasoning: parsed.reasoning ?? undefined,
         },
       };
