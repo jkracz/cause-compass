@@ -341,12 +341,7 @@ export const getByGeographicFocus = query({
 const EDITORIAL_POOL_SIZE = 200;
 
 function passesEditorialQualityGate(org: Doc<"organizations">) {
-  return Boolean(
-    org.logoUrl?.trim() &&
-    org.tagline?.trim() &&
-    org.keywords &&
-    org.keywords.length > 0,
-  );
+  return Boolean(org.logoUrl?.trim() && org.tagline?.trim());
 }
 
 async function takeReadyEditorialPool(
