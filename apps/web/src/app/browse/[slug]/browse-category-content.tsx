@@ -3,12 +3,20 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePaginatedQuery } from "convex/react";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, ChevronDown, Loader2 } from "lucide-react";
 import { api } from "@cause/backend/convex/_generated/api";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
-import type { BrowseCategory } from "@/lib/browse-categories";
+import type { BrowseCategory, GeographicFocus } from "@/lib/browse-categories";
 import { EditorialOrgCard } from "@/components/editorial/editorial-org-card";
 import { OrganizationModal } from "@/components/organization-modal";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 type Organization = Doc<"organizations">;
@@ -67,7 +75,7 @@ const US_STATES: { code: string; label: string }[] = [
   { code: "WY", label: "Wyoming" },
 ];
 
-const GEO_CHIPS: ("Local" | "Regional" | "National" | "Global")[] = [
+const REACH_FILTERS: GeographicFocus[] = [
   "Local",
   "Regional",
   "National",
@@ -81,31 +89,21 @@ interface BrowseCategoryContentProps {
 export function BrowseCategoryContent({
   category,
 }: BrowseCategoryContentProps) {
-  const [stateFilter, setStateFilter] = useState<string>("");
-  const [hasLogoFilter, setHasLogoFilter] = useState<boolean>(false);
-  const [geoFilter, setGeoFilter] = useState<
-    "Local" | "Regional" | "National" | "Global" | null
-  >(null);
+  const [stateFilters, setStateFilters] = useState<string[]>([]);
+  const [reachFilters, setReachFilters] = useState<GeographicFocus[]>([]);
 
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const queryArgs = useMemo(() => {
-    if (category.kind === "ntee") {
-      return {
-        kind: "ntee" as const,
-        nteeMajor: category.nteeMajor,
-        state: stateFilter || undefined,
-        hasLogo: hasLogoFilter || undefined,
-      };
-    }
     return {
-      kind: "geo" as const,
-      geographicFocus: geoFilter ?? category.geographicFocus,
-      state: stateFilter || undefined,
-      hasLogo: hasLogoFilter || undefined,
+      kind: "ntee" as const,
+      nteeMajors: category.nteeMajors,
+      geographicFocuses:
+        reachFilters.length > 0 ? reachFilters : undefined,
+      states: stateFilters.length > 0 ? stateFilters : undefined,
     };
-  }, [category, stateFilter, hasLogoFilter, geoFilter]);
+  }, [category, reachFilters, stateFilters]);
 
   const { results, status, loadMore } = usePaginatedQuery(
     api.organizations.listByCategoryPaginated,
@@ -141,6 +139,37 @@ export function BrowseCategoryContent({
     setSelectedOrg(null);
   };
 
+  const toggleReachFilter = (reach: GeographicFocus) => {
+    setReachFilters((current) =>
+      current.includes(reach)
+        ? current.filter((value) => value !== reach)
+        : [...current, reach],
+    );
+  };
+
+  const toggleStateFilter = (state: string) => {
+    setStateFilters((current) =>
+      current.includes(state)
+        ? current.filter((value) => value !== state)
+        : [...current, state],
+    );
+  };
+
+  const reachLabel =
+    reachFilters.length === 0
+      ? "Any"
+      : reachFilters.length === 1
+        ? reachFilters[0]
+        : `${reachFilters.length} selected`;
+
+  const stateLabel =
+    stateFilters.length === 0
+      ? "Any"
+      : stateFilters.length === 1
+        ? (US_STATES.find((state) => state.code === stateFilters[0])?.code ??
+          stateFilters[0])
+        : `${stateFilters.length} selected`;
+
   return (
     <>
       {/* Hero band */}
@@ -165,13 +194,6 @@ export function BrowseCategoryContent({
           </Link>
           <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl space-y-3">
-              <span
-                className="font-heading text-[5rem] leading-none"
-                style={{ color: category.accent }}
-                aria-hidden
-              >
-                {category.glyph}
-              </span>
               <h1 className="font-heading text-[clamp(2.4rem,5vw,4rem)] leading-[1] font-semibold text-[var(--ink)]">
                 {category.label}
               </h1>
@@ -186,71 +208,92 @@ export function BrowseCategoryContent({
       <div className="mx-auto max-w-6xl px-4 py-8 md:px-8">
         {/* Filter row */}
         <div className="mb-8 flex flex-wrap items-center gap-3 rounded-2xl border border-[var(--rule)] bg-white/70 p-3 backdrop-blur">
-          {category.kind === "geo" && (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="px-2 text-[10px] font-semibold tracking-[0.22em] text-[var(--ink-mute)] uppercase">
-                Reach
-              </span>
-              {GEO_CHIPS.map((chip) => {
-                const isActive =
-                  (geoFilter ?? category.geographicFocus) === chip;
-                return (
-                  <button
-                    key={chip}
-                    type="button"
-                    onClick={() => setGeoFilter(chip)}
-                    className={cn(
-                      "rounded-full border px-3 py-1 text-[12px] font-medium transition",
-                      isActive
-                        ? "border-[var(--accent)]/40 bg-[var(--accent-soft)] text-[var(--accent)]"
-                        : "border-[var(--rule)] bg-white text-[var(--ink-soft)] hover:border-[var(--accent)]/40",
-                    )}
-                  >
-                    {chip}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          <label className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold tracking-[0.22em] text-[var(--ink-mute)] uppercase">
-              State
-            </span>
-            <select
-              value={stateFilter}
-              onChange={(e) => setStateFilter(e.target.value)}
-              className="rounded-full border border-[var(--rule)] bg-white px-3 py-1.5 text-[12px] font-medium text-[var(--ink-soft)] focus:border-[var(--accent)]/50 focus:outline-none"
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className={cn(
+                  "inline-flex h-8 items-center gap-2 rounded-full border px-3 text-[12px] font-medium transition focus-visible:border-[var(--accent)]/50 focus-visible:ring-2 focus-visible:ring-[var(--accent)]/15 focus-visible:outline-none",
+                  reachFilters.length > 0
+                    ? "border-[var(--accent)]/40 bg-[var(--accent-soft)] text-[var(--accent)]"
+                    : "border-[var(--rule)] bg-white text-[var(--ink-soft)] hover:border-[var(--accent)]/40",
+                )}
+              >
+                <span className="text-[10px] font-semibold tracking-[0.18em] uppercase">
+                  Reach
+                </span>
+                <span>{reachLabel}</span>
+                <ChevronDown className="h-3.5 w-3.5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              className="w-44 border-[var(--rule)] bg-white text-[var(--ink-soft)]"
             >
-              <option value="">All states</option>
-              {US_STATES.map((s) => (
-                <option key={s.code} value={s.code}>
-                  {s.label}
-                </option>
+              <DropdownMenuLabel className="text-[10px] font-semibold tracking-[0.18em] text-[var(--ink-mute)] uppercase">
+                Reach
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-[var(--rule)]" />
+              {REACH_FILTERS.map((reach) => (
+                <DropdownMenuCheckboxItem
+                  key={reach}
+                  checked={reachFilters.includes(reach)}
+                  onCheckedChange={() => toggleReachFilter(reach)}
+                  onSelect={(event) => event.preventDefault()}
+                  className="text-[13px]"
+                >
+                  {reach}
+                </DropdownMenuCheckboxItem>
               ))}
-            </select>
-          </label>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-          <button
-            type="button"
-            onClick={() => setHasLogoFilter((prev) => !prev)}
-            className={cn(
-              "rounded-full border px-3 py-1.5 text-[12px] font-medium transition",
-              hasLogoFilter
-                ? "border-[var(--accent)]/40 bg-[var(--accent-soft)] text-[var(--accent)]"
-                : "border-[var(--rule)] bg-white text-[var(--ink-soft)] hover:border-[var(--accent)]/40",
-            )}
-          >
-            {hasLogoFilter ? "✓ With logos only" : "Show all"}
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className={cn(
+                  "inline-flex h-8 items-center gap-2 rounded-full border px-3 text-[12px] font-medium transition focus-visible:border-[var(--accent)]/50 focus-visible:ring-2 focus-visible:ring-[var(--accent)]/15 focus-visible:outline-none",
+                  stateFilters.length > 0
+                    ? "border-[var(--accent)]/40 bg-[var(--accent-soft)] text-[var(--accent)]"
+                    : "border-[var(--rule)] bg-white text-[var(--ink-soft)] hover:border-[var(--accent)]/40",
+                )}
+              >
+                <span className="text-[10px] font-semibold tracking-[0.18em] uppercase">
+                  HQ State
+                </span>
+                <span>{stateLabel}</span>
+                <ChevronDown className="h-3.5 w-3.5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              className="max-h-80 w-60 overflow-y-auto border-[var(--rule)] bg-white text-[var(--ink-soft)]"
+            >
+              <DropdownMenuLabel className="text-[10px] font-semibold tracking-[0.18em] text-[var(--ink-mute)] uppercase">
+                HQ State
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-[var(--rule)]" />
+              {US_STATES.map((state) => (
+                <DropdownMenuCheckboxItem
+                  key={state.code}
+                  checked={stateFilters.includes(state.code)}
+                  onCheckedChange={() => toggleStateFilter(state.code)}
+                  onSelect={(event) => event.preventDefault()}
+                  className="text-[13px]"
+                >
+                  {state.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-          {(stateFilter || hasLogoFilter || geoFilter) && (
+          {(reachFilters.length > 0 || stateFilters.length > 0) && (
             <button
               type="button"
               onClick={() => {
-                setStateFilter("");
-                setHasLogoFilter(false);
-                setGeoFilter(null);
+                setReachFilters([]);
+                setStateFilters([]);
               }}
               className="ml-auto text-[11px] font-semibold tracking-[0.18em] text-[var(--ink-mute)] uppercase underline-offset-4 hover:text-[var(--accent)] hover:underline"
             >
@@ -277,8 +320,7 @@ export function BrowseCategoryContent({
               No nonprofits matched these filters.
             </p>
             <p className="mt-2 text-[14px] text-[var(--ink-soft)]">
-              Try widening the state or clearing the &quot;with logos only&quot;
-              toggle.
+              Try widening the reach or HQ state.
             </p>
           </div>
         )}
