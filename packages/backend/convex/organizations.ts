@@ -10,6 +10,7 @@ import {
 } from "./lib/recommendations";
 
 type GeographicFocus = "Global" | "National" | "Regional" | "Local";
+type NteeMajorFilter = string | null;
 const ORGANIZATION_COLLECTION_POOL_SIZE = 60;
 const geographicFocusValidator = v.union(
   v.literal("Global"),
@@ -17,6 +18,7 @@ const geographicFocusValidator = v.union(
   v.literal("Regional"),
   v.literal("Local"),
 );
+const nteeMajorFilterValidator = v.union(v.string(), v.null());
 
 type OrganizationCollectionFilters = {
   nteeMajors?: string[];
@@ -459,39 +461,130 @@ export const listByCategoryPaginated = query({
     paginationOpts: paginationOptsValidator,
     kind: v.union(v.literal("ntee"), v.literal("geo")),
     nteeMajor: v.optional(v.string()),
+    nteeMajors: v.optional(v.array(nteeMajorFilterValidator)),
     geographicFocus: v.optional(geographicFocusValidator),
+    geographicFocuses: v.optional(v.array(geographicFocusValidator)),
     state: v.optional(v.string()),
-    hasLogo: v.optional(v.boolean()),
+    states: v.optional(v.array(v.string())),
   },
   handler: async (
     ctx,
-    { paginationOpts, kind, nteeMajor, geographicFocus, state, hasLogo },
+    {
+      paginationOpts,
+      kind,
+      nteeMajor,
+      nteeMajors,
+      geographicFocus,
+      geographicFocuses,
+      state,
+      states,
+    },
   ) => {
+    const geographicFocusFilters =
+      geographicFocuses && geographicFocuses.length > 0
+        ? geographicFocuses
+        : geographicFocus
+          ? [geographicFocus]
+          : [];
+    const stateFilters =
+      states && states.length > 0 ? states : state ? [state] : [];
+
     if (kind === "ntee") {
-      if (!nteeMajor) {
-        throw new Error("nteeMajor is required when kind is 'ntee'");
+      const majorFilters: NteeMajorFilter[] =
+        nteeMajors && nteeMajors.length > 0
+          ? nteeMajors
+          : nteeMajor
+            ? [nteeMajor]
+            : [];
+
+      if (majorFilters.length === 0) {
+        throw new Error("nteeMajors is required when kind is 'ntee'");
+      }
+
+      const onlyMajor = majorFilters[0];
+      if (majorFilters.length === 1 && typeof onlyMajor === "string") {
+        const indexed = ctx.db
+          .query("organizations")
+          .withIndex("by_enrichmentStage_and_nteeMajor_and_name", (qb) =>
+            qb.eq("enrichmentStage", "ready").eq("nteeMajor", onlyMajor),
+          );
+
+        if (geographicFocusFilters.length === 0 && stateFilters.length === 0) {
+          return await indexed.paginate(paginationOpts);
+        }
+
+        return await indexed
+          .filter((qb) => {
+            const conditions = [];
+            if (geographicFocusFilters.length > 0) {
+              const geographicFocusConditions = geographicFocusFilters.map(
+                (focus) => qb.eq(qb.field("geographicFocus"), focus),
+              );
+              conditions.push(
+                geographicFocusConditions.length === 1
+                  ? geographicFocusConditions[0]!
+                  : qb.or(...geographicFocusConditions),
+              );
+            }
+            if (stateFilters.length > 0) {
+              const stateConditions = stateFilters.map((stateFilter) =>
+                qb.eq(qb.field("state"), stateFilter),
+              );
+              conditions.push(
+                stateConditions.length === 1
+                  ? stateConditions[0]!
+                  : qb.or(...stateConditions),
+              );
+            }
+
+            return conditions.length === 1
+              ? conditions[0]!
+              : qb.and(...conditions);
+          })
+          .paginate(paginationOpts);
       }
 
       const indexed = ctx.db
         .query("organizations")
-        .withIndex("by_enrichmentStage_and_nteeMajor_and_name", (qb) =>
-          qb.eq("enrichmentStage", "ready").eq("nteeMajor", nteeMajor),
+        .withIndex("by_enrichmentStage", (qb) =>
+          qb.eq("enrichmentStage", "ready"),
         );
-
-      if (!state && !hasLogo) {
-        return await indexed.paginate(paginationOpts);
-      }
 
       return await indexed
         .filter((qb) => {
-          if (state && hasLogo) {
-            return qb.and(
-              qb.eq(qb.field("state"), state),
-              qb.neq(qb.field("logoUrl"), undefined),
+          const nteeConditions = majorFilters.map((major) =>
+            qb.eq(qb.field("nteeMajor"), major ?? undefined),
+          );
+          const nteeCondition =
+            nteeConditions.length === 1
+              ? nteeConditions[0]!
+              : qb.or(...nteeConditions);
+          const conditions = [nteeCondition];
+
+          if (geographicFocusFilters.length > 0) {
+            const geographicFocusConditions = geographicFocusFilters.map(
+              (focus) => qb.eq(qb.field("geographicFocus"), focus),
+            );
+            conditions.push(
+              geographicFocusConditions.length === 1
+                ? geographicFocusConditions[0]!
+                : qb.or(...geographicFocusConditions),
             );
           }
-          if (state) return qb.eq(qb.field("state"), state);
-          return qb.neq(qb.field("logoUrl"), undefined);
+          if (stateFilters.length > 0) {
+            const stateConditions = stateFilters.map((stateFilter) =>
+              qb.eq(qb.field("state"), stateFilter),
+            );
+            conditions.push(
+              stateConditions.length === 1
+                ? stateConditions[0]!
+                : qb.or(...stateConditions),
+            );
+          }
+
+          return conditions.length === 1
+            ? conditions[0]!
+            : qb.and(...conditions);
         })
         .paginate(paginationOpts);
     }
@@ -508,20 +601,18 @@ export const listByCategoryPaginated = query({
           .eq("geographicFocus", geographicFocus),
       );
 
-    if (!state && !hasLogo) {
+    if (stateFilters.length === 0) {
       return await indexed.paginate(paginationOpts);
     }
 
     return await indexed
       .filter((qb) => {
-        if (state && hasLogo) {
-          return qb.and(
-            qb.eq(qb.field("state"), state),
-            qb.neq(qb.field("logoUrl"), undefined),
-          );
-        }
-        if (state) return qb.eq(qb.field("state"), state);
-        return qb.neq(qb.field("logoUrl"), undefined);
+        const stateConditions = stateFilters.map((stateFilter) =>
+          qb.eq(qb.field("state"), stateFilter),
+        );
+        return stateConditions.length === 1
+          ? stateConditions[0]!
+          : qb.or(...stateConditions);
       })
       .paginate(paginationOpts);
   },

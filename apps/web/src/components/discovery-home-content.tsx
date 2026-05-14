@@ -10,7 +10,6 @@ import { Compass, Search } from "lucide-react";
 import { OrganizationModal } from "@/components/organization-modal";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useWeekKey } from "@/hooks/use-week-key";
-import { CATEGORY_ROW_TITLES } from "@/lib/ntee-labels";
 import { api } from "@cause/backend/convex/_generated/api";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
 import {
@@ -28,48 +27,28 @@ import { EditorialOrgCard } from "@/components/editorial/editorial-org-card";
 import { SectionHeader } from "@/components/editorial/section-header";
 
 type Organization = Doc<"organizations">;
-const HOMEPAGE_CAROUSELS = [
+
+type GeographicFocus = "Global" | "National" | "Regional" | "Local";
+
+const REACH_CAROUSELS = [
   {
-    key: "artsAndCulture",
-    title: CATEGORY_ROW_TITLES.artsAndCulture,
+    key: "communityRooted",
+    title: "Community-rooted work",
+    subtitle: "Organizations focused close to the communities they serve.",
+    filters: { geographicFocuses: ["Local", "Regional"] },
+  },
+  {
+    key: "workingAcrossBorders",
+    title: "Working across borders",
     subtitle:
-      "Museums, theaters, archives, and the makers keeping culture alive.",
-    filters: { nteeMajors: ["A"] },
-    browseHref: "/browse/arts-culture",
-    position: "upper" as const,
-  },
-  {
-    key: "education",
-    title: CATEGORY_ROW_TITLES.education,
-    subtitle: "Classrooms, scholarships, and after-school programs.",
-    filters: { nteeMajors: ["B"] },
-    browseHref: "/browse/education",
-    position: "upper" as const,
-  },
-  {
-    key: "healthAndWellness",
-    title: CATEGORY_ROW_TITLES.healthAndWellness,
-    subtitle: "Clinics, patient services, and community health workers.",
-    filters: { nteeMajors: ["E", "F"] },
-    browseHref: "/browse/health-care",
-    position: "lower" as const,
-  },
-  {
-    key: "environmentAndAnimals",
-    title: CATEGORY_ROW_TITLES.environmentAndAnimals,
-    subtitle:
-      "Conservation, wildlife, climate, and stewards of the land we share.",
-    filters: { nteeMajors: ["C", "D"] },
-    browseHref: "/browse/environment",
-    position: "lower" as const,
+      "Organizations serving communities and causes beyond one country.",
+    filters: { geographicFocuses: ["Global"] },
   },
 ] satisfies {
   key: string;
   title: string;
   subtitle: string;
-  filters: { nteeMajors: string[] };
-  browseHref: string;
-  position: "upper" | "lower";
+  filters: { geographicFocuses: GeographicFocus[] };
 }[];
 
 function createSessionSeed() {
@@ -105,11 +84,11 @@ export function DiscoveryHomeContent() {
     weekKey,
   });
 
-  // Carousels
+  // Reach carousels
   const collectionQueries = useMemo(
     () =>
       Object.fromEntries(
-        HOMEPAGE_CAROUSELS.map((row) => [
+        REACH_CAROUSELS.map((row) => [
           row.key,
           {
             query: api.organizations.getOrganizationCollection,
@@ -212,18 +191,14 @@ export function DiscoveryHomeContent() {
     }
   };
 
-  const upperCarousels = HOMEPAGE_CAROUSELS.filter(
-    (row) => row.position === "upper",
-  ).map((row) => ({
-    ...row,
-    organizations: (rowResults[row.key] as Organization[] | undefined) ?? [],
-  }));
-  const lowerCarousels = HOMEPAGE_CAROUSELS.filter(
-    (row) => row.position === "lower",
-  ).map((row) => ({
-    ...row,
-    organizations: (rowResults[row.key] as Organization[] | undefined) ?? [],
-  }));
+  const reachCarousels = REACH_CAROUSELS.map((row) => {
+    const result = rowResults[row.key] as Organization[] | undefined;
+    return {
+      ...row,
+      organizations: result ?? [],
+      isLoading: result === undefined,
+    };
+  });
   const activeSharedOrgSlug =
     sharedOrgSlug && sharedOrgSlug !== closedSharedOrgSlug
       ? sharedOrgSlug
@@ -356,30 +331,31 @@ export function DiscoveryHomeContent() {
               transition={{ duration: 0.25 }}
               className="mt-10 space-y-20"
             >
-              {/* Browse tiles — second affordance inside the search module above. */}
+              {/* Browse by cause — the full taxonomy. */}
               <div className="editorial-fade-up">
                 <CategoryMosaic />
               </div>
 
-              {/* Upper carousels */}
-              {upperCarousels.map((row) => (
-                <div key={row.key} className="editorial-fade-up">
-                  {row.organizations.length === 0 ? (
+              {/* Reach carousels — discovery lenses by geographic scope. */}
+              {reachCarousels.map((row) =>
+                row.isLoading ? (
+                  <div key={row.key} className="editorial-fade-up">
                     <CarouselSkeleton title={row.title} />
-                  ) : (
+                  </div>
+                ) : row.organizations.length === 0 ? null : (
+                  <div key={row.key} className="editorial-fade-up">
                     <EditorialCarousel
                       title={row.title}
                       subtitle={row.subtitle}
                       organizations={row.organizations}
                       onCardClick={handleCardClick}
-                      browseHref={row.browseHref}
                       rowKey={row.key}
                     />
-                  )}
-                </div>
-              ))}
+                  </div>
+                ),
+              )}
 
-              {/* Find Your Scale */}
+              {/* Browse by scale — the dedicated asset-size module. */}
               <div className="editorial-fade-up">
                 {scaleData === undefined ? (
                   <ScaleStripSkeleton />
@@ -388,27 +364,11 @@ export function DiscoveryHomeContent() {
                 )}
               </div>
 
-              {/* Lower carousels */}
-              {lowerCarousels.map((row) => (
-                <div key={row.key} className="editorial-fade-up">
-                  {row.organizations.length === 0 ? (
-                    <CarouselSkeleton title={row.title} />
-                  ) : (
-                    <EditorialCarousel
-                      title={row.title}
-                      subtitle={row.subtitle}
-                      organizations={row.organizations}
-                      onCardClick={handleCardClick}
-                      browseHref={row.browseHref}
-                      rowKey={row.key}
-                    />
-                  )}
-                </div>
-              ))}
-
               {/* Empty state */}
               {causeOfTheWeek === null &&
-                upperCarousels.every((r) => r.organizations.length === 0) && (
+                reachCarousels.every(
+                  (r) => !r.isLoading && r.organizations.length === 0,
+                ) && (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
                     <Compass className="mb-4 h-12 w-12 text-[var(--ink-mute)]" />
                     <p className="text-[var(--ink-soft)]">
