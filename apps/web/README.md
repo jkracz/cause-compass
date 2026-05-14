@@ -61,25 +61,14 @@ This project uses a **type-first approach** with Zod v4 for validation and Mongo
 1. **Define Zod Schema** (Single source of truth):
 
 ```typescript
-// src/lib/schemas/user.ts
-export const UserPreferencesSchema = z.object({
-  openEnded: OpenEndedQuestionSchema.optional(),
-  causes: z.array(z.string()).optional(),
-  helpMethod: z.array(z.string()).optional(),
-  changeScope: z.string().optional(),
-  location: z.string().optional(),
-});
-
 export const UserSchema = z.object({
   userId: z.string(),
-  preferences: UserPreferencesSchema,
   likedOrganizations: z.array(z.string()),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
 
 // Generate TypeScript types
-export type UserPreferences = z.infer<typeof UserPreferencesSchema>;
 export type User = z.infer<typeof UserSchema>;
 ```
 
@@ -90,16 +79,6 @@ export type User = z.infer<typeof UserSchema>;
 const UserSchema = new Schema<IUser>(
   {
     userId: { type: String, required: true, unique: true, index: true },
-    preferences: {
-      openEnded: {
-        question: { type: String, required: true },
-        answer: { type: String, required: false },
-      },
-      causes: [{ type: String }],
-      helpMethod: [{ type: String }],
-      changeScope: { type: String },
-      location: { type: String },
-    },
     likedOrganizations: [{ type: String }],
   },
   {
@@ -113,14 +92,14 @@ const UserSchema = new Schema<IUser>(
 
 ```typescript
 // src/server/db/user/mutations.ts
-export async function saveUserPreferences(
+export async function saveLikedOrganization(
   userId: string,
-  preferences: UserPreferences, // Zod-inferred type
+  organizationId: string,
 ): Promise<IUser> {
   // Type-safe database operation
   return await UserModel.findOneAndUpdate(
     { userId },
-    { userId, preferences },
+    { userId, $addToSet: { likedOrganizations: organizationId } },
     { new: true, upsert: true, runValidators: true },
   ).exec();
 }

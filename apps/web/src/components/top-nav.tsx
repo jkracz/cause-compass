@@ -34,13 +34,12 @@ import { Button } from "@/components/ui/button";
 import { AccountAvatar } from "@/components/account-avatar";
 import { AccountAuthDialog } from "@/components/account-auth-dialog";
 import { useAppSession } from "@/components/app-session-provider";
-import { useResetPreferences } from "@/hooks/use-reset-preferences";
+import { useResetJourney } from "@/hooks/use-reset-journey";
 
 export function TopNav({ className }: { className?: string }) {
   const pathname = usePathname();
   const session = useAppSession();
-  const { isAuthenticated, isPending, resetPreferences } =
-    useResetPreferences();
+  const { isAuthenticated, isPending, resetJourney } = useResetJourney();
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
   const [isAccountAuthOpen, setIsAccountAuthOpen] = useState(false);
 
@@ -181,8 +180,8 @@ export function TopNav({ className }: { className?: string }) {
             <AlertDialogTitle>Reset Your Journey?</AlertDialogTitle>
             <AlertDialogDescription>
               {isAuthenticated
-                ? "This will clear your saved reflection and preferences from your account. Your liked organizations will stay."
-                : "This will clear your saved reflection and preferences in this browser. Your liked organizations will stay."}
+                ? "This will clear your saved and skipped organizations from your account."
+                : "This will clear your saved and skipped organizations in this browser."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -191,11 +190,11 @@ export function TopNav({ className }: { className?: string }) {
               type="button"
               disabled={isPending}
               onClick={() =>
-                void resetPreferences().then(() => setIsResetDialogOpen(false))
+                void resetJourney().then(() => setIsResetDialogOpen(false))
               }
               variant="destructive"
             >
-              {isPending ? "Clearing..." : "Clear Preferences"}
+              {isPending ? "Clearing..." : "Clear Journey"}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

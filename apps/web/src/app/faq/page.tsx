@@ -11,12 +11,12 @@ export default function FAQPage() {
     {
       question: "What is Cause Compass?",
       answer:
-        "Cause Compass is a platform that helps you discover nonprofits that align with your values and interests. Through our unique mirror check process, we match you with organizations where you can make a meaningful impact.",
+        "Cause Compass is a platform that helps you discover nonprofits, explore their work, and save organizations you want to revisit.",
     },
     {
       question: "How does the matching process work?",
       answer:
-        "Our matching process starts with a series of thoughtful questions about your values, interests, and preferred ways to help. We then use this information to recommend nonprofits that align with your passions and goals.",
+        "Discovery highlights well-described organizations, rotates the set shown, and avoids causes you have already saved or skipped during that journey.",
     },
     {
       question: "Is Cause Compass free to use?",
@@ -27,12 +27,6 @@ export default function FAQPage() {
       question: "How do you verify the nonprofits on your platform?",
       answer:
         "We carefully vet all nonprofits on our platform to ensure they are legitimate, registered organizations with a track record of positive impact. We regularly update our database to maintain accuracy.",
-    },
-    {
-      question:
-        "Can I change my preferences after completing the mirror check?",
-      answer:
-        "You can edit your reflection and answer additional questions at any time through your Control Center. This helps us provide better matches as your interests evolve.",
     },
     {
       question: "How can I get involved with the organizations I discover?",
@@ -48,11 +42,6 @@ export default function FAQPage() {
       question: "Can I suggest a nonprofit to be added to the platform?",
       answer:
         "We'd love to hear your suggestions! While we don't have a formal submission process yet, you can reach out to us with nonprofit recommendations and we'll consider them for inclusion.",
-    },
-    {
-      question: "What if I can't find my location during the mirror check?",
-      answer:
-        "Location sharing is completely optional. If you skip it or if we can't access your location, we'll still show you amazing organizations. You can always enable location services later to see more local opportunities.",
     },
     {
       question: "How often do you add new organizations?",

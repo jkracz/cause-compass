@@ -1,6 +1,12 @@
 "use client";
 
-import { startTransition, useCallback, useEffect, useRef, useState } from "react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import posthog from "posthog-js";
@@ -9,8 +15,6 @@ import { useMutation, useQuery } from "convex/react";
 import { SwipeableCard } from "@/components/swipeable-card";
 import { OrganizationModal } from "@/components/organization-modal";
 import { DiscoverSkeleton } from "@/app/discover/discover-skeleton";
-import type { SessionLocation } from "@/app/discover/actions";
-import { reverseGeocodeForSession } from "@/app/discover/actions";
 import { api } from "@cause/backend/convex/_generated/api";
 import { useAppSession } from "@/components/app-session-provider";
 import {
@@ -18,65 +22,16 @@ import {
   RecommendationResult,
 } from "@/lib/recommendations";
 
-type StoredCoordinates = {
-  latitude: number;
-  longitude: number;
-};
-
-function parseStoredCoordinates(location?: string): StoredCoordinates | null {
-  if (!location?.trim()) {
-    return null;
-  }
-
-  try {
-    const parsed = JSON.parse(location) as {
-      latitude?: unknown;
-      longitude?: unknown;
-    };
-
-    if (
-      typeof parsed.latitude === "number" &&
-      typeof parsed.longitude === "number"
-    ) {
-      return {
-        latitude: parsed.latitude,
-        longitude: parsed.longitude,
-      };
-    }
-  } catch {
-    return null;
-  }
-
-  return null;
-}
-
 export default function Discover() {
   const { guestId } = useAppSession();
-  const viewer = useQuery(api.users.getViewer, guestId ? { guestId } : {});
   const [sessionSeed] = useState(() =>
     typeof crypto !== "undefined" && "randomUUID" in crypto
       ? crypto.randomUUID()
       : String(Date.now()),
   );
-  const [sessionLocation, setSessionLocation] =
-    useState<SessionLocation | null>(null);
-  const [sessionLocationResolved, setSessionLocationResolved] = useState(false);
   const recommendations = useQuery(
     api.organizations.getPersonalizedRecommended,
-    sessionLocationResolved
-      ? guestId
-        ? {
-            guestId,
-            limit: 10,
-            sessionLocationState: sessionLocation?.state,
-            sessionSeed,
-          }
-        : {
-            limit: 10,
-            sessionLocationState: sessionLocation?.state,
-            sessionSeed,
-          }
-      : "skip",
+    guestId ? { guestId, limit: 10, sessionSeed } : { limit: 10, sessionSeed },
   );
   const likeOrganization = useMutation(api.users.likeOrganization);
   const dismissOrganization = useMutation(api.users.dismissOrganization);
@@ -89,74 +44,6 @@ export default function Discover() {
   const hasTrackedCompletionRef = useRef(false);
   const trackedImpressionsRef = useRef<Set<string>>(new Set());
   const [detailsOrgSlug, setDetailsOrgSlug] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (viewer === undefined || sessionLocationResolved) {
-      return;
-    }
-
-    const storedLocation = viewer?.preferences.location;
-    if (
-      !storedLocation ||
-      storedLocation === "skipped" ||
-      storedLocation === "denied" ||
-      storedLocation === "unavailable"
-    ) {
-      startTransition(() => {
-        setSessionLocationResolved(true);
-      });
-      return;
-    }
-
-    const resolveSessionLocation = async () => {
-      try {
-        const storedCoordinates = parseStoredCoordinates(storedLocation);
-        let coordinates = storedCoordinates;
-
-        if (!coordinates && storedLocation === "granted") {
-          coordinates = await new Promise<StoredCoordinates>(
-            (resolve, reject) =>
-              navigator.geolocation.getCurrentPosition(
-                (position) =>
-                  resolve({
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude,
-                  }),
-                reject,
-                {
-                  timeout: 10000,
-                  enableHighAccuracy: true,
-                },
-              ),
-          );
-        }
-
-        if (!coordinates) {
-          startTransition(() => {
-            setSessionLocationResolved(true);
-          });
-          return;
-        }
-
-        const location = await reverseGeocodeForSession(coordinates);
-        if (!location) {
-          startTransition(() => {
-            setSessionLocationResolved(true);
-          });
-          return;
-        }
-
-        setSessionLocation(location);
-      } catch (error) {
-        console.error("Error resolving session location:", error);
-        posthog.captureException(error);
-      } finally {
-        setSessionLocationResolved(true);
-      }
-    };
-
-    void resolveSessionLocation();
-  }, [sessionLocationResolved, viewer]);
 
   useEffect(() => {
     if (recommendations !== undefined && sessionRecommendations === null) {
@@ -323,7 +210,8 @@ export default function Discover() {
   const handleCloseDetails = () => setDetailsOrgSlug(null);
 
   const detailsOrg =
-    detailsOrgSlug && currentRecommendation?.organization.slug === detailsOrgSlug
+    detailsOrgSlug &&
+    currentRecommendation?.organization.slug === detailsOrgSlug
       ? currentRecommendation.organization
       : null;
 

@@ -14,16 +14,6 @@ Cause Compass uses PostHog for product analytics, user tracking, and error monit
 
 ## Tracked Events
 
-### Onboarding Events
-
-| Event Name                     | Description                                | Location                             |
-| ------------------------------ | ------------------------------------------ | ------------------------------------ |
-| `onboarding_started`           | User begins the onboarding questionnaire   | `src/components/onboarding-flow.tsx` |
-| `onboarding_question_answered` | User answers an onboarding question        | `src/components/onboarding-flow.tsx` |
-| `onboarding_completed`         | User completes onboarding (key conversion) | `src/components/onboarding-flow.tsx` |
-| `location_permission_granted`  | User grants location permission            | `src/components/onboarding-flow.tsx` |
-| `location_permission_denied`   | User denies or skips location permission   | `src/components/onboarding-flow.tsx` |
-
 ### Discovery Events
 
 | Event Name                    | Description                                 | Location                      |
@@ -43,11 +33,9 @@ Cause Compass uses PostHog for product analytics, user tracking, and error monit
 
 ### Other Events
 
-| Event Name                 | Description                                  | Location                               |
-| -------------------------- | -------------------------------------------- | -------------------------------------- |
-| `voice_recording_started`  | User starts voice recording                  | `src/components/voice-recorder.tsx`    |
-| `journey_reset`            | User resets their journey (churn indicator)  | `src/components/start-over-button.tsx` |
-| `server_preferences_saved` | Server-side event when preferences are saved | `src/lib/actions/user.ts`              |
+| Event Name      | Description                                 | Location                               |
+| --------------- | ------------------------------------------- | -------------------------------------- |
+| `journey_reset` | User resets their journey (churn indicator) | `src/components/start-over-button.tsx` |
 
 ## Implementation Details
 
@@ -59,33 +47,14 @@ Server-side events are flushed before redirects to prevent data loss:
 await flushPostHog(); // Ensures events are sent before redirect
 ```
 
-### User Identification
-
-Users are identified server-side when they complete onboarding:
-
-```typescript
-posthog.identify({
-  distinctId: userId,
-  properties: {
-    causes: preferences.causes,
-    help_methods: preferences.helpMethod,
-    change_scope: preferences.changeScope,
-    has_location: preferences.location !== "skipped",
-  },
-});
-```
-
 ## Files
 
 ### Instrumented Components
 
-- `src/components/onboarding-flow.tsx` - Onboarding funnel tracking
 - `src/components/discover.tsx` - Discovery session tracking
 - `src/components/my-causes.tsx` - Organization management tracking
 - `src/components/organization-modal.tsx` - Organization engagement tracking
-- `src/components/voice-recorder.tsx` - Voice interaction tracking
 - `src/components/start-over-button.tsx` - Churn indicator tracking
-- `src/lib/actions/user.ts` - Server-side user identification and tracking
 
 ## Dashboards and Insights
 
@@ -95,7 +64,6 @@ posthog.identify({
 
 ### Key Insights
 
-- [Onboarding Funnel](https://us.posthog.com/project/277352/insights/OYZPspRa) - User progression through onboarding
 - [Discovery to Engagement Funnel](https://us.posthog.com/project/277352/insights/MgHTkjaz) - Discovery session to website clicks
 - [Organization Engagement Over Time](https://us.posthog.com/project/277352/insights/gJ8ETRBL) - Weekly engagement trends
 - [Churn Indicators](https://us.posthog.com/project/277352/insights/djlcvi54) - Journey resets and organization removals
@@ -106,5 +74,4 @@ posthog.identify({
 1. **Event naming**: Use snake_case for event names
 2. **Error filtering**: Only track unexpected errors, not user-initiated cancellations
 3. **Event timing**: Capture conversion events before redirects to prevent data loss
-4. **User identification**: Identify users server-side when they complete onboarding
-5. **Event properties**: Include relevant context (organization IDs, question types, etc.)
+4. **Event properties**: Include relevant context (organization IDs, recommendation metadata, etc.)

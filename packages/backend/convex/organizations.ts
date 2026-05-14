@@ -5,7 +5,6 @@ import { v } from "convex/values";
 import { getViewerRecord } from "./lib/viewer";
 import {
   applyDiversityPass,
-  CAUSE_CONFIG,
   getSeededVariantScore,
   scoreRecommendation,
 } from "./lib/recommendations";
@@ -25,10 +24,6 @@ type OrganizationCollectionFilters = {
   states?: string[];
   preferredState?: string;
 };
-
-function unique<T>(values: T[]) {
-  return Array.from(new Set(values));
-}
 
 async function getReadyOrganizationsByNteeMajor(
   ctx: QueryCtx,
@@ -171,15 +166,10 @@ export const getPersonalizedRecommended = query({
   args: {
     guestId: v.optional(v.string()),
     limit: v.optional(v.number()),
-    sessionLocationState: v.optional(v.string()),
     sessionSeed: v.optional(v.string()),
   },
-  handler: async (
-    ctx,
-    { guestId, limit = 10, sessionLocationState, sessionSeed },
-  ) => {
+  handler: async (ctx, { guestId, limit = 10, sessionSeed }) => {
     const viewer = await getViewerRecord(ctx, guestId);
-    const preferences = viewer.user?.preferences ?? {};
     const likedOrganizations = new Set(viewer.user?.likedOrganizations ?? []);
     const dismissedOrganizations = new Set(
       viewer.user?.dismissedOrganizations ?? [],
@@ -200,42 +190,6 @@ export const getPersonalizedRecommended = query({
       }
     };
 
-    const nteeMajors = unique(
-      (preferences.causes ?? []).flatMap(
-        (cause) => CAUSE_CONFIG[cause]?.nteeMajors ?? [],
-      ),
-    );
-
-    for (const nteeMajor of nteeMajors) {
-      addCandidates(await getReadyOrganizationsByNteeMajor(ctx, nteeMajor, 20));
-    }
-
-    if (preferences.changeScope === "local") {
-      addCandidates(
-        await getReadyOrganizationsByGeographicFocus(ctx, "Local", 20),
-      );
-      addCandidates(
-        await getReadyOrganizationsByGeographicFocus(ctx, "Regional", 20),
-      );
-    } else if (preferences.changeScope === "national") {
-      addCandidates(
-        await getReadyOrganizationsByGeographicFocus(ctx, "National", 40),
-      );
-    } else if (preferences.changeScope === "global") {
-      addCandidates(
-        await getReadyOrganizationsByGeographicFocus(ctx, "Global", 20),
-      );
-      addCandidates(
-        await getReadyOrganizationsByGeographicFocus(ctx, "National", 20),
-      );
-    }
-
-    if (sessionLocationState) {
-      addCandidates(
-        await getReadyOrganizationsByState(ctx, sessionLocationState, 40),
-      );
-    }
-
     if (candidates.size < candidateTarget) {
       addCandidates(
         await ctx.db
@@ -249,11 +203,7 @@ export const getPersonalizedRecommended = query({
 
     const scoredRecommendations = Array.from(candidates.values())
       .map((organization) => {
-        const recommendation = scoreRecommendation(
-          organization,
-          preferences,
-          sessionLocationState,
-        );
+        const recommendation = scoreRecommendation(organization);
         const seededVariantScore = getSeededVariantScore(
           sessionSeed ?? "default",
           organization.slug,
@@ -428,20 +378,14 @@ async function takeReadyEditorialPool(
 }
 
 export const getCauseOfTheWeek = query({
-  args: {
-    weekKey: v.string(),
-    sessionLocationState: v.optional(v.string()),
-  },
-  handler: async (ctx, { weekKey, sessionLocationState }) => {
-    const pool = await takeReadyEditorialPool(ctx, {
-      state: sessionLocationState,
-    });
+  args: { weekKey: v.string() },
+  handler: async (ctx, { weekKey }) => {
+    const pool = await takeReadyEditorialPool(ctx, {});
 
     // Keep the hero populated even when an environment's ready data has not
     // fully cleared the stricter editorial completeness bar yet.
     const qualityCandidates = pool.filter(passesEditorialQualityGate);
-    const candidates =
-      qualityCandidates.length > 0 ? qualityCandidates : pool;
+    const candidates = qualityCandidates.length > 0 ? qualityCandidates : pool;
     if (candidates.length === 0) {
       return null;
     }

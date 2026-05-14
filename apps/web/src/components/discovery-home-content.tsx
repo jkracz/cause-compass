@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  startTransition,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQueries, useQuery } from "convex/react";
 import { motion, AnimatePresence } from "motion/react";
@@ -20,11 +13,6 @@ import { useWeekKey } from "@/hooks/use-week-key";
 import { CATEGORY_ROW_TITLES } from "@/lib/ntee-labels";
 import { api } from "@cause/backend/convex/_generated/api";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
-import { useAppSession } from "@/components/app-session-provider";
-import {
-  reverseGeocodeForSession,
-  type SessionLocation,
-} from "@/app/discover/actions";
 import {
   CauseOfTheWeek,
   CauseOfTheWeekSkeleton,
@@ -43,11 +31,6 @@ import { EditorialCarousel } from "@/components/editorial/editorial-carousel";
 import { EditorialOrgCard } from "@/components/editorial/editorial-org-card";
 
 type Organization = Doc<"organizations">;
-type StoredCoordinates = {
-  latitude: number;
-  longitude: number;
-};
-
 const HOMEPAGE_CAROUSELS = [
   {
     key: "artsAndCulture",
@@ -98,35 +81,11 @@ function createSessionSeed() {
     : String(Date.now());
 }
 
-function parseStoredCoordinates(location?: string): StoredCoordinates | null {
-  if (!location?.trim()) return null;
-  try {
-    const parsed = JSON.parse(location) as {
-      latitude?: unknown;
-      longitude?: unknown;
-    };
-    if (
-      typeof parsed.latitude === "number" &&
-      typeof parsed.longitude === "number"
-    ) {
-      return { latitude: parsed.latitude, longitude: parsed.longitude };
-    }
-  } catch {
-    return null;
-  }
-  return null;
-}
-
 export function DiscoveryHomeContent() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { guestId } = useAppSession();
-  const viewer = useQuery(api.users.getViewer, guestId ? { guestId } : {});
   const [sessionSeed] = useState(createSessionSeed);
-  const [sessionLocation, setSessionLocation] =
-    useState<SessionLocation | null>(null);
-  const [sessionLocationResolved, setSessionLocationResolved] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -141,59 +100,9 @@ export function DiscoveryHomeContent() {
 
   const weekKey = useWeekKey();
 
-  useEffect(() => {
-    if (viewer === undefined || sessionLocationResolved) return;
-
-    const storedLocation = viewer?.preferences.location;
-    if (
-      !storedLocation ||
-      storedLocation === "skipped" ||
-      storedLocation === "denied" ||
-      storedLocation === "unavailable"
-    ) {
-      startTransition(() => setSessionLocationResolved(true));
-      return;
-    }
-
-    const resolveSessionLocation = async () => {
-      try {
-        const storedCoordinates = parseStoredCoordinates(storedLocation);
-        let coordinates = storedCoordinates;
-        if (!coordinates && storedLocation === "granted") {
-          coordinates = await new Promise<StoredCoordinates>(
-            (resolve, reject) =>
-              navigator.geolocation.getCurrentPosition(
-                (pos) =>
-                  resolve({
-                    latitude: pos.coords.latitude,
-                    longitude: pos.coords.longitude,
-                  }),
-                reject,
-                { timeout: 10000, enableHighAccuracy: true },
-              ),
-          );
-        }
-        if (!coordinates) {
-          startTransition(() => setSessionLocationResolved(true));
-          return;
-        }
-        const location = await reverseGeocodeForSession(coordinates);
-        if (location) setSessionLocation(location);
-      } catch (error) {
-        console.error("Error resolving homepage session location:", error);
-        posthog.captureException(error);
-      } finally {
-        setSessionLocationResolved(true);
-      }
-    };
-
-    void resolveSessionLocation();
-  }, [sessionLocationResolved, viewer]);
-
   // Cause of the Week + Editor's Picks
   const causeOfTheWeek = useQuery(api.organizations.getCauseOfTheWeek, {
     weekKey,
-    sessionLocationState: sessionLocation?.state,
   });
   const editorsPicks = useQuery(api.organizations.getEditorsPicks, {
     weekKey,

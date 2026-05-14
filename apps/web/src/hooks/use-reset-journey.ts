@@ -7,17 +7,17 @@ import posthog from "posthog-js";
 import { api } from "@cause/backend/convex/_generated/api";
 import { useAppSession } from "@/components/app-session-provider";
 
-export function useResetPreferences() {
+export function useResetJourney() {
   const router = useRouter();
   const session = useAppSession();
-  const resetViewerPreferences = useMutation(api.users.resetViewerPreferences);
+  const resetViewerJourney = useMutation(api.users.resetViewerJourney);
   const [isPending, setIsPending] = useState(false);
 
-  const resetPreferences = async () => {
+  const resetJourney = async () => {
     setIsPending(true);
 
     try {
-      await resetViewerPreferences({
+      await resetViewerJourney({
         guestId: session.guestId,
       });
 
@@ -34,6 +34,6 @@ export function useResetPreferences() {
   return {
     isPending,
     isAuthenticated: session.isAuthenticated,
-    resetPreferences,
+    resetJourney,
   };
 }

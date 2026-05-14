@@ -13,15 +13,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { RotateCcw } from "lucide-react";
-import { useResetPreferences } from "@/hooks/use-reset-preferences";
+import { useResetJourney } from "@/hooks/use-reset-journey";
 
 export function StartOverButton() {
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
-  const { isAuthenticated, isPending, resetPreferences } =
-    useResetPreferences();
+  const { isAuthenticated, isPending, resetJourney } = useResetJourney();
 
   const handleStartOver = async () => {
-    await resetPreferences();
+    await resetJourney();
     setIsResetDialogOpen(false);
   };
 
@@ -42,8 +41,8 @@ export function StartOverButton() {
           <AlertDialogTitle>Reset Your Journey?</AlertDialogTitle>
           <AlertDialogDescription>
             {isAuthenticated
-              ? "This will clear your saved reflection and preferences from your account. Your liked organizations will stay."
-              : "This will clear your saved reflection and preferences in this browser. Your liked organizations will stay."}
+              ? "This will clear your saved and skipped organizations from your account."
+              : "This will clear your saved and skipped organizations in this browser."}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -54,7 +53,7 @@ export function StartOverButton() {
             variant="destructive"
             disabled={isPending}
           >
-            {isPending ? "Clearing..." : "Clear Preferences"}
+            {isPending ? "Clearing..." : "Clear Journey"}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

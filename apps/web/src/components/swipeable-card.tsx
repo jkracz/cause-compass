@@ -138,7 +138,7 @@ export function SwipeableCard({
         )}
 
         {previewText && (
-          <p className="mt-4 max-w-[42ch] text-[14.5px] leading-[1.55] text-[var(--ink-soft)] line-clamp-[7]">
+          <p className="mt-4 line-clamp-[7] max-w-[42ch] text-[14.5px] leading-[1.55] text-[var(--ink-soft)]">
             {previewText}
           </p>
         )}
