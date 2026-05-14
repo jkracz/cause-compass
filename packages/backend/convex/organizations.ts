@@ -153,17 +153,6 @@ export const getBySlug = query({
   },
 });
 
-// Get recommended orgs for discover page
-export const getRecommended = query({
-  args: { limit: v.optional(v.number()) },
-  handler: async (ctx, { limit = 10 }) => {
-    return await ctx.db
-      .query("organizations")
-      .withIndex("by_enrichmentStage", (q) => q.eq("enrichmentStage", "ready"))
-      .take(limit);
-  },
-});
-
 export const getPersonalizedRecommended = query({
   args: {
     guestId: v.optional(v.string()),
@@ -232,29 +221,6 @@ export const getPersonalizedRecommended = query({
   },
 });
 
-// Get orgs for carousel display (fetch extra for client-side shuffling)
-export const getForCarousel = query({
-  args: {},
-  handler: async (ctx) => {
-    // Fetch more than needed so client can shuffle and pick 30
-    return await ctx.db
-      .query("organizations")
-      .withIndex("by_enrichmentStage", (q) => q.eq("enrichmentStage", "ready"))
-      .take(100);
-  },
-});
-
-// Paginated query for infinite scroll grid
-export const listPaginated = query({
-  args: { paginationOpts: paginationOptsValidator },
-  handler: async (ctx, { paginationOpts }) => {
-    return await ctx.db
-      .query("organizations")
-      .withIndex("by_enrichmentStage", (q) => q.eq("enrichmentStage", "ready"))
-      .paginate(paginationOpts);
-  },
-});
-
 // Full-text search organizations by name
 export const search = query({
   args: { query: v.string() },
@@ -313,28 +279,6 @@ export const getLikedByViewer = query({
     );
     // Filter out nulls with proper type narrowing
     return orgs.filter((org): org is NonNullable<typeof org> => org !== null);
-  },
-});
-
-// Get organizations by NTEE major category
-export const getByNteeMajor = query({
-  args: {
-    nteeMajor: v.string(),
-    limit: v.optional(v.number()),
-  },
-  handler: async (ctx, { nteeMajor, limit = 15 }) => {
-    return await getReadyOrganizationsByNteeMajor(ctx, nteeMajor, limit);
-  },
-});
-
-// Get organizations by geographic focus
-export const getByGeographicFocus = query({
-  args: {
-    focus: geographicFocusValidator,
-    limit: v.optional(v.number()),
-  },
-  handler: async (ctx, { focus, limit = 15 }) => {
-    return await getReadyOrganizationsByGeographicFocus(ctx, focus, limit);
   },
 });
 

@@ -4,104 +4,7 @@
  */
 
 import { v } from "convex/values";
-import {
-  mutation,
-  query,
-  internalMutation,
-  internalQuery,
-} from "./_generated/server";
-
-// Simplified status validator (workflow handles orchestration)
-const batchJobStatusValidator = v.union(
-  v.literal("processing"),
-  v.literal("completed"),
-  v.literal("failed"),
-);
-
-// Batch job document validator (for return types)
-const batchJobValidator = v.object({
-  _id: v.id("batchJobs"),
-  _creationTime: v.number(),
-  jobId: v.string(),
-  status: batchJobStatusValidator,
-  createdAt: v.string(),
-  completedAt: v.optional(v.string()),
-  batchSize: v.number(),
-  batchId: v.optional(v.string()),
-  outputFileId: v.optional(v.string()),
-  processedCount: v.optional(v.number()),
-  errorCount: v.optional(v.number()),
-  error: v.optional(v.string()),
-  workflowId: v.optional(v.string()),
-});
-
-// ============================================================================
-// PUBLIC QUERIES
-// ============================================================================
-
-/**
- * Get a batch job by its jobId.
- */
-export const getByJobId = query({
-  args: { jobId: v.string() },
-  returns: v.union(batchJobValidator, v.null()),
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("batchJobs")
-      .withIndex("by_jobId", (q) => q.eq("jobId", args.jobId))
-      .first();
-  },
-});
-
-/**
- * List batch jobs by status.
- */
-export const listByStatus = query({
-  args: {
-    status: batchJobStatusValidator,
-    limit: v.optional(v.number()),
-  },
-  returns: v.array(batchJobValidator),
-  handler: async (ctx, args) => {
-    const limit = args.limit ?? 50;
-    return await ctx.db
-      .query("batchJobs")
-      .withIndex("by_status", (q) => q.eq("status", args.status))
-      .take(limit);
-  },
-});
-
-/**
- * List all batch jobs, ordered by creation date (newest first).
- */
-export const listAll = query({
-  args: {
-    limit: v.optional(v.number()),
-  },
-  returns: v.array(batchJobValidator),
-  handler: async (ctx, args) => {
-    const limit = args.limit ?? 50;
-    return await ctx.db
-      .query("batchJobs")
-      .withIndex("by_createdAt")
-      .order("desc")
-      .take(limit);
-  },
-});
-
-/**
- * Get active batch jobs (jobs currently processing).
- */
-export const listActive = query({
-  args: {},
-  returns: v.array(batchJobValidator),
-  handler: async (ctx) => {
-    return await ctx.db
-      .query("batchJobs")
-      .withIndex("by_status", (q) => q.eq("status", "processing"))
-      .collect();
-  },
-});
+import { internalMutation, internalQuery } from "./_generated/server";
 
 // ============================================================================
 // INTERNAL QUERIES
@@ -278,30 +181,5 @@ export const internalMarkFailed = internalMutation({
       completedAt: new Date().toISOString(),
       error: args.error,
     });
-  },
-});
-
-// ============================================================================
-// PUBLIC MUTATIONS (for admin/debugging)
-// ============================================================================
-
-/**
- * Delete a batch job by jobId.
- */
-export const deleteByJobId = mutation({
-  args: { jobId: v.string() },
-  returns: v.boolean(),
-  handler: async (ctx, args) => {
-    const job = await ctx.db
-      .query("batchJobs")
-      .withIndex("by_jobId", (q) => q.eq("jobId", args.jobId))
-      .first();
-
-    if (job) {
-      await ctx.db.delete(job._id);
-      return true;
-    }
-
-    return false;
   },
 });
