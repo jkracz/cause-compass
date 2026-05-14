@@ -31,12 +31,6 @@ Cause Compass uses PostHog for product analytics, user tracking, and error monit
 | `organization_website_clicked` | User clicks to visit website (key conversion) | `src/components/organization-modal.tsx` |
 | `organization_shared`          | User shares an organization link              | `src/components/organization-modal.tsx` |
 
-### Other Events
-
-| Event Name      | Description                                 | Location                               |
-| --------------- | ------------------------------------------- | -------------------------------------- |
-| `journey_reset` | User resets their journey (churn indicator) | `src/components/start-over-button.tsx` |
-
 ## Implementation Details
 
 ### Event Flushing
@@ -54,7 +48,6 @@ await flushPostHog(); // Ensures events are sent before redirect
 - `src/components/discover.tsx` - Discovery session tracking
 - `src/components/my-causes.tsx` - Organization management tracking
 - `src/components/organization-modal.tsx` - Organization engagement tracking
-- `src/components/start-over-button.tsx` - Churn indicator tracking
 
 ## Dashboards and Insights
 

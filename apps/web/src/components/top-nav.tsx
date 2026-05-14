@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { LogOut, RotateCcw } from "lucide-react";
+import { LogOut } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -14,33 +14,19 @@ import {
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { AccountAvatar } from "@/components/account-avatar";
 import { AccountAuthDialog } from "@/components/account-auth-dialog";
 import { useAppSession } from "@/components/app-session-provider";
-import { useResetJourney } from "@/hooks/use-reset-journey";
 
 export function TopNav({ className }: { className?: string }) {
   const pathname = usePathname();
   const session = useAppSession();
-  const { isAuthenticated, isPending, resetJourney } = useResetJourney();
-  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
   const [isAccountAuthOpen, setIsAccountAuthOpen] = useState(false);
 
   return (
@@ -144,14 +130,6 @@ export function TopNav({ className }: { className?: string }) {
                         </div>
                       </div>
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onSelect={() => setIsResetDialogOpen(true)}
-                      className="text-[var(--ink-soft)] focus:bg-[var(--paper-deep)] focus:text-[var(--accent)]"
-                    >
-                      <RotateCcw className="size-4" />
-                      Start over
-                    </DropdownMenuItem>
                     <DropdownMenuItem
                       onSelect={() => void session.signOut()}
                       className="text-[var(--ink-soft)] focus:bg-[var(--paper-deep)] focus:text-[var(--accent)]"
@@ -174,31 +152,6 @@ export function TopNav({ className }: { className?: string }) {
         </div>
       </nav>
 
-      <AlertDialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Reset Your Journey?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {isAuthenticated
-                ? "This will clear your saved and skipped organizations from your account."
-                : "This will clear your saved and skipped organizations in this browser."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <Button
-              type="button"
-              disabled={isPending}
-              onClick={() =>
-                void resetJourney().then(() => setIsResetDialogOpen(false))
-              }
-              variant="destructive"
-            >
-              {isPending ? "Clearing..." : "Clear Journey"}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
       <AccountAuthDialog
         open={isAccountAuthOpen}
         onOpenChange={setIsAccountAuthOpen}

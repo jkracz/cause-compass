@@ -257,29 +257,6 @@ export const unlikeOrganization = mutation({
   },
 });
 
-export const resetViewerJourney = mutation({
-  args: { guestId: v.optional(v.string()) },
-  returns: v.boolean(),
-  handler: async (ctx, { guestId }) => {
-    const viewer = await getViewerRecord(ctx, guestId);
-    const user =
-      viewer.kind === "authenticated" && viewer.authIdentity
-        ? await ensureLinkedAuthenticatedUser(ctx, guestId, viewer.authIdentity)
-        : viewer.user;
-
-    if (!user) {
-      return false;
-    }
-
-    await ctx.db.patch(user._id, {
-      dismissedOrganizations: [],
-      likedOrganizations: [],
-    });
-
-    return true;
-  },
-});
-
 export const linkGuestToAccount = mutation({
   args: {
     guestId: v.optional(v.string()),
