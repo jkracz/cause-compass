@@ -8,9 +8,9 @@ Cause Compass uses PostHog for product analytics, user tracking, and error monit
 
 ### Architecture
 
-- **Client-side**: Initialized via `instrumentation-client.ts` using `posthog-js` for browser-based tracking
+- **Client-side**: components import `posthog-js` directly for browser-based tracking
 - **Identity**: `src/components/app-session-provider.tsx` identifies anonymous guest sessions and authenticated users
-- **Error tracking**: Automatic exception capture with filtering for expected user behaviors
+- **Error tracking**: selected client error paths call `posthog.captureException`
 
 ## Tracked Events
 
@@ -22,22 +22,22 @@ Cause Compass uses PostHog for product analytics, user tracking, and error monit
 
 ### Discovery Events
 
-| Event Name                    | Description                                 | Location                      |
-| ----------------------------- | ------------------------------------------- | ----------------------------- |
-| `recommendation_impression`   | Organization appears in the ranked feed     | `src/components/discover.tsx` |
-| `organization_liked`          | User likes an organization (key engagement) | `src/components/discover.tsx` |
-| `organization_skipped`        | User skips an organization                  | `src/components/discover.tsx` |
-| `discovery_session_completed` | User finishes viewing all organizations     | `src/components/discover.tsx` |
+| Event Name                    | Description                                 | Location                                                               |
+| ----------------------------- | ------------------------------------------- | ---------------------------------------------------------------------- |
+| `recommendation_impression`   | Organization appears in the ranked feed     | `src/components/discover.tsx`                                          |
+| `organization_liked`          | User likes an organization (key engagement) | `src/components/discover.tsx`, `src/components/organization-modal.tsx` |
+| `organization_skipped`        | User skips an organization                  | `src/components/discover.tsx`                                          |
+| `discovery_session_completed` | User finishes viewing all organizations     | `src/components/discover.tsx`                                          |
 
 ### Organization Management Events
 
-| Event Name                     | Description                                   | Location                                |
-| ------------------------------ | --------------------------------------------- | --------------------------------------- |
-| `organization_details_viewed`  | User opens organization details modal         | `src/components/my-causes.tsx`          |
-| `organization_removed`         | User removes a saved organization             | `src/components/organization-modal.tsx` |
-| `organization_website_clicked` | User clicks to visit website (key conversion) | `src/components/organization-modal.tsx` |
-| `organization_donate_clicked`  | User clicks to visit donation page            | `src/components/organization-modal.tsx` |
-| `organization_shared`          | User shares an organization link              | `src/components/organization-modal.tsx` |
+| Event Name                     | Description                                   | Location                                                                                                   |
+| ------------------------------ | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `organization_details_viewed`  | User opens organization details modal         | `src/components/discover.tsx`, `src/components/discovery-home-content.tsx`, `src/components/my-causes.tsx` |
+| `organization_removed`         | User removes a saved organization             | `src/components/organization-modal.tsx`                                                                    |
+| `organization_website_clicked` | User clicks to visit website (key conversion) | `src/components/organization-modal.tsx`                                                                    |
+| `organization_donate_clicked`  | User clicks to visit donation page            | `src/components/organization-modal.tsx`                                                                    |
+| `organization_shared`          | User shares an organization link              | `src/components/organization-modal.tsx`                                                                    |
 
 ### Browse Events
 
@@ -49,8 +49,8 @@ Cause Compass uses PostHog for product analytics, user tracking, and error monit
 
 ### Instrumented Components
 
-- `src/components/discover.tsx` - Discovery session tracking
-- `src/components/discovery-home-content.tsx` - Browse and search tracking
+- `src/components/discover.tsx` - Discovery session, details, like, skip, and impression tracking
+- `src/components/discovery-home-content.tsx` - Home browse, search, and details tracking
 - `src/components/app-session-provider.tsx` - Account creation and identity tracking
 - `src/components/my-causes.tsx` - Organization management tracking
 - `src/components/organization-modal.tsx` - Organization engagement tracking

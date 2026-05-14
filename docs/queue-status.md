@@ -4,12 +4,18 @@ This document describes the Convex crawl queue status query used for worker moni
 
 ## Query
 
-- Function: `crawlQueue:getQueueStats`
+- Function: internal query `crawlQueue:getQueueStats`
 - File: `packages/backend/convex/crawlQueue.ts`
 
 ## Purpose
 
-`getQueueStats` returns queue depth totals for one crawl worker type:
+`getQueueStats` returns queue depth totals for one crawl worker type. It is an internal query, so it is primarily called by backend actions and maintenance code rather than directly from the web client.
+
+Arguments:
+
+- `queueType`: `"html"` or `"browser"`
+
+It returns counts for:
 
 - pending
 - processing

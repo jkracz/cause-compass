@@ -68,7 +68,7 @@ What unites these failures: they all treat a nonprofit as a _record_ (a row, a s
 
 ## Accessibility & Inclusion
 
-**Floor:** WCAG 2.2 AA for color contrast, focus states, and keyboard navigation. The plum-on-paper palette generally clears this, but `--ink-mute` (#7c6f9a) on `--paper` (#f0e6f5) needs verification for body-text contexts. Today it is used on small caption-weight text where it likely passes only as Large Text. To be audited during DESIGN.md and `polish`.
+**Floor:** WCAG 2.2 AA for color contrast, focus states, and keyboard navigation. `--ink-mute` (#7c6f9a) on `--paper` (#f0e6f5) is reserved for label-sized or tertiary text; body copy should use stronger plum text tokens.
 
 **Reduced motion:** Decorative animations (carousel scroll, fade-up reveals) already honor `prefers-reduced-motion: reduce` and resolve to no motion. New motion added to the system must do the same by default.
 

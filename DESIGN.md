@@ -145,9 +145,9 @@ The palette is **plum on paper**: a pale heliotrope ground, deep plum ink, hot m
 
 - **Iris** (`#5b4b9e`): Muted purple. Used for small structural marks (geo glyphs, atmospheric backdrops, hairline tints). Never a primary action color; it does the quiet work of suggesting hierarchy without raising volume.
 
-### Tertiary — Cardstock
+### Tertiary - Cardstock
 
-The six saturated tones used **only on category tabs** (Browse by Cause). These are the colored dividers in the notebook. They never appear on body text, buttons, or surfaces outside the category mosaic. Adding a seventh requires an explicit naming and a ratified place for it to live.
+Saturated tones used **only on category tabs** (Browse by Cause). These are the colored dividers in the notebook. They never appear on body text, buttons, or surfaces outside the category mosaic. The current implementation defines the full category accent set in `apps/web/src/lib/browse-categories.ts`; add new saturated tones there only when a new category needs one.
 
 - **Terracotta** (`#c58f5a`): Arts & Culture
 - **Slate Blue** (`#5a7a8e`): Education & Learning
@@ -173,7 +173,7 @@ The six saturated tones used **only on category tabs** (Browse by Cause). These 
 
 **The Plum-First Rule.** The page should always read more plum than magenta. Magenta is the writer's hand — sparing, deliberate. If the eye lands on pink first, redistribute.
 
-**The Tab-Color Rule.** The cardstock palette appears only on category tabs (Browse by Cause). It does not bleed into other surfaces. Category color does not flavor the content underneath the category — once a user clicks into Arts & Culture, the page returns to plum on paper.
+**The Tab-Color Rule.** The cardstock palette appears only on category tabs (Browse by Cause). It does not bleed into other surfaces. Category color does not flavor the content underneath the category - once a user clicks into Arts & Culture, the page returns to plum on paper.
 
 ## 3. Typography
 
@@ -221,7 +221,7 @@ Buttons, cards, inputs, and chips share one philosophy: **confidently quiet**. P
 
 ### Buttons
 
-- **Shape:** Pill (`rounded-full` / 9999px). Always. The system has no rectangular buttons.
+- **Shape:** Primary product actions use pills (`rounded-full` / 9999px). Utility primitives may keep their shadcn defaults, but user-facing Cause Compass flows should choose the pill treatment unless a component pattern explicitly calls for another shape.
 - **Primary:** Plum Ink fill, Heliotrope Paper text, Label typography. Padding `12px 24px`. On hover: fill shifts to Margin-Note Magenta, paper text remains, Action-bloom shadow appears beneath.
 - **Ghost / secondary:** Page White at ~70% opacity, Soft Plum text, Ruled Mauve 1px border. On hover: fills to Page White, border shifts to Margin-Note Magenta at 40%, text shifts to Margin-Note Magenta. Used for tertiary actions and the "Add to My Causes" save toggle in its inactive state.
 - **Active save state:** Blush Wash fill, Margin-Note Magenta text, Margin-Note Magenta border at 50%. Heart icon fills.
@@ -238,11 +238,11 @@ The default surface for content. Page White fill on Heliotrope Paper ground, Hai
 
 #### Loupe Card (glass)
 
-Used for emphasis only. Page White at 60% opacity over Heliotrope Paper, `backdrop-filter: blur(18px)`, 1px Iris-tinted border (`rgba(91, 75, 158, 0.22)`), card radius (20px). On hover: opacity rises to 85%, border shifts toward Margin-Note Magenta at 45%, Loupe-hover shadow strengthens. Used for the featured Cause of the Week and for the search-result spotlight, never on routine grid cards.
+Used for organization cards that need a light inspection surface over the paper ground. Page White at 60% opacity over Heliotrope Paper, `backdrop-filter: blur(18px)`, 1px Iris-tinted border (`rgba(91, 75, 158, 0.22)`), card radius (20px). On hover: opacity rises to 85%, border shifts toward Margin-Note Magenta at 45%, Loupe-hover shadow strengthens. Use it for featured causes, search results, saved causes, and browse grids; keep surrounding page sections unframed so the glass surface remains readable.
 
 #### Cardstock Tab
 
-Used only in the Browse by Cause mosaic. Drenched cardstock background (one of the six category tones), Plum Ink title, Soft Plum body, Faded Plum index numerals (e.g. "01"–"06"). A diagonal hatch pattern at low opacity (~6%, line spacing ~6px, line angle 135°) overlays the fill to give it a printed-cardstock texture. On hover: Loupe-rest shadow appears, the glyph rotates 12° and scales 1.1×, the bottom rule fills in left-to-right.
+Used only in the Browse by Cause mosaic. Drenched cardstock background from the category accent set, Plum Ink title, and Soft Plum body. A diagonal hatch pattern at low opacity (~6%, line spacing ~6px, line angle 135deg) overlays the fill to give it a printed-cardstock texture. On hover: Loupe-rest shadow appears and the bottom rule fills in left-to-right.
 
 ### Chips
 
