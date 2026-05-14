@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "About Cause Compass",
   description:
     "Cause Compass helps people discover nonprofits that match their values, not the ones with the strongest SEO.",
+  alternates: {
+    canonical: "/about",
+  },
 };
 
 const SUPPORT_EMAIL = "support@causecompass.com";

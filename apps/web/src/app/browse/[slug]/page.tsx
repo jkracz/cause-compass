@@ -16,8 +16,16 @@ export async function generateMetadata({
   const category = getBrowseCategory(slug);
   if (!category) return { title: "Browse — Cause Compass" };
   return {
-    title: `${category.label} — Browse · Cause Compass`,
+    title: `${category.label} Nonprofits`,
     description: category.description,
+    alternates: {
+      canonical: `/browse/${category.slug}`,
+    },
+    openGraph: {
+      title: `${category.label} Nonprofits`,
+      description: category.description,
+      url: `/browse/${category.slug}`,
+    },
   };
 }
 

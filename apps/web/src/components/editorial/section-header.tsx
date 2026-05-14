@@ -30,8 +30,7 @@ export function SectionHeader({
     >
       <div className={cn("flex max-w-2xl flex-col gap-2.5", alignment)}>
         {kicker && (
-          <span className="flex items-center gap-3 text-[10px] font-semibold tracking-[0.32em] text-[var(--accent)] uppercase">
-            <span className="h-px w-7 bg-[var(--accent)]/70" aria-hidden />
+          <span className="text-[10px] font-semibold tracking-[0.32em] text-[var(--accent)] uppercase">
             {kicker}
           </span>
         )}

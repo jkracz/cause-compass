@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
     "What Cause Compass collects, how we use it, and the rights you have over your information.",
+  alternates: {
+    canonical: "/privacy",
+  },
 };
 
 const EFFECTIVE_DATE = "May 14, 2026";

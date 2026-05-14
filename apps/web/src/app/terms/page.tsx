@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Terms & Conditions",
   description:
     "The terms that govern your access to and use of Cause Compass.",
+  alternates: {
+    canonical: "/terms",
+  },
 };
 
 const EFFECTIVE_DATE = "May 14, 2026";
