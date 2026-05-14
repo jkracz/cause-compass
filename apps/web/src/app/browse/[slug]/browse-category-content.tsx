@@ -165,13 +165,6 @@ export function BrowseCategoryContent({
           </Link>
           <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl space-y-3">
-              <span
-                className="font-heading text-[5rem] leading-none"
-                style={{ color: category.accent }}
-                aria-hidden
-              >
-                {category.glyph}
-              </span>
               <h1 className="font-heading text-[clamp(2.4rem,5vw,4rem)] leading-[1] font-semibold text-[var(--ink)]">
                 {category.label}
               </h1>

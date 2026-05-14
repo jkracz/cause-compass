@@ -115,7 +115,6 @@ export function EditorialOrgCard({
       <div className="flex flex-1 flex-col gap-2 px-5 pt-1 pb-5">
         {(organization.city || organization.state) && (
           <div className="flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-[var(--ink-mute)] uppercase">
-            <span className="h-px w-3 shrink-0 bg-[var(--rule-strong)]" />
             {organization.city && (
               <span className="truncate">{organization.city}</span>
             )}

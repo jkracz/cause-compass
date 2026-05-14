@@ -4,7 +4,6 @@ export type BrowseCategory = {
   slug: string;
   label: string;
   description: string;
-  glyph: string;
   accent: string;
   accentInk: string;
   kind: "ntee" | "geo";
@@ -19,7 +18,6 @@ export const BROWSE_CATEGORIES: BrowseCategory[] = [
     label: "Arts & Culture",
     description:
       "Museums, theaters, galleries, performing arts, and the makers keeping culture alive.",
-    glyph: "◆",
     accent: "#C58F5A",
     accentInk: "#FFF4E6",
     kind: "ntee",
@@ -30,7 +28,6 @@ export const BROWSE_CATEGORIES: BrowseCategory[] = [
     label: "Education & Learning",
     description:
       "Classrooms, scholarships, after-school programs, and education built for the long arc.",
-    glyph: "✱",
     accent: "#5A7A8E",
     accentInk: "#EAF1F6",
     kind: "ntee",
@@ -41,7 +38,6 @@ export const BROWSE_CATEGORIES: BrowseCategory[] = [
     label: "Health Care",
     description:
       "Hospitals, clinics, patient services, and the people delivering care where it's needed.",
-    glyph: "✚",
     accent: "#8E5C4A",
     accentInk: "#F8E9E2",
     kind: "ntee",
@@ -52,7 +48,6 @@ export const BROWSE_CATEGORIES: BrowseCategory[] = [
     label: "Environment",
     description:
       "Conservation, climate, clean water, wildlife, and the stewardship of place.",
-    glyph: "❋",
     accent: "#5C7A5E",
     accentInk: "#E8F0E9",
     kind: "ntee",
@@ -63,7 +58,6 @@ export const BROWSE_CATEGORIES: BrowseCategory[] = [
     label: "Making Global Impact",
     description:
       "Cross-border missions reaching communities far from where most of us live.",
-    glyph: "◐",
     accent: "#5E5470",
     accentInk: "#EBE6F1",
     kind: "geo",
@@ -74,7 +68,6 @@ export const BROWSE_CATEGORIES: BrowseCategory[] = [
     label: "Your Local Community",
     description:
       "Neighborhood-rooted nonprofits, the kind you can volunteer with on a Saturday.",
-    glyph: "◉",
     accent: "#8E6F4F",
     accentInk: "#F4ECDF",
     kind: "geo",

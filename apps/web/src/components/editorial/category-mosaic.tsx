@@ -30,13 +30,6 @@ function MosaicTile({ category }: { category: BrowseCategory }) {
         style={{ backgroundImage: HATCH_BACKGROUND }}
       />
 
-      <span
-        aria-hidden
-        className="font-heading pointer-events-none absolute top-6 right-6 text-[18px] leading-none text-[var(--paper)]/55"
-      >
-        {category.glyph}
-      </span>
-
       <h3 className="font-heading relative z-10 text-[clamp(1.5rem,2.1vw,2rem)] leading-[1.05] font-semibold text-[var(--paper)]">
         {category.label}
       </h3>
