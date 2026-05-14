@@ -37,6 +37,18 @@ const PALETTE = [
 
 const FAILED_LOGO_URLS = new Set<string>();
 
+function isSupportedLogoUrl(logoUrl: string) {
+  const normalized = logoUrl.trim().toLowerCase();
+  if (normalized.startsWith("data:image/svg+xml")) return false;
+
+  try {
+    const url = new URL(logoUrl);
+    return !url.pathname.toLowerCase().endsWith(".svg");
+  } catch {
+    return !normalized.endsWith(".svg");
+  }
+}
+
 function hashSlug(slug: string) {
   let h = 0;
   for (let i = 0; i < slug.length; i += 1) {
@@ -65,10 +77,11 @@ export function OrgMark({
   const imagePaddingClass = IMAGE_PADDING_CLASS[size];
   const [failedLogoUrl, setFailedLogoUrl] = useState<string | null>(() => {
     if (!logoUrl) return null;
+    if (!isSupportedLogoUrl(logoUrl)) return logoUrl;
     return FAILED_LOGO_URLS.has(logoUrl) ? logoUrl : null;
   });
 
-  if (logoUrl && failedLogoUrl !== logoUrl) {
+  if (logoUrl && isSupportedLogoUrl(logoUrl) && failedLogoUrl !== logoUrl) {
     return (
       <div
         className={cn(
