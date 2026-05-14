@@ -341,12 +341,7 @@ export const getByGeographicFocus = query({
 const EDITORIAL_POOL_SIZE = 200;
 
 function passesEditorialQualityGate(org: Doc<"organizations">) {
-  return Boolean(
-    org.logoUrl?.trim() &&
-    org.tagline?.trim() &&
-    org.keywords &&
-    org.keywords.length > 0,
-  );
+  return Boolean(org.logoUrl?.trim() && org.tagline?.trim());
 }
 
 async function takeReadyEditorialPool(
@@ -399,49 +394,6 @@ export const getCauseOfTheWeek = query({
     });
 
     return sorted[0] ?? null;
-  },
-});
-
-export const getEditorsPicks = query({
-  args: {
-    weekKey: v.string(),
-    excludeSlugs: v.optional(v.array(v.string())),
-  },
-  handler: async (ctx, { weekKey, excludeSlugs = [] }) => {
-    const exclude = new Set(excludeSlugs);
-    const pool = await takeReadyEditorialPool(ctx, {});
-
-    const candidates = pool.filter(
-      (org) => passesEditorialQualityGate(org) && !exclude.has(org.slug),
-    );
-    if (candidates.length === 0) return [];
-
-    const seed = `editors-picks:${weekKey}`;
-    const sorted = [...candidates].sort((left, right) => {
-      const rightScore = getSeededVariantScore(seed, right.slug);
-      const leftScore = getSeededVariantScore(seed, left.slug);
-      if (rightScore !== leftScore) return rightScore - leftScore;
-      return left.name.localeCompare(right.name);
-    });
-
-    const picks: Doc<"organizations">[] = [];
-    const seenMajors = new Set<string>();
-    for (const org of sorted) {
-      if (picks.length === 3) break;
-      const major = org.nteeMajor ?? "__unknown__";
-      if (seenMajors.has(major) && picks.length < 2) continue;
-      picks.push(org);
-      seenMajors.add(major);
-    }
-
-    if (picks.length < 3) {
-      for (const org of sorted) {
-        if (picks.length === 3) break;
-        if (!picks.includes(org)) picks.push(org);
-      }
-    }
-
-    return picks;
   },
 });
 

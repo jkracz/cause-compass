@@ -98,6 +98,7 @@ export const internalInsertAiConfirmation = internalMutation({
           }),
         ),
       ),
+      keywords: v.optional(v.array(v.string())),
       reasoning: v.optional(v.string()),
     }),
   },

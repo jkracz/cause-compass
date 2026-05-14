@@ -3,34 +3,17 @@ import {
   BROWSE_CATEGORIES,
   type BrowseCategory,
 } from "@/lib/browse-categories";
-import { SectionHeader } from "@/components/editorial/section-header";
 
 const HATCH_BACKGROUND =
   "repeating-linear-gradient(135deg, transparent 0, transparent 5px, rgba(240, 230, 245, 0.09) 5px, rgba(240, 230, 245, 0.09) 6px)";
 
 export function CategoryMosaic() {
   return (
-    <section className="space-y-7">
-      <SectionHeader
-        kicker="Browse by cause"
-        title={
-          <>
-            Find something to{" "}
-            <span className="font-medium text-[var(--accent)] italic">
-              care
-            </span>{" "}
-            about.
-          </>
-        }
-        subtitle="Six broad causes. Each opens onto every nonprofit on our list working there."
-      />
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {BROWSE_CATEGORIES.map((category) => (
-          <MosaicTile key={category.slug} category={category} />
-        ))}
-      </div>
-    </section>
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {BROWSE_CATEGORIES.map((category) => (
+        <MosaicTile key={category.slug} category={category} />
+      ))}
+    </div>
   );
 }
 

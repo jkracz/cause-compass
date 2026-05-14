@@ -198,6 +198,7 @@ export default defineSchema({
       targetAudience: v.optional(v.string()),
       geographicFocus: v.optional(v.string()),
       activityTags: v.optional(v.array(activityValidator)),
+      keywords: v.optional(v.array(v.string())),
       reasoning: v.optional(v.string()),
     }),
   })

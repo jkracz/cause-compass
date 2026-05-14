@@ -7,7 +7,6 @@ import posthog from "posthog-js";
 
 import { EditorialOrgCard } from "@/components/editorial/editorial-org-card";
 import { OrganizationModal } from "@/components/organization-modal";
-import { SectionHeader } from "@/components/editorial/section-header";
 import { PortraitHeader } from "@/components/my-causes/portrait-header";
 import { PortraitBlock } from "@/components/my-causes/portrait-block";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
@@ -83,11 +82,6 @@ export function MyCauses({ likedOrgs }: { likedOrgs: Organization[] }) {
         </div>
       ) : (
         <section className="w-full">
-          <SectionHeader
-            kicker="Your collection"
-            title="Liked Causes"
-            className="mb-8"
-          />
           <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {organizations.map((org) => (
               <EditorialOrgCard

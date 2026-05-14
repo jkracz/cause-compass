@@ -19,6 +19,7 @@ export type AiConfirmationOutputs = {
   targetAudience?: string;
   geographicFocus?: string;
   activityTags?: Array<{ name: string; description: string }>;
+  keywords?: string[];
   reasoning?: string;
 };
 
@@ -80,6 +81,9 @@ export function buildAiConfirmationApplication(args: {
       : undefined,
     activityTags: hasConfirmedWebsite
       ? (confirmation.organizationActivities ?? undefined)
+      : undefined,
+    keywords: hasConfirmedWebsite
+      ? (confirmation.organizationKeywords ?? undefined)
       : undefined,
     reasoning: confirmation.reasoning ?? undefined,
   };
