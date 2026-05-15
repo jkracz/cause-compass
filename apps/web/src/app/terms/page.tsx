@@ -3,8 +3,7 @@ import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
   title: "Terms & Conditions",
-  description:
-    "The terms that govern your access to and use of Cause Compass.",
+  description: "The terms that govern your access to and use of Cause Compass.",
   alternates: {
     canonical: "/terms",
   },
@@ -97,8 +96,8 @@ export default function TermsPage() {
 
         <Section number={1} title="About Cause Compass">
           <Paragraph>
-            Cause Compass is an independently operated platform designed to
-            help people discover nonprofit organizations and explore publicly
+            Cause Compass is an independently operated platform designed to help
+            people discover nonprofit organizations and explore publicly
             available information about them.
           </Paragraph>
           <Paragraph>
@@ -165,8 +164,8 @@ export default function TermsPage() {
             ]}
           />
           <Paragraph>
-            Access may be suspended or terminated if these Terms are violated
-            or if use creates security, legal, or operational risk.
+            Access may be suspended or terminated if these Terms are violated or
+            if use creates security, legal, or operational risk.
           </Paragraph>
         </Section>
 
@@ -176,9 +175,8 @@ export default function TermsPage() {
         >
           <Paragraph>Cause Compass is a discovery platform.</Paragraph>
           <Paragraph>
-            The Service aggregates publicly available nonprofit information
-            and may use automated systems, including AI-assisted tools, to
-            help:
+            The Service aggregates publicly available nonprofit information and
+            may use automated systems, including AI-assisted tools, to help:
           </Paragraph>
           <List
             items={[
@@ -189,8 +187,7 @@ export default function TermsPage() {
             ]}
           />
           <Paragraph>
-            Because public data changes and automated systems can make
-            mistakes:
+            Because public data changes and automated systems can make mistakes:
           </Paragraph>
           <List
             items={[
@@ -200,8 +197,7 @@ export default function TermsPage() {
             ]}
           />
           <Paragraph>
-            Cause Compass is provided for informational discovery purposes
-            only.
+            Cause Compass is provided for informational discovery purposes only.
           </Paragraph>
           <Paragraph>
             You should independently verify important details directly with
@@ -219,10 +215,9 @@ export default function TermsPage() {
           title="Corrections, submissions, and organization claims"
         >
           <Paragraph>
-            If you submit feedback, corrections, organization updates,
-            nonprofit suggestions, or profile claim requests, you represent
-            that the information provided is accurate to the best of your
-            knowledge.
+            If you submit feedback, corrections, organization updates, nonprofit
+            suggestions, or profile claim requests, you represent that the
+            information provided is accurate to the best of your knowledge.
           </Paragraph>
           <Paragraph>
             By submitting information, you grant Cause Compass permission to
@@ -233,8 +228,8 @@ export default function TermsPage() {
 
         <Section number={8} title="Third-party links">
           <Paragraph>
-            Cause Compass may link to third-party nonprofit websites or
-            external resources.
+            Cause Compass may link to third-party nonprofit websites or external
+            resources.
           </Paragraph>
           <Paragraph>
             These are not controlled by Cause Compass, and we are not
@@ -258,8 +253,8 @@ export default function TermsPage() {
         <Section number={9} title="Intellectual property">
           <Paragraph>
             Cause Compass, including its software, design, branding, features,
-            text, graphics, and underlying systems, is protected by
-            intellectual property law.
+            text, graphics, and underlying systems, is protected by intellectual
+            property law.
           </Paragraph>
           <Paragraph>
             These Terms do not grant ownership rights in the Service.
@@ -290,8 +285,8 @@ export default function TermsPage() {
           </Paragraph>
           <Paragraph>
             TO THE MAXIMUM EXTENT PERMITTED BY LAW, ALL WARRANTIES ARE
-            DISCLAIMED, INCLUDING IMPLIED WARRANTIES OF MERCHANTABILITY,
-            FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, ACCURACY, AND
+            DISCLAIMED, INCLUDING IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
+            FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, ACCURACY, AND
             AVAILABILITY.
           </Paragraph>
           <Paragraph>WE DO NOT GUARANTEE:</Paragraph>
@@ -307,9 +302,9 @@ export default function TermsPage() {
 
         <Section number={13} title="Limitation of liability">
           <Paragraph>
-            TO THE MAXIMUM EXTENT PERMITTED BY LAW, CAUSE COMPASS, ITS
-            OPERATOR, AND SERVICE PROVIDERS WILL NOT BE LIABLE FOR INDIRECT,
-            INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES.
+            TO THE MAXIMUM EXTENT PERMITTED BY LAW, CAUSE COMPASS, ITS OPERATOR,
+            AND SERVICE PROVIDERS WILL NOT BE LIABLE FOR INDIRECT, INCIDENTAL,
+            SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES.
           </Paragraph>
           <Paragraph>
             THIS INCLUDES LOSS OF DATA, LOST OPPORTUNITIES, FINANCIAL LOSS,
@@ -350,8 +345,8 @@ export default function TermsPage() {
             ]}
           />
           <Paragraph>
-            Provisions that reasonably should survive termination will remain
-            in effect.
+            Provisions that reasonably should survive termination will remain in
+            effect.
           </Paragraph>
         </Section>
 
@@ -379,8 +374,8 @@ export default function TermsPage() {
 
         <Section number={18} title="Entire agreement">
           <Paragraph>
-            These Terms, together with the Privacy Policy, constitute the
-            entire agreement regarding your use of the Service.
+            These Terms, together with the Privacy Policy, constitute the entire
+            agreement regarding your use of the Service.
           </Paragraph>
           <Paragraph>
             If any provision is unenforceable, the remaining provisions remain

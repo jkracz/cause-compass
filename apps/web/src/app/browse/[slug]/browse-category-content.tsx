@@ -99,8 +99,7 @@ export function BrowseCategoryContent({
     return {
       kind: "ntee" as const,
       nteeMajors: category.nteeMajors,
-      geographicFocuses:
-        reachFilters.length > 0 ? reachFilters : undefined,
+      geographicFocuses: reachFilters.length > 0 ? reachFilters : undefined,
       states: stateFilters.length > 0 ? stateFilters : undefined,
     };
   }, [category, reachFilters, stateFilters]);

@@ -43,7 +43,9 @@ async function withTimeout<T>(
         timeout = setTimeout(
           () =>
             reject(
-              new Error(`Claude Agent SDK request timed out after ${timeoutMs}ms`),
+              new Error(
+                `Claude Agent SDK request timed out after ${timeoutMs}ms`,
+              ),
             ),
           timeoutMs,
         );
@@ -180,7 +182,9 @@ async function collectStructuredOutput(
       `Claude Agent SDK returned unexpected result subtype: ${result.subtype ?? "<missing>"}`,
     );
   }
-  throw new Error("Claude Agent SDK iterator completed without a result message");
+  throw new Error(
+    "Claude Agent SDK iterator completed without a result message",
+  );
 }
 
 /**

@@ -54,7 +54,7 @@ export function Footer() {
           </nav>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs tracking-widest uppercase text-[var(--ink-soft)]">
+        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs tracking-widest text-[var(--ink-soft)] uppercase">
           <a
             href="https://github.com/jkracz/cause-compass"
             target="_blank"

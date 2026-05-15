@@ -209,10 +209,7 @@ export function FeaturedCauses({
                   )}
                 >
                   <Heart
-                    className={cn(
-                      "h-4 w-4",
-                      isLiked && "fill-[var(--accent)]",
-                    )}
+                    className={cn("h-4 w-4", isLiked && "fill-[var(--accent)]")}
                   />
                 </button>
 

@@ -8,16 +8,16 @@ The project is not a charity rating service, donation checkout, or Form 990 rese
 
 This is a pnpm and Turborepo monorepo.
 
-| Path | Purpose |
-| --- | --- |
-| `apps/web` | Next.js 16 App Router frontend for browsing, saving, and reading nonprofit profiles |
-| `apps/parsley` | IRS Exempt Organizations data parsing, Convex import preparation, and optional AI confirmation runners |
-| `apps/scraper` | HTML and Playwright crawl workers that process the Convex crawl queue |
-| `packages/backend` | Convex backend: schema, queries, mutations, auth, crons, worker routes, and enrichment workflows |
-| `packages/lib` | Shared Zod schemas, TypeScript types, and utilities |
-| `packages/eslint-config` | Shared ESLint configuration |
-| `packages/typescript-config` | Shared TypeScript configuration |
-| `docs` | Architecture and pipeline notes |
+| Path                         | Purpose                                                                                                |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `apps/web`                   | Next.js 16 App Router frontend for browsing, saving, and reading nonprofit profiles                    |
+| `apps/parsley`               | IRS Exempt Organizations data parsing, Convex import preparation, and optional AI confirmation runners |
+| `apps/scraper`               | HTML and Playwright crawl workers that process the Convex crawl queue                                  |
+| `packages/backend`           | Convex backend: schema, queries, mutations, auth, crons, worker routes, and enrichment workflows       |
+| `packages/lib`               | Shared Zod schemas, TypeScript types, and utilities                                                    |
+| `packages/eslint-config`     | Shared ESLint configuration                                                                            |
+| `packages/typescript-config` | Shared TypeScript configuration                                                                        |
+| `docs`                       | Architecture and pipeline notes                                                                        |
 
 ## Architecture
 

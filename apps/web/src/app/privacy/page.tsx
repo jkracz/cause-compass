@@ -140,10 +140,7 @@ export default function PrivacyPage() {
           </Paragraph>
         </Section>
 
-        <Section
-          number={2}
-          title="Authentication and infrastructure providers"
-        >
+        <Section number={2} title="Authentication and infrastructure providers">
           <Paragraph>
             Cause Compass relies on third-party infrastructure providers to
             operate core parts of the Service. This includes:
@@ -175,8 +172,8 @@ export default function PrivacyPage() {
             Cause Compass uses{" "}
             <strong className="font-semibold text-[var(--ink)]">PostHog</strong>{" "}
             for product analytics. This helps us understand how the product is
-            being used so we can improve usability, identify product issues,
-            and make the experience better over time.
+            being used so we can improve usability, identify product issues, and
+            make the experience better over time.
           </Paragraph>
           <Paragraph>Analytics information may include:</Paragraph>
           <List
@@ -193,8 +190,8 @@ export default function PrivacyPage() {
           <Paragraph>
             Cause Compass does{" "}
             <strong className="font-semibold text-[var(--ink)]">not</strong>{" "}
-            currently use session replay tools to record visual reproductions
-            of user browsing sessions.
+            currently use session replay tools to record visual reproductions of
+            user browsing sessions.
           </Paragraph>
           <Paragraph>
             Analytics systems may associate usage activity with account or
@@ -370,8 +367,8 @@ export default function PrivacyPage() {
           </Paragraph>
           <Paragraph>
             If you access the Service from outside the United States, your
-            information may be transferred to and processed in the United
-            States or other jurisdictions where service providers operate.
+            information may be transferred to and processed in the United States
+            or other jurisdictions where service providers operate.
           </Paragraph>
           <Paragraph>
             By using the Service, you consent to those transfers.
@@ -383,8 +380,8 @@ export default function PrivacyPage() {
             Cause Compass is not intended for children under 13.
           </Paragraph>
           <Paragraph>
-            We do not knowingly collect personal information from children
-            under 13.
+            We do not knowingly collect personal information from children under
+            13.
           </Paragraph>
           <Paragraph>
             If you believe a child has submitted personal information, contact{" "}
@@ -393,7 +390,9 @@ export default function PrivacyPage() {
         </Section>
 
         <Section number={13} title="Changes to this Privacy Policy">
-          <Paragraph>This Privacy Policy may be updated periodically.</Paragraph>
+          <Paragraph>
+            This Privacy Policy may be updated periodically.
+          </Paragraph>
           <Paragraph>
             When updates are made, the effective date at the top will be
             updated.

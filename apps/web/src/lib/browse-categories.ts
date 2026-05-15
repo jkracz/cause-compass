@@ -106,7 +106,8 @@ export const BROWSE_CATEGORIES: BrowseCategory[] = [
   {
     slug: "recreation-sports",
     label: "Recreation & Sports",
-    description: "Play, physical activity, parks, clubs, and community leagues.",
+    description:
+      "Play, physical activity, parks, clubs, and community leagues.",
     accent: "#4F765C",
     accentInk: "#E5F0E8",
     nteeMajors: ["N"],
@@ -130,7 +131,8 @@ export const BROWSE_CATEGORIES: BrowseCategory[] = [
   {
     slug: "philanthropy-public-benefit",
     label: "Philanthropy & Public Benefit",
-    description: "Giving, volunteering, civic institutions, and public support.",
+    description:
+      "Giving, volunteering, civic institutions, and public support.",
     accent: "#8B5874",
     accentInk: "#F3E6EE",
     nteeMajors: ["T", "W"],
@@ -146,7 +148,8 @@ export const BROWSE_CATEGORIES: BrowseCategory[] = [
   {
     slug: "membership-mutual-benefit",
     label: "Membership & Mutual Benefit",
-    description: "Member-serving associations and mutual benefit organizations.",
+    description:
+      "Member-serving associations and mutual benefit organizations.",
     accent: "#6B6B56",
     accentInk: "#EDEDE2",
     nteeMajors: ["Y"],

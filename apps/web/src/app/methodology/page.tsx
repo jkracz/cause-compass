@@ -339,9 +339,7 @@ export default function MethodologyPage() {
         </header>
 
         <PageSection>
-          <SectionHeading>
-            Where the data comes from
-          </SectionHeading>
+          <SectionHeading>Where the data comes from</SectionHeading>
           <div className="mt-5 space-y-4">
             <Paragraph>
               The base directory is IRS Exempt Organizations data. Parsley, the
@@ -361,9 +359,7 @@ export default function MethodologyPage() {
         </PageSection>
 
         <PageSection>
-          <SectionHeading>
-            How records become profiles
-          </SectionHeading>
+          <SectionHeading>How records become profiles</SectionHeading>
           <ol className="mt-8 border-t border-[var(--rule)]">
             {PIPELINE_STEPS.map((step, index) => (
               <li
@@ -390,9 +386,7 @@ export default function MethodologyPage() {
         </PageSection>
 
         <PageSection>
-          <SectionHeading>
-            Which fields come from where
-          </SectionHeading>
+          <SectionHeading>Which fields come from where</SectionHeading>
           <div className="mt-5 space-y-6">
             <Paragraph>
               Each profile is assembled from four kinds of input. This is the
@@ -429,9 +423,7 @@ export default function MethodologyPage() {
         </PageSection>
 
         <PageSection>
-          <SectionHeading>
-            IRS codes and our cause buckets
-          </SectionHeading>
+          <SectionHeading>IRS codes and our cause buckets</SectionHeading>
           <div className="mt-5 space-y-5">
             <Paragraph>
               NTEE codes are hierarchical. We store both the specific code and
@@ -467,9 +459,7 @@ export default function MethodologyPage() {
         </PageSection>
 
         <PageSection>
-          <SectionHeading>
-            How we describe organization scale
-          </SectionHeading>
+          <SectionHeading>How we describe organization scale</SectionHeading>
           <div className="mt-5 space-y-8">
             <Paragraph>
               Exact finances are not the story here. Broad size language conveys
@@ -551,9 +541,7 @@ export default function MethodologyPage() {
         </PageSection>
 
         <PageSection>
-          <SectionHeading>
-            What this methodology does not do
-          </SectionHeading>
+          <SectionHeading>What this methodology does not do</SectionHeading>
           <div className="mt-5 space-y-4">
             <Paragraph>
               Cause Compass does not verify every claim an organization makes,

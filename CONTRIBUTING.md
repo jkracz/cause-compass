@@ -49,14 +49,14 @@ If you need sample data or access to a shared Cause Compass Convex instance for 
 
 ## Repository Layout
 
-| Path | Use |
-| --- | --- |
-| `apps/web` | Next.js frontend |
-| `apps/parsley` | IRS data parsing and import scripts |
-| `apps/scraper` | Crawl workers |
-| `packages/backend` | Convex backend |
-| `packages/lib` | Shared schemas, types, and utilities |
-| `docs` | Architecture and operations notes |
+| Path               | Use                                  |
+| ------------------ | ------------------------------------ |
+| `apps/web`         | Next.js frontend                     |
+| `apps/parsley`     | IRS data parsing and import scripts  |
+| `apps/scraper`     | Crawl workers                        |
+| `packages/backend` | Convex backend                       |
+| `packages/lib`     | Shared schemas, types, and utilities |
+| `docs`             | Architecture and operations notes    |
 
 Each package may have its own README with more specific commands.
 
