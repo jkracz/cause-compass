@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
-import posthog from "posthog-js";
 
 import { EditorialOrgCard } from "@/components/editorial/editorial-org-card";
 import { DynamicOrganizationModal } from "@/components/dynamic-organization-modal";
@@ -14,6 +13,7 @@ import {
   buildPortraitSentence,
   computePortraitStats,
 } from "@/lib/compass-axes";
+import { analytics } from "@/lib/analytics-client";
 
 type Organization = Doc<"organizations">;
 
@@ -34,7 +34,7 @@ export function MyCauses({ likedOrgs }: { likedOrgs: Organization[] }) {
     setSelectedOrg(org);
     setIsModalOpen(true);
 
-    posthog.capture("organization_details_viewed", {
+    analytics.capture("organization_details_viewed", {
       organization_id: org.slug,
       organization_name: org.name,
       organization_ein: org.ein,

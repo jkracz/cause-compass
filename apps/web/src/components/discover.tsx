@@ -9,7 +9,6 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import posthog from "posthog-js";
 import { useMutation, useQuery } from "convex/react";
 
 import { SwipeableCard } from "@/components/swipeable-card";
@@ -21,6 +20,7 @@ import {
   RECOMMENDATION_VERSION,
   RecommendationResult,
 } from "@/lib/recommendations";
+import { analytics } from "@/lib/analytics-client";
 
 export default function Discover() {
   const { guestId } = useAppSession();
@@ -76,7 +76,7 @@ export default function Discover() {
     }
 
     trackedImpressionsRef.current.add(currentRecommendation.organization.slug);
-    posthog.capture("recommendation_impression", {
+    analytics.capture("recommendation_impression", {
       organization_id: currentRecommendation.organization.slug,
       recommendation_version: RECOMMENDATION_VERSION,
       recommendation_score: currentRecommendation.score,
@@ -93,7 +93,7 @@ export default function Discover() {
       !hasTrackedCompletionRef.current
     ) {
       hasTrackedCompletionRef.current = true;
-      posthog.capture("discovery_session_completed", {
+      analytics.capture("discovery_session_completed", {
         total_causes_shown: activeRecommendations.length,
         total_liked: likedCount,
         total_skipped: activeRecommendations.length - likedCount,
@@ -121,7 +121,7 @@ export default function Discover() {
 
     setLikedCount((count) => count + 1);
 
-    posthog.capture("organization_liked", {
+    analytics.capture("organization_liked", {
       organization_id: currentRecommendation.organization.slug,
       organization_name: currentRecommendation.organization.name,
       organization_ein: currentRecommendation.organization.ein,
@@ -159,10 +159,10 @@ export default function Discover() {
       });
     } catch (error) {
       console.error("Error dismissing organization:", error);
-      posthog.captureException(error);
+      analytics.captureException(error);
     }
 
-    posthog.capture("organization_skipped", {
+    analytics.capture("organization_skipped", {
       organization_id: currentRecommendation.organization.slug,
       organization_name: currentRecommendation.organization.name,
       organization_ein: currentRecommendation.organization.ein,
@@ -195,7 +195,7 @@ export default function Discover() {
   const handleOpenDetails = useCallback(() => {
     if (!currentRecommendation) return;
     setDetailsOrgSlug(currentRecommendation.organization.slug);
-    posthog.capture("organization_details_viewed", {
+    analytics.capture("organization_details_viewed", {
       organization_id: currentRecommendation.organization.slug,
       organization_name: currentRecommendation.organization.name,
       organization_ein: currentRecommendation.organization.ein,

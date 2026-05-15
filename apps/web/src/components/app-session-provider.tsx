@@ -13,9 +13,9 @@ import {
 import { useRouter } from "next/navigation";
 import { ConvexReactClient, useConvexAuth, useMutation } from "convex/react";
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
-import posthog from "posthog-js";
 import { api } from "@cause/backend/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
+import { analytics } from "@/lib/analytics-client";
 
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -181,7 +181,7 @@ function AppSessionInner({
         throw new Error(result.error.message ?? "Unable to create account");
       }
 
-      posthog.capture("account_created", {
+      analytics.capture("account_created", {
         method: "email_password",
         guest_id: initialGuestId,
       });
@@ -199,7 +199,7 @@ function AppSessionInner({
     } catch (error) {
       console.error("Failed to sign out cleanly", error);
     } finally {
-      posthog.reset();
+      analytics.reset();
       router.refresh();
     }
   }, [router]);
@@ -210,14 +210,14 @@ function AppSessionInner({
     }
 
     if (isAuthenticated && userId) {
-      posthog.identify(userId, {
+      analytics.identify(userId, {
         email: user?.email,
         name: user?.name,
       });
       return;
     }
 
-    posthog.identify(initialGuestId);
+    analytics.identify(initialGuestId);
   }, [initialGuestId, isAuthenticated, user?.email, user?.name, userId]);
 
   useEffect(() => {
@@ -231,7 +231,7 @@ function AppSessionInner({
       return;
     }
 
-    posthog.capture("account_created", {
+    analytics.capture("account_created", {
       method: accountCreatedMethod,
       guest_id: initialGuestId,
     });

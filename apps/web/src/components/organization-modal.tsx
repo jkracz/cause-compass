@@ -2,7 +2,6 @@
 
 import type React from "react";
 import { ExternalLink, X, Heart, Share2, HandHeart, Users } from "lucide-react";
-import posthog from "posthog-js";
 import { useMutation, useQuery } from "convex/react";
 
 import { Button } from "@/components/ui/button";
@@ -29,6 +28,7 @@ import { api } from "@cause/backend/convex/_generated/api";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
 import { sanitizeTagline } from "@cause/lib";
 import { cn } from "@/lib/utils";
+import { analytics } from "@/lib/analytics-client";
 
 type Organization = Doc<"organizations">;
 
@@ -153,7 +153,7 @@ export function OrganizationModal({
   const handleSaveToggle = async () => {
     if (isLiked) {
       await unlikeOrganization({ guestId, organizationId: organization.slug });
-      posthog.capture("organization_removed", {
+      analytics.capture("organization_removed", {
         organization_id: organization.slug,
         organization_name: organization.name,
         organization_ein: organization.ein,
@@ -161,7 +161,7 @@ export function OrganizationModal({
       });
     } else {
       await likeOrganization({ guestId, organizationId: organization.slug });
-      posthog.capture("organization_liked", {
+      analytics.capture("organization_liked", {
         organization_id: organization.slug,
         organization_name: organization.name,
         organization_ein: organization.ein,
@@ -171,7 +171,7 @@ export function OrganizationModal({
   };
 
   const handleWebsiteClick = () => {
-    posthog.capture("organization_website_clicked", {
+    analytics.capture("organization_website_clicked", {
       organization_id: organization.slug,
       organization_name: organization.name,
       organization_ein: organization.ein,
@@ -180,7 +180,7 @@ export function OrganizationModal({
   };
 
   const handleDonateClick = () => {
-    posthog.capture("organization_donate_clicked", {
+    analytics.capture("organization_donate_clicked", {
       organization_id: organization.slug,
       organization_name: organization.name,
       organization_ein: organization.ein,
@@ -200,7 +200,7 @@ export function OrganizationModal({
       if (navigator.share && navigator.canShare(shareData)) {
         await navigator.share(shareData);
 
-        posthog.capture("organization_shared", {
+        analytics.capture("organization_shared", {
           organization_id: organization.slug,
           organization_name: organization.name,
           organization_ein: organization.ein,
@@ -212,7 +212,7 @@ export function OrganizationModal({
           description: "Organization link has been copied to your clipboard.",
         });
 
-        posthog.capture("organization_shared", {
+        analytics.capture("organization_shared", {
           organization_id: organization.slug,
           organization_name: organization.name,
           organization_ein: organization.ein,
@@ -230,7 +230,7 @@ export function OrganizationModal({
           description: "Organization link has been copied to your clipboard.",
         });
 
-        posthog.capture("organization_shared", {
+        analytics.capture("organization_shared", {
           organization_id: organization.slug,
           organization_name: organization.name,
           organization_ein: organization.ein,
@@ -239,8 +239,8 @@ export function OrganizationModal({
       } catch (clipboardError) {
         console.error("Error sharing:", error);
         console.error("Clipboard fallback error:", clipboardError);
-        posthog.captureException(error);
-        posthog.captureException(clipboardError);
+        analytics.captureException(error);
+        analytics.captureException(clipboardError);
 
         toast.error("Share failed", {
           description: "Unable to share or copy link. Please try again.",
