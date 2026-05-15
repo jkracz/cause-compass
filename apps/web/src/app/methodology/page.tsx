@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { BROWSE_CATEGORIES } from "@/lib/browse-categories";
@@ -46,15 +45,15 @@ const PIPELINE_STEPS = [
   },
   {
     title: "Filter and transform",
-    body: "Eligible organizations are transformed into Convex-ready JSONL records with normalized names, addresses, financial buckets, NTEE major codes, and import metadata.",
+    body: "Eligible organizations become Convex-ready JSONL records with normalized names, addresses, financial buckets, NTEE major codes, and import metadata.",
   },
   {
     title: "Find public context",
-    body: "The scraper and confirmation pipeline look for likely official websites, about pages, donation links, social links, and public text that can help describe what the organization actually does.",
+    body: "The scraper looks for likely official websites, about pages, donation links, social links, and public text that helps describe what the organization actually does.",
   },
   {
     title: "Structure for discovery",
-    body: "AI-assisted steps help turn public web content into consistent fields such as mission, tagline, summary, activities, audience, geography, and keywords. Those fields improve browsing, but they are not treated as guarantees.",
+    body: "AI-assisted steps turn that public web content into consistent fields: mission, tagline, summary, activities, audience, geography, and keywords.",
   },
 ];
 
@@ -72,12 +71,12 @@ const CODE_EXPLANATIONS = [
   {
     term: "NTEE major",
     description:
-      "The first letter of the NTEE code. Cause Compass stores this separately because it is useful for broad browsing and aggregate counts.",
+      "The first letter of the NTEE code, stored separately because it is useful for broad browsing and aggregate counts.",
   },
   {
     term: "Activity codes",
     description:
-      "IRS activity codes describe activities reported in the EO file. A record can contain up to three activity codes.",
+      "IRS activity codes describe activities reported in the EO file. A record can contain up to three.",
   },
   {
     term: "Deductibility code",
@@ -87,12 +86,12 @@ const CODE_EXPLANATIONS = [
   {
     term: "Foundation code",
     description:
-      "An IRS classification for foundation status, such as private foundation, operating foundation, or public charity style categories.",
+      "An IRS classification for foundation status, such as private foundation, operating foundation, or public charity.",
   },
   {
     term: "Asset and income buckets",
     description:
-      "Cause Compass stores broad IRS-derived financial buckets instead of making exact financial size the focus of discovery.",
+      "Broad IRS-derived financial ranges, stored instead of making exact financial size the focus of discovery.",
   },
   {
     term: "Enrichment stage",
@@ -113,42 +112,38 @@ const SIZE_BUCKETS = [
 const SCALE_LABELS = [
   {
     label: "Grassroots",
-    buckets: ["micro", "small"],
-    description:
-      "Used in the app for smaller organizations based on IRS asset bucket.",
+    buckets: "micro, small",
+    description: "Smaller organizations, by IRS asset bucket.",
   },
   {
     label: "Established",
-    buckets: ["mid"],
-    description: "Used for mid-sized organizations.",
+    buckets: "mid",
+    description: "Mid-sized organizations.",
   },
   {
     label: "Institutional",
-    buckets: ["large", "mega"],
-    description: "Used for large and major organizations.",
+    buckets: "large, mega",
+    description: "Large and major organizations.",
   },
 ] as const;
 
 const REACH_LEVELS = [
   {
     label: "Local",
-    description:
-      "Work appears rooted in a city, neighborhood, county, or nearby community.",
+    description: "Rooted in a city, neighborhood, county, or nearby community.",
   },
   {
     label: "Regional",
-    description:
-      "Work appears to span a metro area, multi-county area, state, or region.",
+    description: "Spans a metro area, multi-county area, state, or region.",
   },
   {
     label: "National",
     description:
-      "Work appears to operate across the United States or serve a national audience.",
+      "Operates across the United States or serves a national audience.",
   },
   {
     label: "Global",
-    description:
-      "Work appears to cross national borders or focus on international issues.",
+    description: "Crosses national borders or focuses on international issues.",
   },
 ] as const;
 
@@ -192,6 +187,13 @@ const SCRAPED_FIELDS = [
   "Crawled text used as AI input",
 ];
 
+const PROVENANCE_GROUPS = [
+  { label: "Pulled from IRS data", items: IRS_FIELDS },
+  { label: "Derived by Cause Compass", items: DERIVED_FIELDS },
+  { label: "Found by scraping", items: SCRAPED_FIELDS },
+  { label: "Generated or classified with AI", items: AI_FIELDS },
+] as const;
+
 const NTEE_MAJOR_CODES = [
   ["A", "Arts, Culture & Humanities"],
   ["B", "Education"],
@@ -227,7 +229,8 @@ const NTEE_MAJOR_LABELS = Object.fromEntries(NTEE_MAJOR_CODES) as Record<
 >;
 
 const TAXONOMY_GROUPS = BROWSE_CATEGORIES.map((category) => ({
-  ...category,
+  slug: category.slug,
+  label: category.label,
   majors: category.nteeMajors.map((major) => ({
     code: major,
     label: major ? NTEE_MAJOR_LABELS[major] : "No NTEE major code",
@@ -236,23 +239,17 @@ const TAXONOMY_GROUPS = BROWSE_CATEGORIES.map((category) => ({
 
 function Paragraph({ children }: { children: ReactNode }) {
   return (
-    <p className="text-[15.5px] leading-[1.58] text-[var(--ink-soft)]">
+    <p className="max-w-[68ch] text-[15.5px] leading-[1.58] text-[var(--ink-soft)]">
       {children}
     </p>
   );
 }
 
-function SectionHeading({ eyebrow, children }: { eyebrow: string; children: ReactNode }) {
+function SectionHeading({ children }: { children: ReactNode }) {
   return (
-    <div>
-      <p className="flex items-center gap-3 text-[11px] font-semibold tracking-[0.32em] text-[var(--accent)] uppercase">
-        <span aria-hidden className="h-px w-7 bg-[var(--accent)]" />
-        {eyebrow}
-      </p>
-      <h2 className="mt-3 font-heading text-[clamp(1.65rem,2.5vw,2.5rem)] leading-[1.08] font-semibold tracking-[-0.005em] text-[var(--ink)]">
-        {children}
-      </h2>
-    </div>
+    <h2 className="font-heading text-[clamp(1.5rem,2.1vw,1.875rem)] leading-[1.15] font-semibold tracking-[-0.005em] text-[var(--ink)]">
+      {children}
+    </h2>
   );
 }
 
@@ -277,13 +274,21 @@ function ExternalLink({
 
 function CodePill({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex min-w-9 justify-center rounded-full border border-[var(--rule)] bg-[var(--card)] px-3 py-1 text-[12px] leading-none font-semibold text-[var(--ink)]">
+    <span className="inline-flex min-w-8 justify-center rounded-full border border-[var(--rule)] bg-[var(--card)] px-2.5 py-1 text-[12px] leading-none font-semibold text-[var(--ink)]">
       {children}
     </span>
   );
 }
 
-function CompactList({ items }: { items: readonly string[] }) {
+function GroupLabel({ children }: { children: ReactNode }) {
+  return (
+    <p className="text-[11px] font-semibold tracking-[0.32em] text-[var(--ink-mute)] uppercase">
+      {children}
+    </p>
+  );
+}
+
+function MarkedList({ items }: { items: readonly string[] }) {
   return (
     <ul className="mt-4 space-y-2">
       {items.map((item) => (
@@ -321,36 +326,29 @@ export default function MethodologyPage() {
     <main className="relative min-h-screen w-full">
       <div className="container mx-auto px-6 py-16 md:py-20">
         <header className="mx-auto max-w-4xl">
-          <p className="text-[11px] font-semibold tracking-[0.32em] text-[var(--accent)] uppercase">
-            Methodology
-          </p>
-          <h1 className="mt-4 font-heading text-[clamp(2.4rem,5vw,4.25rem)] leading-[0.98] font-semibold tracking-[-0.01em] text-[var(--ink)]">
+          <h1 className="font-heading text-[clamp(2.4rem,5vw,4.25rem)] leading-[0.98] font-semibold tracking-[-0.01em] text-[var(--ink)]">
             How Cause Compass turns public records into discovery.
           </h1>
-          <div className="mt-6 max-w-[68ch] space-y-3">
-            <Paragraph>
-              Cause Compass starts with public nonprofit data and reshapes it
-              for casual exploration. The goal is not to rate, certify, or rank
-              organizations. The goal is to make it easier to understand what a
-              nonprofit is, where it works, and which causes it may connect to.
-            </Paragraph>
-            <Paragraph>
-              This page explains the records, codes, scraping, source links,
-              and higher-level groupings behind the product.
-            </Paragraph>
-          </div>
+          <p className="mt-6 max-w-[68ch] text-[16px] leading-[1.58] text-[var(--ink-soft)]">
+            Cause Compass reshapes public nonprofit data into something you can
+            wander through. It does not rate, certify, or rank organizations. It
+            exists to make it easier to see what a nonprofit is, where it works,
+            and which causes it connects to. This page documents how that
+            happens, and where it stops.
+          </p>
         </header>
 
         <PageSection>
-          <SectionHeading eyebrow="Sources">Where the data comes from</SectionHeading>
+          <SectionHeading>
+            Where the data comes from
+          </SectionHeading>
           <div className="mt-5 space-y-4">
             <Paragraph>
-              The base directory comes from IRS Exempt Organizations data.
-              Parsley, the import package in this monorepo, processes those
-              files and uses reference dictionaries for the codes that appear in
-              them. The public profile layer adds information from organization
-              websites and other public web pages when those pages can be
-              matched with reasonable confidence.
+              The base directory is IRS Exempt Organizations data. Parsley, the
+              import package in this monorepo, processes those files and expands
+              the codes inside them. A second layer adds public web information
+              from organization sites, used only when the match is reasonably
+              confident.
             </Paragraph>
             <ul className="divide-y divide-[var(--rule)] border-y border-[var(--rule)]">
               {IRS_LINKS.map((link) => (
@@ -363,29 +361,56 @@ export default function MethodologyPage() {
         </PageSection>
 
         <PageSection>
-          <SectionHeading eyebrow="Pipeline">How records become profiles</SectionHeading>
-          <ol className="mt-6 grid gap-4 md:grid-cols-2">
+          <SectionHeading>
+            How records become profiles
+          </SectionHeading>
+          <ol className="mt-8 border-t border-[var(--rule)]">
             {PIPELINE_STEPS.map((step, index) => (
               <li
                 key={step.title}
-                className="rounded-[20px] border border-[var(--rule)] bg-[color:rgba(255,255,255,0.58)] p-5"
+                className="grid gap-x-6 gap-y-1.5 border-b border-[var(--rule)] py-6 sm:grid-cols-[3.5rem_1fr]"
               >
-                <p className="text-[11px] font-semibold tracking-[0.32em] text-[var(--ink-mute)] uppercase">
-                  Step {index + 1}
-                </p>
-                <h3 className="mt-3 font-heading text-[20px] leading-[1.15] font-semibold text-[var(--ink)]">
-                  {step.title}
-                </h3>
-                <p className="mt-2 text-[14.5px] leading-[1.55] text-[var(--ink-soft)]">
-                  {step.body}
-                </p>
+                <span
+                  aria-hidden
+                  className="font-heading text-[26px] leading-none font-semibold text-[var(--rule-strong)] tabular-nums"
+                >
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <h3 className="font-heading text-[19px] leading-[1.2] font-semibold text-[var(--ink)]">
+                    {step.title}
+                  </h3>
+                  <p className="mt-1.5 max-w-[60ch] text-[14.5px] leading-[1.55] text-[var(--ink-soft)]">
+                    {step.body}
+                  </p>
+                </div>
               </li>
             ))}
           </ol>
         </PageSection>
 
         <PageSection>
-          <SectionHeading eyebrow="Codes">What the fields mean</SectionHeading>
+          <SectionHeading>
+            Which fields come from where
+          </SectionHeading>
+          <div className="mt-5 space-y-6">
+            <Paragraph>
+              Each profile is assembled from four kinds of input. This is the
+              split we track internally.
+            </Paragraph>
+            <div className="grid gap-x-12 gap-y-8 sm:grid-cols-2">
+              {PROVENANCE_GROUPS.map((group) => (
+                <div key={group.label}>
+                  <GroupLabel>{group.label}</GroupLabel>
+                  <MarkedList items={group.items} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </PageSection>
+
+        <PageSection>
+          <SectionHeading>What the fields mean</SectionHeading>
           <dl className="mt-5 divide-y divide-[var(--rule)] border-y border-[var(--rule)]">
             {CODE_EXPLANATIONS.map((item) => (
               <div
@@ -395,7 +420,7 @@ export default function MethodologyPage() {
                 <dt className="font-heading text-[17px] font-semibold text-[var(--ink)]">
                   {item.term}
                 </dt>
-                <dd className="text-[15px] leading-[1.55] text-[var(--ink-soft)]">
+                <dd className="max-w-[62ch] text-[15px] leading-[1.55] text-[var(--ink-soft)]">
                   {item.description}
                 </dd>
               </div>
@@ -404,204 +429,143 @@ export default function MethodologyPage() {
         </PageSection>
 
         <PageSection>
-          <SectionHeading eyebrow="Field provenance">
-            Which fields come from which source
+          <SectionHeading>
+            IRS codes and our cause buckets
           </SectionHeading>
-          <div className="mt-5 space-y-4">
+          <div className="mt-5 space-y-5">
             <Paragraph>
-              Organization profiles combine source data, deterministic
-              transformations, scraped public web information, and AI-assisted
-              enrichment. This is the split we use internally.
+              NTEE codes are hierarchical. We store both the specific code and
+              its major, which is the first letter: a specific Education code
+              rolls up to major <CodePill>B</CodePill>. We then group those IRS
+              majors into broader cause areas that are easier to browse.
             </Paragraph>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-[20px] border border-[var(--rule)] bg-[color:rgba(255,255,255,0.58)] p-5">
-                <h3 className="font-heading text-[20px] leading-[1.15] font-semibold text-[var(--ink)]">
-                  Pulled from IRS data
-                </h3>
-                <CompactList items={IRS_FIELDS} />
-              </div>
-
-              <div className="rounded-[20px] border border-[var(--rule)] bg-[color:rgba(255,255,255,0.58)] p-5">
-                <h3 className="font-heading text-[20px] leading-[1.15] font-semibold text-[var(--ink)]">
-                  Derived by Cause Compass
-                </h3>
-                <CompactList items={DERIVED_FIELDS} />
-              </div>
-
-              <div className="rounded-[20px] border border-[var(--rule)] bg-[color:rgba(255,255,255,0.58)] p-5">
-                <h3 className="font-heading text-[20px] leading-[1.15] font-semibold text-[var(--ink)]">
-                  Found by scraping
-                </h3>
-                <CompactList items={SCRAPED_FIELDS} />
-              </div>
-
-              <div className="rounded-[20px] border border-[var(--rule)] bg-[color:rgba(255,255,255,0.58)] p-5">
-                <h3 className="font-heading text-[20px] leading-[1.15] font-semibold text-[var(--ink)]">
-                  Generated or classified with AI
-                </h3>
-                <CompactList items={AI_FIELDS} />
-              </div>
-            </div>
-          </div>
-        </PageSection>
-
-        <PageSection>
-          <SectionHeading eyebrow="Size and reach">
-            How we describe organization scale
-          </SectionHeading>
-          <div className="mt-5 space-y-6">
-            <Paragraph>
-              Cause Compass avoids presenting exact finances as the main story.
-              We use broad size language so a person can understand rough scale
-              without turning discovery into financial ranking.
-            </Paragraph>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-[20px] border border-[var(--rule)] bg-[color:rgba(255,255,255,0.58)] p-5">
-                <h3 className="font-heading text-[20px] leading-[1.15] font-semibold text-[var(--ink)]">
-                  Size comes from IRS financial amounts
-                </h3>
-                <p className="mt-3 text-[14.5px] leading-[1.55] text-[var(--ink-soft)]">
-                  Parsley converts IRS asset and income amounts into shared
-                  buckets. The app primarily uses the asset bucket when it calls
-                  an organization grassroots, established, large, or major.
-                </p>
-                <div className="mt-4 grid gap-2">
-                  {SIZE_BUCKETS.map(([bucket, range]) => (
-                    <div
-                      key={bucket}
-                      className="grid grid-cols-[5.5rem_1fr] items-center gap-3 rounded-[14px] border border-[var(--rule)] bg-[var(--card)] px-3 py-2.5"
-                    >
-                      <CodePill>{bucket}</CodePill>
-                      <span className="text-[14px] leading-[1.35] text-[var(--ink-soft)]">
-                        {range}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-[20px] border border-[var(--rule)] bg-[color:rgba(255,255,255,0.58)] p-5">
-                <h3 className="font-heading text-[20px] leading-[1.15] font-semibold text-[var(--ink)]">
-                  Reach is AI-assisted
-                </h3>
-                <p className="mt-3 text-[14.5px] leading-[1.55] text-[var(--ink-soft)]">
-                  Geographic focus is inferred from public website content and
-                  constrained to four labels. It is a discovery aid, not a legal
-                  service-area claim.
-                </p>
-                <div className="mt-4 grid gap-2">
-                  {REACH_LEVELS.map((level) => (
-                    <div
-                      key={level.label}
-                      className="rounded-[14px] border border-[var(--rule)] bg-[var(--card)] px-3 py-3"
-                    >
-                      <CodePill>{level.label}</CodePill>
-                      <p className="mt-2 text-[14px] leading-[1.4] text-[var(--ink-soft)]">
-                        {level.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-[20px] border border-[var(--rule)] bg-[color:rgba(255,255,255,0.58)] p-5">
-              <h3 className="font-heading text-[20px] leading-[1.15] font-semibold text-[var(--ink)]">
-                How size appears in the product
-              </h3>
-              <div className="mt-4 grid gap-2 md:grid-cols-3">
-                {SCALE_LABELS.map((scale) => (
-                  <div
-                    key={scale.label}
-                    className="rounded-[14px] border border-[var(--rule)] bg-[var(--card)] px-3 py-3"
-                  >
-                    <h4 className="font-heading text-[16px] font-semibold text-[var(--ink)]">
-                      {scale.label}
-                    </h4>
-                    <p className="mt-1 text-[13.5px] leading-[1.4] text-[var(--ink-soft)]">
-                      Buckets: {scale.buckets.join(", ")}
-                    </p>
-                    <p className="mt-2 text-[13.5px] leading-[1.4] text-[var(--ink-soft)]">
-                      {scale.description}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </PageSection>
-
-        <PageSection>
-          <SectionHeading eyebrow="NTEE">IRS codes and our cause buckets</SectionHeading>
-          <div className="mt-5 space-y-4">
-            <Paragraph>
-              NTEE codes are hierarchical. Cause Compass stores both the
-              specific code and the major code, which is the first letter. For
-              example, a specific code under Education rolls up to major code{" "}
-              <CodePill>B</CodePill>. We then group those IRS major codes into
-              broader cause areas that are easier to browse.
-            </Paragraph>
-
-            <div className="grid gap-4">
+            <dl className="divide-y divide-[var(--rule)] border-y border-[var(--rule)]">
               {TAXONOMY_GROUPS.map((category) => (
                 <div
                   key={category.slug}
-                  className="rounded-[20px] border bg-[color:rgba(255,255,255,0.58)] p-4 sm:grid sm:grid-cols-[15rem_1fr] sm:gap-5 sm:p-5"
-                  style={{
-                    borderColor: category.accent,
-                    backgroundColor: `${category.accent}14`,
-                  }}
+                  className="grid gap-2 py-4 sm:grid-cols-[14rem_1fr] sm:gap-8"
                 >
-                  <div>
-                    <h3 className="font-heading text-[18px] leading-[1.15] font-semibold text-[var(--ink)]">
-                      {category.label}
-                    </h3>
-                    <p className="mt-2 text-[13.5px] leading-[1.45] text-[var(--ink-soft)]">
-                      {category.description}
-                    </p>
-                  </div>
-
-                  <div className="mt-4 grid gap-2 sm:mt-0">
+                  <dt className="font-heading text-[16px] leading-[1.25] font-semibold text-[var(--ink)]">
+                    {category.label}
+                  </dt>
+                  <dd className="flex flex-col gap-1.5">
                     {category.majors.map((major) => (
                       <div
                         key={major.code ?? "none"}
-                        className="grid gap-2 rounded-[14px] border border-[var(--rule)] bg-[var(--card)] px-3 py-3 sm:grid-cols-[5rem_1fr] sm:items-center"
+                        className="flex items-baseline gap-2.5 text-[14px] leading-[1.4] text-[var(--ink-soft)]"
                       >
-                        <CodePill>{major.code ?? "None"}</CodePill>
-                        <span className="text-[14px] leading-[1.35] text-[var(--ink-soft)]">
-                          {major.label}
-                        </span>
+                        <CodePill>{major.code ?? "—"}</CodePill>
+                        <span>{major.label}</span>
                       </div>
                     ))}
-                  </div>
+                  </dd>
                 </div>
               ))}
+            </dl>
+          </div>
+        </PageSection>
+
+        <PageSection>
+          <SectionHeading>
+            How we describe organization scale
+          </SectionHeading>
+          <div className="mt-5 space-y-8">
+            <Paragraph>
+              Exact finances are not the story here. Broad size language conveys
+              rough scale without turning discovery into financial ranking, and
+              geographic reach is inferred from public website content rather
+              than declared.
+            </Paragraph>
+
+            <div className="grid gap-x-12 gap-y-8 sm:grid-cols-2">
+              <div>
+                <GroupLabel>Size, from IRS financial amounts</GroupLabel>
+                <p className="mt-3 max-w-[42ch] text-[14px] leading-[1.55] text-[var(--ink-soft)]">
+                  Parsley converts IRS asset and income amounts into shared
+                  buckets. The app primarily reads the asset bucket.
+                </p>
+                <dl className="mt-4 divide-y divide-[var(--rule)] border-y border-[var(--rule)]">
+                  {SIZE_BUCKETS.map(([bucket, range]) => (
+                    <div
+                      key={bucket}
+                      className="grid grid-cols-[6rem_1fr] items-center gap-3 py-2.5"
+                    >
+                      <dt>
+                        <CodePill>{bucket}</CodePill>
+                      </dt>
+                      <dd className="text-[14px] leading-[1.35] text-[var(--ink-soft)]">
+                        {range}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+
+              <div>
+                <GroupLabel>Reach, inferred by AI</GroupLabel>
+                <p className="mt-3 max-w-[42ch] text-[14px] leading-[1.55] text-[var(--ink-soft)]">
+                  Geographic focus is read from public website content and
+                  constrained to four labels.
+                </p>
+                <dl className="mt-4 divide-y divide-[var(--rule)] border-y border-[var(--rule)]">
+                  {REACH_LEVELS.map((level) => (
+                    <div
+                      key={level.label}
+                      className="grid grid-cols-[6rem_1fr] items-baseline gap-3 py-2.5"
+                    >
+                      <dt>
+                        <CodePill>{level.label}</CodePill>
+                      </dt>
+                      <dd className="text-[14px] leading-[1.4] text-[var(--ink-soft)]">
+                        {level.description}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </div>
+
+            <div>
+              <GroupLabel>How size appears in the product</GroupLabel>
+              <dl className="mt-4 divide-y divide-[var(--rule)] border-y border-[var(--rule)]">
+                {SCALE_LABELS.map((scale) => (
+                  <div
+                    key={scale.label}
+                    className="grid gap-1 py-3 sm:grid-cols-[9rem_8rem_1fr] sm:items-baseline sm:gap-6"
+                  >
+                    <dt className="font-heading text-[16px] font-semibold text-[var(--ink)]">
+                      {scale.label}
+                    </dt>
+                    <dd className="text-[13px] text-[var(--ink-mute)]">
+                      {scale.buckets}
+                    </dd>
+                    <dd className="text-[14px] leading-[1.4] text-[var(--ink-soft)]">
+                      {scale.description}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
           </div>
         </PageSection>
 
         <PageSection>
-          <SectionHeading eyebrow="Limits">What this methodology does not do</SectionHeading>
+          <SectionHeading>
+            What this methodology does not do
+          </SectionHeading>
           <div className="mt-5 space-y-4">
             <Paragraph>
               Cause Compass does not verify every claim an organization makes,
               inspect financial filings for quality, or assign scores. Public
-              records can lag reality, organization websites can move, and
-              AI-assisted summaries can be incomplete or wrong.
+              records lag reality, organization websites move, and AI-assisted
+              summaries can be incomplete or wrong.
             </Paragraph>
             <Paragraph>
               The product is built for discovery. Before donating, volunteering,
-              or making any important decision, users should review the
-              organization directly and consult the original public sources.
+              or making any important decision, review the organization directly
+              and consult the original public sources.
             </Paragraph>
-            <Link
-              href="/about"
-              className="inline-flex items-center rounded-full bg-[var(--ink)] px-6 py-3 text-[11px] font-semibold tracking-[0.32em] text-[var(--paper)] uppercase transition-all hover:bg-[var(--accent)] hover:shadow-[0_18px_40px_-20px_rgba(200,38,110,0.55)]"
-            >
-              Back to about
-            </Link>
           </div>
         </PageSection>
       </div>

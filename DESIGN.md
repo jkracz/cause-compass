@@ -254,7 +254,9 @@ The four-glyph set (◐ Global, ◈ National, ◇ Regional, ◉ Local) appears a
 
 ### Section Headers
 
-Three-row vertical structure. (1) Label kicker in Margin-Note Magenta with a 28px Margin-Note Magenta hairline prefix. (2) Headline in Plum Ink. (3) Optional subtitle in Faded Plum at body size. The hairline prefix is the system's "this is a section" mark; it appears nowhere else.
+Long-form content pages (about, methodology) lead each section with a single Bitter headline in Plum Ink, no kicker. The headline carries the section; a one-word label above a self-describing headline is restated-heading noise. An optional subtitle sits below in Faded Plum at body size.
+
+A small uppercase label kicker (Label token, Faded Plum) is allowed only inside dense dialog or panel contexts (the organization profile dialog) where a compact section marker earns its place. The earlier magenta hairline-prefix kicker is retired; do not reintroduce it.
 
 ## 6. Do's and Don'ts
 

@@ -104,45 +104,6 @@ const FAQS: { question: string; answer: ReactNode }[] = [
   },
 ];
 
-const SOURCES = [
-  "Public nonprofit registration and filing information",
-  "Organizational websites and public web content",
-  "Public reference data",
-  "AI-assisted categorization, summarization, and profile structuring",
-];
-
-const AI_HELPS = [
-  "Match nonprofits with their likely official public websites",
-  "Organize information into consistent profile formats",
-  "Generate summaries and structured metadata that improve discovery",
-  "Improve searchability across causes, missions, and organizations",
-];
-
-const CAVEATS = [
-  "Some information may be incomplete, outdated, or incorrect",
-  "AI-generated summaries or classifications may occasionally contain mistakes",
-  "Inclusion on Cause Compass does not imply endorsement, certification, or evaluation",
-];
-
-function MarkedList({ items }: { items: string[] }) {
-  return (
-    <ul className="mt-5 grid gap-x-10 gap-y-3 sm:grid-cols-2">
-      {items.map((item) => (
-        <li
-          key={item}
-          className="flex items-start gap-3 text-[15px] leading-[1.55] text-[var(--ink-soft)]"
-        >
-          <span
-            aria-hidden
-            className="mt-[0.7em] block h-px w-4 shrink-0 bg-[var(--accent)]/70"
-          />
-          <span>{item}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 function Paragraph({ children }: { children: ReactNode }) {
   return (
     <p className="text-[15.5px] leading-[1.55] text-[var(--ink-soft)]">
@@ -177,11 +138,11 @@ export default function AboutPage() {
               doing meaningful work in your own community.
             </p>
             <p>
-              Cause Compass was built to make nonprofit discovery simpler,
-              more accessible, and more human. Whether you are looking for a
-              cause to support, an organization to volunteer with, or a
-              nonprofit working on an issue you care deeply about, Cause
-              Compass helps you explore organizations in one place.
+              Cause Compass was built to make nonprofit discovery simpler, more
+              accessible, and more human. Whether you are looking for an
+              organization to volunteer with or a nonprofit working on an issue
+              you care deeply about, Cause Compass helps you explore
+              organizations in one place.
             </p>
           </div>
         </header>
@@ -191,78 +152,53 @@ export default function AboutPage() {
           <SectionHeading>A discovery problem worth solving</SectionHeading>
           <div className="mt-4 space-y-3">
             <Paragraph>
-              The nonprofit world is full of organizations doing important
-              work, but many of them are surprisingly hard to find.
+              The nonprofit world is full of organizations doing important work,
+              but many of them are surprisingly hard to find.
             </Paragraph>
             <Paragraph>
-              Large organizations often have dedicated marketing teams,
-              polished websites, and strong search visibility. Smaller
-              nonprofits often do not. Yet those smaller organizations may be
-              doing incredible work right in your neighborhood.
+              Large organizations often have dedicated marketing teams, polished
+              websites, and strong search visibility. Smaller nonprofits often
+              do not. Yet those smaller organizations may be doing incredible
+              work right in your neighborhood.
             </Paragraph>
             <Paragraph>
-              Cause Compass was created to help level that playing field by
-              making it easier for people to discover nonprofits based on
-              mission and cause, not just search visibility. We believe people
-              should be able to discover organizations they care about,
-              whether they are nationally known or quietly making a difference
-              locally.
+              Cause Compass exists to level that field: it surfaces nonprofits
+              by mission and cause, not by who markets themselves best. Everyone
+              should be able to find the organizations they care about, whether
+              nationally known or quietly working down the street.
             </Paragraph>
           </div>
         </section>
 
-        {/* How Cause Compass works */}
+        {/* What we are, and what we aren't */}
         <section className="mx-auto mt-16 max-w-3xl md:mt-20">
-          <SectionHeading>Public data, organized for discovery</SectionHeading>
-          <div className="mt-4 space-y-6">
+          <SectionHeading>What we are, and what we aren&rsquo;t</SectionHeading>
+          <div className="mt-4 space-y-4">
             <Paragraph>
-              Cause Compass brings together publicly available nonprofit
-              information and uses AI to help make organization profiles
-              easier to explore. The detailed{" "}
+              Cause Compass organizes public nonprofit information into
+              something you can wander through. We start with IRS records, add
+              what organizations share publicly about their work, and use AI to
+              shape that into profiles you can actually read. The{" "}
               <Link
                 href="/methodology"
                 className="font-medium text-[var(--ink)] underline decoration-[var(--rule-strong)] decoration-1 underline-offset-4 transition-colors hover:text-[var(--accent)] hover:decoration-[var(--accent)]"
               >
                 methodology
               </Link>{" "}
-              explains the source data, scraping process, IRS codes, and browse
-              category groupings.
+              covers where the data comes from and how far we take it.
             </Paragraph>
-
-            <div>
-              <p className="text-[11px] font-semibold tracking-[0.32em] text-[var(--ink-mute)] uppercase">
-                What we draw on
-              </p>
-              <MarkedList items={SOURCES} />
-            </div>
-
-            <div>
-              <p className="text-[11px] font-semibold tracking-[0.32em] text-[var(--ink-mute)] uppercase">
-                Where AI helps
-              </p>
-              <MarkedList items={AI_HELPS} />
-            </div>
-          </div>
-        </section>
-
-        {/* Accuracy and methodology */}
-        <section className="mx-auto mt-16 max-w-3xl md:mt-20">
-          <SectionHeading>What we are, and what we aren&rsquo;t</SectionHeading>
-          <div className="mt-4 space-y-4">
             <Paragraph>
-              Cause Compass is built to improve discovery, not to act as a
-              nonprofit rating or endorsement platform. Because we rely on
-              public data sources and AI-assisted systems, the directory has
-              real limits.
+              We are not a rating service, a giving platform, or a research
+              tool. We do not score nonprofits, rank them, or decide which ones
+              deserve your attention. Inclusion here is not an endorsement. It
+              means an organization exists in the public record and we have
+              tried to describe it clearly.
             </Paragraph>
-
-            <MarkedList items={CAVEATS} />
-
             <Paragraph>
-              We continuously work to improve data quality and expand
-              coverage. If you notice inaccurate information, inconsistencies,
-              or if you represent a nonprofit and would like to claim or
-              update your organization&rsquo;s profile, please email{" "}
+              Because we lean on public data and AI-assisted summaries, some
+              details will be incomplete, outdated, or wrong. We keep working to
+              improve that. If you notice something inaccurate, or you represent
+              an organization and want to claim or update its profile, email{" "}
               <SupportLink />.
             </Paragraph>
           </div>
@@ -273,10 +209,10 @@ export default function AboutPage() {
           <SectionHeading>A place for wandering</SectionHeading>
           <div className="mt-4 space-y-5">
             <Paragraph>
-              Our vision is to make Cause Compass the easiest place to
-              discover meaningful organizations, helping more people connect
-              with causes they care about while helping nonprofits of all
-              sizes become more discoverable.
+              Our vision is to make Cause Compass the easiest place to discover
+              meaningful organizations, helping more people connect with causes
+              they care about while helping nonprofits of all sizes become more
+              discoverable.
             </Paragraph>
             <blockquote className="border-l-2 border-[var(--accent)] pl-6">
               <p className="font-heading text-[clamp(1.375rem,2.2vw,1.75rem)] leading-[1.25] font-medium tracking-[-0.005em] text-[var(--ink)] italic">
