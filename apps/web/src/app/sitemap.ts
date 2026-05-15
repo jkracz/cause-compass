@@ -21,6 +21,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.6,
     }),
+    sitemapEntry("/methodology", {
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    }),
     ...BROWSE_CATEGORIES.map((category) =>
       sitemapEntry(`/browse/${category.slug}`, {
         lastModified: now,

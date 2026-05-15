@@ -34,6 +34,12 @@ export function Footer() {
               About
             </Link>
             <Link
+              href="/methodology"
+              className="text-[var(--ink-soft)] transition-colors hover:text-[var(--accent)]"
+            >
+              Methodology
+            </Link>
+            <Link
               href="/terms"
               className="text-[var(--ink-soft)] transition-colors hover:text-[var(--accent)]"
             >

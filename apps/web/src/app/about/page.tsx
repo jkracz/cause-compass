@@ -41,6 +41,23 @@ const FAQS: { question: string; answer: ReactNode }[] = [
       "No. Cause Compass is a discovery platform designed to help people explore organizations, not a nonprofit rating or endorsement service.",
   },
   {
+    question: "How does Cause Compass organize nonprofit data?",
+    answer: (
+      <>
+        We start with public IRS Exempt Organizations data, attach code
+        dictionaries, enrich records with public web information, and group NTEE
+        major codes into broader cause areas. Read the full{" "}
+        <Link
+          href="/methodology"
+          className="font-medium text-[var(--ink)] underline decoration-[var(--rule-strong)] decoration-1 underline-offset-4 transition-colors hover:text-[var(--accent)] hover:decoration-[var(--accent)]"
+        >
+          methodology
+        </Link>
+        .
+      </>
+    ),
+  },
+  {
     question:
       "I found inaccurate information about a nonprofit. What should I do?",
     answer: (
@@ -201,7 +218,15 @@ export default function AboutPage() {
             <Paragraph>
               Cause Compass brings together publicly available nonprofit
               information and uses AI to help make organization profiles
-              easier to explore.
+              easier to explore. The detailed{" "}
+              <Link
+                href="/methodology"
+                className="font-medium text-[var(--ink)] underline decoration-[var(--rule-strong)] decoration-1 underline-offset-4 transition-colors hover:text-[var(--accent)] hover:decoration-[var(--accent)]"
+              >
+                methodology
+              </Link>{" "}
+              explains the source data, scraping process, IRS codes, and browse
+              category groupings.
             </Paragraph>
 
             <div>
