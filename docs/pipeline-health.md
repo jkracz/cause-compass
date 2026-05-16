@@ -53,6 +53,7 @@ All mutations that modify the organizations table must go through the `patchOrga
 
 - `searchOrgs.ts` — `saveSearchResult`, `markOrgSearched`
 - `crawlQueue.ts` — crawl-settled advancement and uncrawlable classification
+- `localAiValidation.ts` — local and trusted-runner validation commits
 - `batch/mutations.ts` — `internalUpdateOrgWithAiResults`
 - `migrations.ts` — organization-stage migration runners
 
@@ -98,9 +99,13 @@ Top-level fields:
 - `byStage`: per-stage health metrics for:
   - `created`
   - `searched`
+  - `uncrawlable`
   - `crawled`
+  - `unverifiable`
+  - `local_ai_reviewed`
   - `ai_confirmed`
   - `ready`
+- `byNteeMajor`: ready-organization totals by NTEE major category.
 - `batchJobs`: summary of batch job statuses.
 - `activeProcessingJobs`: currently processing batch jobs.
 - `notes`: quick backlog/status hints.
@@ -125,15 +130,23 @@ Batch metrics (`batchJobs`):
 
 ## How To Interpret
 
-Typical intended stage flow:
+Typical intended stage flow has branches:
 
-`created -> searched -> crawled -> ai_confirmed -> ready`
+- `created -> searched` when search finds candidate URLs.
+- `created -> uncrawlable` when search yields no crawlable candidates.
+- `searched -> crawled` after crawl jobs settle successfully.
+- `searched -> uncrawlable` when crawl attempts cannot produce usable content.
+- `crawled -> ready` when a trusted validator confirms a website and profile data.
+- `crawled -> local_ai_reviewed` when local validation cannot confirm and OpenAI batch should retry.
+- `crawled -> ai_confirmed` when a trusted validator or batch process records a non-ready result.
+- `crawled -> unverifiable` when batch enrichment cannot verify a usable organization profile.
 
 Common signals:
 
 - High `byStage.created.total`: search and/or crawl automation not keeping up.
 - High `byStage.searched.total`: crawler backlog.
-- High `byStage.ai_confirmed.total`: finalization step to `ready` is missing or stalled.
+- High `byStage.local_ai_reviewed.total`: local validation is producing records that still need OpenAI batch review.
+- High `byStage.ai_confirmed.total` or `byStage.unverifiable.total`: many records are being reviewed but not becoming ready.
 - High `stalePercent` in active stages: records are not being refreshed regularly.
 - `batchJobs.processing = 0` for long periods: batch workflow may not be running.
 
@@ -143,6 +156,8 @@ Common signals:
 2. Record key values:
    - `byStage.created.total`
    - `byStage.searched.total`
+   - `byStage.crawled.total`
+   - `byStage.local_ai_reviewed.total`
    - `byStage.ai_confirmed.total`
    - `byStage.ready.total`
    - `batchJobs.processing/completed/failed`

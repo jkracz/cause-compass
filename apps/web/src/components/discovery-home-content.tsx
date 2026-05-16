@@ -4,10 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQueries, useQuery } from "convex/react";
 import { motion, AnimatePresence } from "motion/react";
-import posthog from "posthog-js";
 import { Compass, Search } from "lucide-react";
 
-import { OrganizationModal } from "@/components/organization-modal";
+import { DynamicOrganizationModal } from "@/components/dynamic-organization-modal";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useWeekKey } from "@/hooks/use-week-key";
 import { api } from "@cause/backend/convex/_generated/api";
@@ -25,6 +24,7 @@ import {
 import { EditorialCarousel } from "@/components/editorial/editorial-carousel";
 import { EditorialOrgCard } from "@/components/editorial/editorial-org-card";
 import { SectionHeader } from "@/components/editorial/section-header";
+import { analytics } from "@/lib/analytics-client";
 
 type Organization = Doc<"organizations">;
 
@@ -129,7 +129,7 @@ export function DiscoveryHomeContent() {
     if (trackedSharedOrgSlugRef.current === sharedOrgSlug) return;
 
     trackedSharedOrgSlugRef.current = sharedOrgSlug;
-    posthog.capture("organization_details_viewed", {
+    analytics.capture("organization_details_viewed", {
       organization_id: sharedOrganization.slug,
       organization_name: sharedOrganization.name,
       organization_ein: sharedOrganization.ein,
@@ -162,7 +162,7 @@ export function DiscoveryHomeContent() {
       setSelectedOrg(org);
       setIsModalOpen(true);
       setOrgUrlParam(org.slug);
-      posthog.capture("organization_details_viewed", {
+      analytics.capture("organization_details_viewed", {
         organization_id: org.slug,
         organization_name: org.name,
         organization_ein: org.ein,
@@ -187,7 +187,7 @@ export function DiscoveryHomeContent() {
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
     if (value.length > 0) {
-      posthog.capture("search_initiated", { query_length: value.length });
+      analytics.capture("search_initiated", { query_length: value.length });
     }
   };
 
@@ -382,7 +382,7 @@ export function DiscoveryHomeContent() {
       </div>
 
       {modalOrganization && (
-        <OrganizationModal
+        <DynamicOrganizationModal
           organization={modalOrganization}
           isOpen={isOrganizationModalOpen}
           onClose={handleCloseModal}

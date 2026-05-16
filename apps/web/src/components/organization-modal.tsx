@@ -2,8 +2,6 @@
 
 import type React from "react";
 import { ExternalLink, X, Heart, Share2, HandHeart, Users } from "lucide-react";
-import Image from "next/image";
-import posthog from "posthog-js";
 import { useMutation, useQuery } from "convex/react";
 
 import { Button } from "@/components/ui/button";
@@ -11,11 +9,13 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Drawer,
   DrawerContent,
+  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
   DrawerClose,
@@ -23,14 +23,16 @@ import {
 import { toast } from "sonner";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAppSession } from "@/components/app-session-provider";
+import { OrgMark } from "@/components/editorial/org-mark";
 import { api } from "@cause/backend/convex/_generated/api";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
 import { sanitizeTagline } from "@cause/lib";
 import { cn } from "@/lib/utils";
+import { analytics } from "@/lib/analytics-client";
 
 type Organization = Doc<"organizations">;
 
-interface OrganizationModalProps {
+export interface OrganizationModalProps {
   organization: Organization;
   isOpen: boolean;
   onClose: () => void;
@@ -151,7 +153,7 @@ export function OrganizationModal({
   const handleSaveToggle = async () => {
     if (isLiked) {
       await unlikeOrganization({ guestId, organizationId: organization.slug });
-      posthog.capture("organization_removed", {
+      analytics.capture("organization_removed", {
         organization_id: organization.slug,
         organization_name: organization.name,
         organization_ein: organization.ein,
@@ -159,7 +161,7 @@ export function OrganizationModal({
       });
     } else {
       await likeOrganization({ guestId, organizationId: organization.slug });
-      posthog.capture("organization_liked", {
+      analytics.capture("organization_liked", {
         organization_id: organization.slug,
         organization_name: organization.name,
         organization_ein: organization.ein,
@@ -169,7 +171,7 @@ export function OrganizationModal({
   };
 
   const handleWebsiteClick = () => {
-    posthog.capture("organization_website_clicked", {
+    analytics.capture("organization_website_clicked", {
       organization_id: organization.slug,
       organization_name: organization.name,
       organization_ein: organization.ein,
@@ -178,7 +180,7 @@ export function OrganizationModal({
   };
 
   const handleDonateClick = () => {
-    posthog.capture("organization_donate_clicked", {
+    analytics.capture("organization_donate_clicked", {
       organization_id: organization.slug,
       organization_name: organization.name,
       organization_ein: organization.ein,
@@ -198,7 +200,7 @@ export function OrganizationModal({
       if (navigator.share && navigator.canShare(shareData)) {
         await navigator.share(shareData);
 
-        posthog.capture("organization_shared", {
+        analytics.capture("organization_shared", {
           organization_id: organization.slug,
           organization_name: organization.name,
           organization_ein: organization.ein,
@@ -210,7 +212,7 @@ export function OrganizationModal({
           description: "Organization link has been copied to your clipboard.",
         });
 
-        posthog.capture("organization_shared", {
+        analytics.capture("organization_shared", {
           organization_id: organization.slug,
           organization_name: organization.name,
           organization_ein: organization.ein,
@@ -228,7 +230,7 @@ export function OrganizationModal({
           description: "Organization link has been copied to your clipboard.",
         });
 
-        posthog.capture("organization_shared", {
+        analytics.capture("organization_shared", {
           organization_id: organization.slug,
           organization_name: organization.name,
           organization_ein: organization.ein,
@@ -237,8 +239,8 @@ export function OrganizationModal({
       } catch (clipboardError) {
         console.error("Error sharing:", error);
         console.error("Clipboard fallback error:", clipboardError);
-        posthog.captureException(error);
-        posthog.captureException(clipboardError);
+        analytics.captureException(error);
+        analytics.captureException(clipboardError);
 
         toast.error("Share failed", {
           description: "Unable to share or copy link. Please try again.",
@@ -321,28 +323,13 @@ export function OrganizationModal({
         )}
 
         <div className="relative z-10 flex h-full items-center justify-center px-6">
-          {organization.logoUrl ? (
-            <div className="border-rule bg-card relative h-40 w-40 overflow-hidden rounded-2xl border shadow-[0_22px_50px_-28px_rgba(91,75,158,0.45)] sm:h-48 sm:w-48">
-              <Image
-                src={organization.logoUrl}
-                alt={organization.name}
-                fill
-                className="object-contain p-3"
-                unoptimized
-              />
-            </div>
-          ) : (
-            <div className="border-rule bg-paper flex h-40 w-40 items-center justify-center rounded-2xl border shadow-[0_22px_50px_-28px_rgba(91,75,158,0.45)] sm:h-48 sm:w-48">
-              <span className="font-heading text-ink text-5xl font-semibold">
-                {organization.name
-                  .split(" ")
-                  .map((w) => w[0])
-                  .join("")
-                  .slice(0, 3)
-                  .toUpperCase()}
-              </span>
-            </div>
-          )}
+          <OrgMark
+            name={organization.name}
+            logoUrl={organization.logoUrl}
+            slug={organization.slug}
+            size="xl"
+            className="border-rule bg-card shadow-[0_22px_50px_-28px_rgba(91,75,158,0.45)]"
+          />
         </div>
 
         <div className="text-ink-mute absolute right-6 bottom-5 text-right text-[11px] font-semibold tracking-[0.32em] uppercase sm:right-8">
@@ -542,6 +529,9 @@ export function OrganizationModal({
             <DrawerTitle className="text-ink-mute text-[11px] font-semibold tracking-[0.32em] uppercase">
               Organization
             </DrawerTitle>
+            <DrawerDescription className="sr-only">
+              Details about {organization.name}
+            </DrawerDescription>
             <DrawerClose asChild>
               <Button
                 variant="ghost"
@@ -565,6 +555,9 @@ export function OrganizationModal({
         showCloseButton={false}
         className="border-rule bg-card text-ink max-h-[92vh] w-[calc(100vw-2rem)] !max-w-5xl overflow-auto border p-0 shadow-[0_30px_70px_-40px_rgba(91,75,158,0.55)] sm:!max-w-5xl sm:rounded-[32px]"
       >
+        <DialogDescription className="sr-only">
+          Details about {organization.name}
+        </DialogDescription>
         <DialogClose asChild>
           <Button
             variant="ghost"

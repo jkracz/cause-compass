@@ -214,6 +214,22 @@ export function extractSocialMediaUrls(socials: string[]): SocialMediaUrls {
   return socialMediaUrls;
 }
 
+function isUsableLogoUrl(url: string): boolean {
+  const normalized = url.trim().toLowerCase();
+  if (!normalized) return false;
+  if (normalized.startsWith("data:image/svg+xml")) return false;
+
+  try {
+    const parsedUrl = new URL(url);
+    if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+      return false;
+    }
+    return !parsedUrl.pathname.toLowerCase().endsWith(".svg");
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Finds the best logo URL from an array of potential logo URLs.
  * Scores each URL based on filename patterns, file format, and path structure.
@@ -224,8 +240,13 @@ export function extractSocialMediaUrls(socials: string[]): SocialMediaUrls {
 export function findMainLogo(logoUrls: string[]): string | undefined {
   if (!logoUrls?.length) return undefined;
 
+  const usableLogoUrls = logoUrls.filter(
+    (url) => typeof url === "string" && isUsableLogoUrl(url),
+  );
+  if (usableLogoUrls.length === 0) return undefined;
+
   // Score each potential logo URL
-  const scoredLogos = logoUrls.map((url) => {
+  const scoredLogos = usableLogoUrls.map((url) => {
     // Ensure url is a string
     if (!url || typeof url !== "string") {
       return { url: "", score: -1000 }; // Return with very low score

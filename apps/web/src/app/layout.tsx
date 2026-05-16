@@ -6,6 +6,12 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Footer } from "@/components/footer";
 import { Toaster } from "@/components/ui/sonner";
 import { TopNav } from "@/components/top-nav";
+import {
+  DEFAULT_DESCRIPTION,
+  DEFAULT_TITLE,
+  SITE_NAME,
+  siteUrl,
+} from "@/lib/seo";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 
 const archivo = Archivo({
@@ -19,8 +25,43 @@ const bitter = Bitter({
 });
 
 export const metadata: Metadata = {
-  title: "Cause Compass",
-  description: "Discover nonprofits that align with your values",
+  metadataBase: new URL(siteUrl),
+  applicationName: SITE_NAME,
+  title: {
+    default: DEFAULT_TITLE,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: DEFAULT_DESCRIPTION,
+  keywords: [
+    "nonprofit discovery",
+    "charity search",
+    "find nonprofits",
+    "volunteer organizations",
+    "causes",
+  ],
+  authors: [{ name: "J.K. Labs", url: "https://joekracz.com" }],
+  creator: "J.K. Labs",
+  publisher: SITE_NAME,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "/",
+    siteName: SITE_NAME,
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary",
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/logo.png",
+  },
 };
 
 export default async function RootLayout({

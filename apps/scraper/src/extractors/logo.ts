@@ -7,8 +7,22 @@ import type { CheerioAPI } from "cheerio";
 export function extractLogoLinks($: CheerioAPI, baseUrl: string): string[] {
   const logos = new Set<string>();
 
+  function isSvgLogoCandidate(src: string): boolean {
+    const normalized = src.trim().toLowerCase();
+    if (normalized.startsWith("data:image/svg+xml")) return true;
+
+    try {
+      const url = new URL(src, baseUrl);
+      return url.pathname.toLowerCase().endsWith(".svg");
+    } catch {
+      return normalized.endsWith(".svg");
+    }
+  }
+
   function addUrl(src: string | undefined) {
     if (!src) return;
+    if (isSvgLogoCandidate(src)) return;
+
     try {
       const url = new URL(src, baseUrl);
       if (url.protocol === "http:" || url.protocol === "https:") {

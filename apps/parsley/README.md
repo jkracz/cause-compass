@@ -66,8 +66,9 @@ single-turn with no tools — same shape as the Ollama path.
 Authentication is auto-detected at startup, in this order:
 
 1. `ANTHROPIC_API_KEY` env var → metered API billing.
-2. `~/.claude/.credentials.json` (written by `claude login`) → Max subscription
-   quota. This is the cheap path for laptop batch runs.
+2. A local Claude login session under `~/.claude` → Max subscription quota.
+   On macOS, the token material may live in Keychain rather than a credentials
+   JSON file, so the runner only checks that the Claude config directory exists.
 
 If neither credential source is available, the runner exits immediately with a
 helpful message before any Convex traffic.
@@ -100,10 +101,11 @@ loop continues; timeouts, malformed model output, schema failures, and failed
 Convex writes leave the org in `crawled` for a later retry.
 
 Note: the SDK's native `outputFormat: json_schema` mode (constrained generation
-+ automatic schema-mismatch retries) is only active on the `ANTHROPIC_API_KEY`
-auth path. The Max subscription path silently ignores `outputFormat` and
-returns free-form text; the runner parses and validates that text as a
-fallback. Use API-key auth for higher reliability on noisy crawl data.
+
+- automatic schema-mismatch retries) is only active on the `ANTHROPIC_API_KEY`
+  auth path. The Max subscription path silently ignores `outputFormat` and
+  returns free-form text; the runner parses and validates that text as a
+  fallback. Use API-key auth for higher reliability on noisy crawl data.
 
 ## Codex AI Confirmation
 
@@ -144,9 +146,9 @@ failures are logged and the loop continues.
 
 - **`src/scripts/createOrgsByStateConvex.ts`** - Reads IRS CSV, filters eligible orgs, writes JSONL for `npx convex import`
 - **`src/scripts/transformToConvex.ts`** - Transforms raw data exports into Convex table JSONL files
-- **`src/scripts/localAiConfirm.ts`** - Runs the sequential local Ollama confirmation workflow against Convex
-- **`src/scripts/claudeAiConfirm.ts`** - Runs the sequential Claude Agent SDK confirmation workflow against Convex (subscription or API key)
-- **`src/scripts/codexAiConfirm.ts`** - Runs the Codex SDK confirmation workflow against Convex (login session or API key)
+- **`src/scripts/localAiConfirm.ts`** - Runs the local Ollama confirmation workflow against Convex
+- **`src/scripts/claudeAiConfirm.ts`** - Runs the concurrent Claude Agent SDK confirmation workflow against Convex (subscription or API key)
+- **`src/scripts/codexAiConfirm.ts`** - Runs the concurrent Codex SDK confirmation workflow against Convex (login session or API key)
 - **`src/services/parseEoFile.ts`** - Core IRS CSV parser with code dictionary mapping (NTEE, activity, foundation, etc.)
 - **`src/data/dataDictionaries/`** - IRS code reference data (10 JSON files)
 - **`src/utils/`** - Shared utilities (slug generation, amount bucketing, text processing, logging)

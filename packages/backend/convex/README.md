@@ -19,7 +19,7 @@ GOOGLE_CLIENT_SECRET=<google-oauth-client-secret>
 
 ## Batch Processing Workflow
 
-The batch processing system uses OpenAI's Batch API to enrich organization data with AI-generated content. It's built on the `@convex-dev/workflow` component for durable, event-driven orchestration.
+The batch processing system uses OpenAI's Batch API to validate crawled organization websites and enrich records with profile content. It writes fields such as website URL, mission, tagline, summary, whySupport, target audience, geographic focus, activities, keywords, social links, donation URL, logo, and emails. It's built on the `@convex-dev/workflow` component for durable, event-driven orchestration.
 
 ### Architecture
 
@@ -69,8 +69,19 @@ Set these in the Convex Dashboard (Settings → Environment Variables):
 # Enable batch processing
 ENABLE_BATCH_CRON=true
 
+# Required by OpenAI batch helpers
+OPENAI_API_KEY=sk-...
+
 # OpenAI webhook signing secret (from step 2)
 OPENAI_WEBHOOK_SECRET=whsec_...
+
+# Search and crawl automation gates
+ENABLE_SEARCH_CRON=true
+ENABLE_CRAWL_CRON=true
+ENABLE_CRAWL_BACKFILL_CRON=true
+
+# Worker route auth for /worker/* HTTP endpoints
+WORKER_TOKEN=<shared-worker-token>
 ```
 
 #### 2. Configure OpenAI Webhook
@@ -91,7 +102,8 @@ npx convex deploy
 ### Manual Testing
 
 ```bash
-# Start a workflow manually (processes up to 20 orgs by default)
+# Start a workflow manually (uses DEFAULT_BATCH_SIZE=100 unless overridden).
+# This path still respects ENABLE_BATCH_CRON=true.
 npx convex run batch/manual:manualStartWorkflow
 
 # Start with a custom limit
@@ -134,7 +146,7 @@ npx convex run crawlQueue:backfillQueueStatsAggregate '{"cursor": null}'
 | `batch/constants.ts`             | Constants and JSON schema                                                                     |
 | `batchJobs.ts`                   | CRUD operations for the `batchJobs` table                                                     |
 | `http.ts`                        | HTTP endpoint for OpenAI webhooks                                                             |
-| `crons.ts`                       | Daily cron job (safety net)                                                                   |
+| `crons.ts`                       | Scheduled search, batch safety net, crawl recovery, and crawl backfill jobs                   |
 | `lib/openAiBatch.ts`             | OpenAI API helpers (upload, create batch, download results)                                   |
 | `lib/batchResponseProcessing.ts` | Process AI responses, extract data from crawl results                                         |
 

@@ -8,7 +8,7 @@ import { api } from "@cause/backend/convex/_generated/api";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
 import type { BrowseCategory, GeographicFocus } from "@/lib/browse-categories";
 import { EditorialOrgCard } from "@/components/editorial/editorial-org-card";
-import { OrganizationModal } from "@/components/organization-modal";
+import { DynamicOrganizationModal } from "@/components/dynamic-organization-modal";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -99,8 +99,7 @@ export function BrowseCategoryContent({
     return {
       kind: "ntee" as const,
       nteeMajors: category.nteeMajors,
-      geographicFocuses:
-        reachFilters.length > 0 ? reachFilters : undefined,
+      geographicFocuses: reachFilters.length > 0 ? reachFilters : undefined,
       states: stateFilters.length > 0 ? stateFilters : undefined,
     };
   }, [category, reachFilters, stateFilters]);
@@ -353,7 +352,7 @@ export function BrowseCategoryContent({
       </div>
 
       {selectedOrg && (
-        <OrganizationModal
+        <DynamicOrganizationModal
           organization={selectedOrg}
           isOpen={isModalOpen}
           onClose={handleCloseModal}

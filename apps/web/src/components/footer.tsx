@@ -17,14 +17,27 @@ function GithubMark({ className }: { className?: string }) {
 export function Footer() {
   return (
     <footer className="relative z-20 mt-auto border-t border-[var(--rule)] bg-[color:rgba(240,230,245,0.6)] backdrop-blur-md">
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
+      <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-4 py-6 md:flex-row">
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm">
+          <span className="text-xs text-[var(--ink-mute)]">
+            © {new Date().getFullYear()} CauseCompass
+          </span>
+          <span className="hidden h-4 w-px bg-[var(--rule)] sm:block" />
+          <nav
+            aria-label="Footer"
+            className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3"
+          >
             <Link
-              href="/faq"
+              href="/about"
               className="text-[var(--ink-soft)] transition-colors hover:text-[var(--accent)]"
             >
-              FAQ
+              About
+            </Link>
+            <Link
+              href="/methodology"
+              className="text-[var(--ink-soft)] transition-colors hover:text-[var(--accent)]"
+            >
+              Methodology
             </Link>
             <Link
               href="/terms"
@@ -38,36 +51,32 @@ export function Footer() {
             >
               Privacy Policy
             </Link>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs tracking-widest uppercase text-[var(--ink-soft)]">
-            <a
-              href="https://github.com/jkracz/cause-compass"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 transition-colors hover:text-[var(--accent)]"
-            >
-              <GithubMark className="h-4 w-4" />
-              <span>Open Source</span>
-            </a>
-            <span className="inline-flex items-center gap-2">
-              <span>Made with</span>
-              <Heart className="h-4 w-4 fill-[var(--accent)] text-[var(--accent)]" />
-              <span>by</span>
-              <a
-                href="https://joekracz.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="transition-colors hover:text-[var(--accent)]"
-              >
-                J.K. Labs
-              </a>
-            </span>
-          </div>
+          </nav>
         </div>
 
-        <div className="mt-4 border-t border-[var(--rule)] pt-4 text-center text-xs text-[var(--ink-mute)]">
-          © {new Date().getFullYear()} CauseCompass. All rights reserved.
+        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs tracking-widest text-[var(--ink-soft)] uppercase">
+          <a
+            href="https://github.com/jkracz/cause-compass"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 transition-colors hover:text-[var(--accent)]"
+          >
+            <GithubMark className="h-4 w-4" />
+            <span>Open Source</span>
+          </a>
+          <span className="inline-flex items-center gap-2">
+            <span>Made with</span>
+            <Heart className="h-4 w-4 fill-[var(--accent)] text-[var(--accent)]" />
+            <span>by</span>
+            <a
+              href="https://joekracz.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-[var(--accent)]"
+            >
+              J.K. Labs
+            </a>
+          </span>
         </div>
       </div>
     </footer>

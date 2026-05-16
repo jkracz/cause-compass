@@ -13,9 +13,9 @@ import {
 import { useRouter } from "next/navigation";
 import { ConvexReactClient, useConvexAuth, useMutation } from "convex/react";
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
-import posthog from "posthog-js";
 import { api } from "@cause/backend/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
+import { analytics } from "@/lib/analytics-client";
 
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -39,6 +39,12 @@ type SessionContextValue = {
 };
 
 const SessionContext = createContext<SessionContextValue | null>(null);
+
+function getCurrentUrlWithParam(key: string, value: string) {
+  const url = new URL(window.location.href);
+  url.searchParams.set(key, value);
+  return `${url.pathname}${url.search}${url.hash}`;
+}
 
 function AuthLinker() {
   const session = useAppSession();
@@ -144,7 +150,11 @@ function AppSessionInner({
   const isAuthenticated = convexAuth.isAuthenticated && Boolean(userId);
 
   const signIn = useCallback(async () => {
-    await authClient.signIn.social({ provider: "google" });
+    await authClient.signIn.social({
+      provider: "google",
+      callbackURL: window.location.href,
+      newUserCallbackURL: getCurrentUrlWithParam("account_created", "google"),
+    });
   }, []);
 
   const signInWithEmail = useCallback(
@@ -170,8 +180,13 @@ function AppSessionInner({
       if (result.error) {
         throw new Error(result.error.message ?? "Unable to create account");
       }
+
+      analytics.capture("account_created", {
+        method: "email_password",
+        guest_id: initialGuestId,
+      });
     },
-    [],
+    [initialGuestId],
   );
 
   const signOut = useCallback(async () => {
@@ -184,7 +199,7 @@ function AppSessionInner({
     } catch (error) {
       console.error("Failed to sign out cleanly", error);
     } finally {
-      posthog.reset();
+      analytics.reset();
       router.refresh();
     }
   }, [router]);
@@ -195,15 +210,39 @@ function AppSessionInner({
     }
 
     if (isAuthenticated && userId) {
-      posthog.identify(userId, {
+      analytics.identify(userId, {
         email: user?.email,
         name: user?.name,
       });
       return;
     }
 
-    posthog.identify(initialGuestId);
+    analytics.identify(initialGuestId);
   }, [initialGuestId, isAuthenticated, user?.email, user?.name, userId]);
+
+  useEffect(() => {
+    if (!isAuthenticated || typeof window === "undefined") {
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    const accountCreatedMethod = url.searchParams.get("account_created");
+    if (accountCreatedMethod !== "google") {
+      return;
+    }
+
+    analytics.capture("account_created", {
+      method: accountCreatedMethod,
+      guest_id: initialGuestId,
+    });
+
+    url.searchParams.delete("account_created");
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `${url.pathname}${url.search}${url.hash}`,
+    );
+  }, [initialGuestId, isAuthenticated]);
 
   const value = useMemo<SessionContextValue>(
     () => ({

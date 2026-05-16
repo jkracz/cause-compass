@@ -1,4 +1,18 @@
+import type { Metadata } from "next";
 import { DashboardContent } from "./dashboard-content";
+
+export const metadata: Metadata = {
+  title: "My Causes",
+  description:
+    "Review the nonprofit organizations and causes you have saved on Cause Compass.",
+  alternates: {
+    canonical: "/my-causes",
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function MyOrgsPage() {
   return (

@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface OrgMarkProps {
@@ -16,6 +19,13 @@ const SIZE_CLASS: Record<NonNullable<OrgMarkProps["size"]>, string> = {
   xl: "h-40 w-40 rounded-[1.75rem] text-4xl sm:h-48 sm:w-48",
 };
 
+const IMAGE_PADDING_CLASS: Record<NonNullable<OrgMarkProps["size"]>, string> = {
+  sm: "p-1",
+  md: "p-1.5",
+  lg: "p-2",
+  xl: "p-2.5",
+};
+
 const PALETTE = [
   ["#C8266E", "#5B4B9E"],
   ["#5B4B9E", "#1A0F2C"],
@@ -24,6 +34,20 @@ const PALETTE = [
   ["#5A7A8E", "#1F3A4D"],
   ["#8E6F4F", "#4A3624"],
 ];
+
+const FAILED_LOGO_URLS = new Set<string>();
+
+function isSupportedLogoUrl(logoUrl: string) {
+  const normalized = logoUrl.trim().toLowerCase();
+  if (normalized.startsWith("data:image/svg+xml")) return false;
+
+  try {
+    const url = new URL(logoUrl);
+    return !url.pathname.toLowerCase().endsWith(".svg");
+  } catch {
+    return !normalized.endsWith(".svg");
+  }
+}
 
 function hashSlug(slug: string) {
   let h = 0;
@@ -50,12 +74,18 @@ export function OrgMark({
   className,
 }: OrgMarkProps) {
   const sizeClass = SIZE_CLASS[size];
+  const imagePaddingClass = IMAGE_PADDING_CLASS[size];
+  const [failedLogoUrl, setFailedLogoUrl] = useState<string | null>(() => {
+    if (!logoUrl) return null;
+    if (!isSupportedLogoUrl(logoUrl)) return logoUrl;
+    return FAILED_LOGO_URLS.has(logoUrl) ? logoUrl : null;
+  });
 
-  if (logoUrl) {
+  if (logoUrl && isSupportedLogoUrl(logoUrl) && failedLogoUrl !== logoUrl) {
     return (
       <div
         className={cn(
-          "relative shrink-0 overflow-hidden border border-[var(--rule)] bg-white",
+          "relative shrink-0 overflow-hidden border border-[var(--rule)] bg-[var(--paper)]",
           sizeClass,
           className,
         )}
@@ -64,9 +94,16 @@ export function OrgMark({
           src={logoUrl}
           alt={name}
           fill
-          className="object-contain p-2"
+          className={cn(
+            "object-contain drop-shadow-[0_1px_1px_rgba(26,15,44,0.45)]",
+            imagePaddingClass,
+          )}
           unoptimized
           loading="eager"
+          onError={() => {
+            FAILED_LOGO_URLS.add(logoUrl);
+            setFailedLogoUrl(logoUrl);
+          }}
         />
       </div>
     );
