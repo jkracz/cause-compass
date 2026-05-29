@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react";
 import { AppSessionProvider } from "@/components/app-session-provider";
+import { LocationPreferenceProvider } from "@/components/location-preference-provider";
 
 export function ConvexClientProvider({
   children,
@@ -11,6 +12,8 @@ export function ConvexClientProvider({
   guestId?: string;
 }) {
   return (
-    <AppSessionProvider initialGuestId={guestId}>{children}</AppSessionProvider>
+    <AppSessionProvider initialGuestId={guestId}>
+      <LocationPreferenceProvider>{children}</LocationPreferenceProvider>
+    </AppSessionProvider>
   );
 }

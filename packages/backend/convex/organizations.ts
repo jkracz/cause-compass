@@ -320,9 +320,9 @@ async function takeReadyEditorialPool(
 }
 
 export const getFeaturedCauses = query({
-  args: { weekKey: v.string() },
-  handler: async (ctx, { weekKey }) => {
-    const pool = await takeReadyEditorialPool(ctx, {});
+  args: { weekKey: v.string(), state: v.optional(v.string()) },
+  handler: async (ctx, { weekKey, state }) => {
+    const pool = await takeReadyEditorialPool(ctx, { state });
 
     // Keep the hero populated even when an environment's ready data has not
     // fully cleared the stricter editorial completeness bar yet.
