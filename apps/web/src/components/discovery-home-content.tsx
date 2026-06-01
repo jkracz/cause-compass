@@ -25,6 +25,7 @@ import { EditorialCarousel } from "@/components/editorial/editorial-carousel";
 import { EditorialOrgCard } from "@/components/editorial/editorial-org-card";
 import { SectionHeader } from "@/components/editorial/section-header";
 import { analytics } from "@/lib/analytics-client";
+import { useLocationPreference } from "@/components/location-preference-provider";
 
 type Organization = Doc<"organizations">;
 
@@ -69,6 +70,8 @@ export function DiscoveryHomeContent() {
     null,
   );
   const trackedSharedOrgSlugRef = useRef<string | null>(null);
+  const locationPreference = useLocationPreference();
+  const preferredState = locationPreference.activeState?.stateCode;
 
   const debouncedQuery = useDebounce(searchQuery, 300);
   const isSearching = debouncedQuery.length > 0;
@@ -79,6 +82,7 @@ export function DiscoveryHomeContent() {
   // Featured Causes
   const featuredCauses = useQuery(api.organizations.getFeaturedCauses, {
     weekKey,
+    state: preferredState,
   });
   const scaleData = useQuery(api.organizations.getOrganizationsByScale, {
     weekKey,
@@ -94,13 +98,13 @@ export function DiscoveryHomeContent() {
             query: api.organizations.getOrganizationCollection,
             args: {
               collectionKey: row.key,
-              filters: row.filters,
+              filters: { ...row.filters, preferredState },
               sessionSeed,
             },
           },
         ]),
       ),
-    [sessionSeed],
+    [preferredState, sessionSeed],
   );
   const rowResults = useQueries(collectionQueries);
 

@@ -25,6 +25,10 @@ export type RecommendationResult = {
 
 type OrganizationDoc = Doc<"organizations">;
 
+type RecommendationScoreOptions = {
+  preferredState?: string;
+};
+
 type ScoreDetails = {
   score: number;
   scoreBreakdown: RecommendationScoreBreakdown;
@@ -72,8 +76,16 @@ function getProfileQualityScore(organization: OrganizationDoc) {
 function buildWhyThisMatch(
   organization: OrganizationDoc,
   hasProfileQuality = false,
+  hasLocationMatch = false,
 ) {
   const primaryKeyword = getPrimaryKeyword(organization);
+
+  if (hasLocationMatch) {
+    if (primaryKeyword) {
+      return `Based near you with clear work around ${primaryKeyword.toLowerCase()}.`;
+    }
+    return "Based near you with clear mission and profile information.";
+  }
 
   if (hasProfileQuality) {
     if (primaryKeyword) {
@@ -88,9 +100,14 @@ function buildWhyThisMatch(
 function buildExplanationBullets(
   organization: OrganizationDoc,
   hasProfileQuality = false,
+  hasLocationMatch = false,
 ) {
   const bullets: string[] = [];
   const primaryKeyword = getPrimaryKeyword(organization);
+
+  if (hasLocationMatch && bullets.length < 3) {
+    bullets.push("Matches your selected location.");
+  }
 
   if (primaryKeyword && bullets.length < 3) {
     bullets.push(`Specifically highlights ${primaryKeyword.toLowerCase()}.`);
@@ -114,21 +131,33 @@ function buildExplanationBullets(
 
 export function scoreRecommendation(
   organization: OrganizationDoc,
+  options: RecommendationScoreOptions = {},
 ): ScoreDetails {
   const profileQualityScore = getProfileQualityScore(organization);
+  const hasLocationMatch =
+    Boolean(options.preferredState) &&
+    organization.state === options.preferredState;
+  const locationScore = hasLocationMatch ? 8 : 0;
 
   const matchedSignals: RecommendationReasonCode[] = [];
+  if (hasLocationMatch) {
+    matchedSignals.push("location_match");
+  }
   if (profileQualityScore > 0) {
     matchedSignals.push("profile_quality");
   }
 
-  const whyThisMatch = buildWhyThisMatch(organization, profileQualityScore > 0);
+  const whyThisMatch = buildWhyThisMatch(
+    organization,
+    profileQualityScore > 0,
+    hasLocationMatch,
+  );
 
   return {
-    score: profileQualityScore,
+    score: profileQualityScore + locationScore,
     scoreBreakdown: {
       causes: 0,
-      scopeLocation: 0,
+      scopeLocation: locationScore,
       helpMethod: 0,
       profileQuality: profileQualityScore,
     },
@@ -136,6 +165,7 @@ export function scoreRecommendation(
     explanationBullets: buildExplanationBullets(
       organization,
       profileQualityScore > 0,
+      hasLocationMatch,
     ),
     matchedSignals,
   };
