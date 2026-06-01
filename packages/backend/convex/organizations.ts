@@ -158,8 +158,9 @@ export const getPersonalizedRecommended = query({
     guestId: v.optional(v.string()),
     limit: v.optional(v.number()),
     sessionSeed: v.optional(v.string()),
+    preferredState: v.optional(v.string()),
   },
-  handler: async (ctx, { guestId, limit = 10, sessionSeed }) => {
+  handler: async (ctx, { guestId, limit = 10, sessionSeed, preferredState }) => {
     const viewer = await getViewerRecord(ctx, guestId);
     const likedOrganizations = new Set(viewer.user?.likedOrganizations ?? []);
     const dismissedOrganizations = new Set(
@@ -167,8 +168,10 @@ export const getPersonalizedRecommended = query({
     );
     const candidates = new Map<string, Doc<"organizations">>();
     const candidateTarget = Math.max(limit * 10, 150);
+    let locationPreferenceForScoring: string | undefined;
 
     const addCandidates = (organizations: Doc<"organizations">[]) => {
+      let addedCount = 0;
       for (const organization of organizations) {
         if (
           organization.enrichmentStage !== "ready" ||
@@ -177,9 +180,26 @@ export const getPersonalizedRecommended = query({
         ) {
           continue;
         }
-        candidates.set(organization._id, organization);
+        if (!candidates.has(organization._id)) {
+          candidates.set(organization._id, organization);
+          addedCount += 1;
+        }
       }
+      return addedCount;
     };
+
+    if (preferredState) {
+      const addedLocationCandidates = addCandidates(
+        await getReadyOrganizationsByState(
+          ctx,
+          preferredState,
+          candidateTarget,
+        ),
+      );
+      if (addedLocationCandidates > 0) {
+        locationPreferenceForScoring = preferredState;
+      }
+    }
 
     if (candidates.size < candidateTarget) {
       addCandidates(
@@ -194,7 +214,9 @@ export const getPersonalizedRecommended = query({
 
     const scoredRecommendations = Array.from(candidates.values())
       .map((organization) => {
-        const recommendation = scoreRecommendation(organization);
+        const recommendation = scoreRecommendation(organization, {
+          preferredState: locationPreferenceForScoring,
+        });
         const seededVariantScore = getSeededVariantScore(
           sessionSeed ?? "default",
           organization.slug,

@@ -21,9 +21,12 @@ import {
   RecommendationResult,
 } from "@/lib/recommendations";
 import { analytics } from "@/lib/analytics-client";
+import { useLocationPreference } from "@/components/location-preference-provider";
 
 export default function Discover() {
   const { guestId } = useAppSession();
+  const locationPreference = useLocationPreference();
+  const preferredState = locationPreference.activeState?.stateCode;
   const [sessionSeed] = useState(() =>
     typeof crypto !== "undefined" && "randomUUID" in crypto
       ? crypto.randomUUID()
@@ -31,7 +34,9 @@ export default function Discover() {
   );
   const recommendations = useQuery(
     api.organizations.getPersonalizedRecommended,
-    guestId ? { guestId, limit: 10, sessionSeed } : { limit: 10, sessionSeed },
+    guestId
+      ? { guestId, limit: 10, sessionSeed, preferredState }
+      : { limit: 10, sessionSeed, preferredState },
   );
   const likeOrganization = useMutation(api.users.likeOrganization);
   const dismissOrganization = useMutation(api.users.dismissOrganization);
@@ -44,6 +49,17 @@ export default function Discover() {
   const hasTrackedCompletionRef = useRef(false);
   const trackedImpressionsRef = useRef<Set<string>>(new Set());
   const [detailsOrgSlug, setDetailsOrgSlug] = useState<string | null>(null);
+
+  useEffect(() => {
+    startTransition(() => {
+      setSessionRecommendations(null);
+      setCurrentIndex(0);
+      setLikedCount(0);
+      setDetailsOrgSlug(null);
+      hasTrackedCompletionRef.current = false;
+      trackedImpressionsRef.current.clear();
+    });
+  }, [preferredState]);
 
   useEffect(() => {
     if (recommendations !== undefined && sessionRecommendations === null) {
