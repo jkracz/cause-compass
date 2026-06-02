@@ -14,17 +14,17 @@
     "@cause/lib": "workspace:*",
     "@convex-dev/aggregate": "^0.2.1",
     "@convex-dev/better-auth": "^0.12.2",
-    "@convex-dev/migrations": "^0.3.4",
-    "@convex-dev/workflow": "^0.4.2",
-    "better-auth": "^1.6.11",
-    "convex": "^1.39.1",
-    "openai": "^6.39.1",
+    "@convex-dev/migrations": "^0.3.5",
+    "@convex-dev/workflow": "^0.4.3",
+    "better-auth": "^1.6.13",
+    "convex": "^1.40.0",
+    "openai": "^6.41.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@cause/eslint-config": "workspace:*",
     "@cause/typescript-config": "workspace:*",
-    "eslint": "^10.4.0",
+    "eslint": "^10.4.1",
     "typescript": "latest"
   }
 }
