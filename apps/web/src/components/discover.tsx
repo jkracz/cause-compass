@@ -373,11 +373,11 @@ function DiscoverHeader({
   return (
     <header className="flex flex-col items-center gap-3 text-center">
       <h1 className="font-heading text-[clamp(1.5rem,4vw,2rem)] leading-[1.1] font-semibold text-balance text-[var(--ink)]">
-        A few causes to wander through
+        Causes to discover
       </h1>
       <ProgressStrip total={total} currentIndex={currentIndex} />
       <p className="text-[12px] leading-none tracking-[0.04em] text-[var(--ink-mute)]">
-        Swipe right to add to your causes. Left to skip. Tap to learn more.
+        Swipe right to add to your causes. Left to skip. Click to learn more.
       </p>
     </header>
   );

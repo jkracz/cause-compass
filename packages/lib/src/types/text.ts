@@ -1,4 +1,6 @@
 const PLACEHOLDER_TEXT = new Set(["n/a", "na", "none", "null", "undefined"]);
+const PLACEHOLDER_TEXT_PATTERN =
+  /^[\W_]*(?:n\s*[./\\-]?\s*a|none|null|undefined)[\W_]*$/i;
 
 /**
  * Normalizes organization taglines and rejects values that are not meaningful
@@ -12,7 +14,10 @@ export function sanitizeTagline(value?: string | null) {
     return undefined;
   }
 
-  if (PLACEHOLDER_TEXT.has(text.toLowerCase())) {
+  if (
+    PLACEHOLDER_TEXT.has(text.toLowerCase()) ||
+    PLACEHOLDER_TEXT_PATTERN.test(text)
+  ) {
     return undefined;
   }
 

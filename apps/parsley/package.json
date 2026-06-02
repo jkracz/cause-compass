@@ -27,7 +27,7 @@
     "@cause/backend": "workspace:*",
     "@cause/lib": "workspace:*",
     "@openai/codex-sdk": "^0.134.0",
-    "convex": "^1.39.1",
+    "convex": "^1.40.0",
     "csv-parse": "^6.2.1",
     "dotenv": "^17.4.2",
     "ollama": "^0.6.3",
@@ -43,9 +43,9 @@
     "@eslint/js": "^10.0.1",
     "@types/node": "^25.9.1",
     "@types/yargs": "^17.0.35",
-    "eslint": "^10.4.0",
+    "eslint": "^10.4.1",
     "globals": "^17.6.0",
-    "tsx": "^4.22.3",
-    "typescript-eslint": "^8.60.0"
+    "tsx": "^4.22.4",
+    "typescript-eslint": "^8.60.1"
   }
 }

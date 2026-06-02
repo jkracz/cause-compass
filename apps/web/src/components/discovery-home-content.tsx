@@ -25,6 +25,7 @@ import { EditorialCarousel } from "@/components/editorial/editorial-carousel";
 import { EditorialOrgCard } from "@/components/editorial/editorial-org-card";
 import { SectionHeader } from "@/components/editorial/section-header";
 import { analytics } from "@/lib/analytics-client";
+import { HOME_NAVIGATION_EVENT } from "@/lib/home-navigation";
 import { useLocationPreference } from "@/components/location-preference-provider";
 
 type Organization = Doc<"organizations">;
@@ -74,7 +75,8 @@ export function DiscoveryHomeContent() {
   const preferredState = locationPreference.activeState?.stateCode;
 
   const debouncedQuery = useDebounce(searchQuery, 300);
-  const isSearching = debouncedQuery.length > 0;
+  const isSearching = searchQuery.length > 0;
+  const shouldRunSearch = debouncedQuery.length > 0;
   const sharedOrgSlug = searchParams.get("org");
 
   const weekKey = useWeekKey();
@@ -110,19 +112,32 @@ export function DiscoveryHomeContent() {
 
   const searchResults = useQuery(
     api.organizations.search,
-    isSearching ? { query: debouncedQuery } : "skip",
+    shouldRunSearch ? { query: debouncedQuery } : "skip",
   );
   const sharedOrganization = useQuery(
     api.organizations.getBySlug,
     sharedOrgSlug ? { slug: sharedOrgSlug } : "skip",
   );
 
-  const isSearchLoading = isSearching && searchResults === undefined;
+  const isSearchLoading =
+    isSearching && (!shouldRunSearch || searchResults === undefined);
 
   const rowError = Object.values(rowResults).find(
     (result): result is Error => result instanceof Error,
   );
   if (rowError) throw rowError;
+
+  useEffect(() => {
+    const handleHomeNavigation = () => {
+      setSearchQuery("");
+    };
+
+    window.addEventListener(HOME_NAVIGATION_EVENT, handleHomeNavigation);
+
+    return () => {
+      window.removeEventListener(HOME_NAVIGATION_EVENT, handleHomeNavigation);
+    };
+  }, []);
 
   useEffect(() => {
     if (!sharedOrgSlug) {
