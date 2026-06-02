@@ -138,7 +138,7 @@ export default defineSchema({
     ])
     .searchIndex("search_name", {
       searchField: "name",
-      filterFields: ["enrichmentStage"],
+      filterFields: ["enrichmentStage", "state", "geographicFocus"],
     }),
 
   searchResults: defineTable({

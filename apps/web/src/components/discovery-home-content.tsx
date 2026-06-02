@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQueries, useQuery } from "convex/react";
 import { motion, AnimatePresence } from "motion/react";
-import { Compass, Search } from "lucide-react";
+import { ChevronDown, Compass, Search } from "lucide-react";
 
 import { DynamicOrganizationModal } from "@/components/dynamic-organization-modal";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -27,10 +27,27 @@ import { SectionHeader } from "@/components/editorial/section-header";
 import { analytics } from "@/lib/analytics-client";
 import { HOME_NAVIGATION_EVENT } from "@/lib/home-navigation";
 import { useLocationPreference } from "@/components/location-preference-provider";
+import { US_STATES } from "@/lib/us-states";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 type Organization = Doc<"organizations">;
 
 type GeographicFocus = "Global" | "National" | "Regional" | "Local";
+
+const REACH_FILTERS: GeographicFocus[] = [
+  "Local",
+  "Regional",
+  "National",
+  "Global",
+];
 
 const REACH_CAROUSELS = [
   {
@@ -65,12 +82,15 @@ export function DiscoveryHomeContent() {
   const searchParams = useSearchParams();
   const [sessionSeed] = useState(createSessionSeed);
   const [searchQuery, setSearchQuery] = useState("");
+  const [stateFilters, setStateFilters] = useState<string[]>([]);
+  const [reachFilters, setReachFilters] = useState<GeographicFocus[]>([]);
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [closedSharedOrgSlug, setClosedSharedOrgSlug] = useState<string | null>(
     null,
   );
   const trackedSharedOrgSlugRef = useRef<string | null>(null);
+  const userChangedStateFiltersRef = useRef(false);
   const locationPreference = useLocationPreference();
   const preferredState = locationPreference.activeState?.stateCode;
 
@@ -112,7 +132,14 @@ export function DiscoveryHomeContent() {
 
   const searchResults = useQuery(
     api.organizations.search,
-    shouldRunSearch ? { query: debouncedQuery } : "skip",
+    shouldRunSearch
+      ? {
+          query: debouncedQuery,
+          geographicFocuses:
+            reachFilters.length > 0 ? reachFilters : undefined,
+          states: stateFilters.length > 0 ? stateFilters : undefined,
+        }
+      : "skip",
   );
   const sharedOrganization = useQuery(
     api.organizations.getBySlug,
@@ -138,6 +165,11 @@ export function DiscoveryHomeContent() {
       window.removeEventListener(HOME_NAVIGATION_EVENT, handleHomeNavigation);
     };
   }, []);
+
+  useEffect(() => {
+    if (userChangedStateFiltersRef.current) return;
+    setStateFilters(preferredState ? [preferredState] : []);
+  }, [preferredState]);
 
   useEffect(() => {
     if (!sharedOrgSlug) {
@@ -209,6 +241,38 @@ export function DiscoveryHomeContent() {
       analytics.capture("search_initiated", { query_length: value.length });
     }
   };
+
+  const toggleReachFilter = (reach: GeographicFocus) => {
+    setReachFilters((current) =>
+      current.includes(reach)
+        ? current.filter((value) => value !== reach)
+        : [...current, reach],
+    );
+  };
+
+  const toggleStateFilter = (state: string) => {
+    userChangedStateFiltersRef.current = true;
+    setStateFilters((current) =>
+      current.includes(state)
+        ? current.filter((value) => value !== state)
+        : [...current, state],
+    );
+  };
+
+  const reachLabel =
+    reachFilters.length === 0
+      ? "Any"
+      : reachFilters.length === 1
+        ? reachFilters[0]
+        : `${reachFilters.length} selected`;
+
+  const stateLabel =
+    stateFilters.length === 0
+      ? "Any"
+      : stateFilters.length === 1
+        ? (US_STATES.find((state) => state.code === stateFilters[0])?.code ??
+          stateFilters[0])
+        : `${stateFilters.length} selected`;
 
   const reachCarousels = REACH_CAROUSELS.map((row) => {
     const result = rowResults[row.key] as Organization[] | undefined;
@@ -291,8 +355,104 @@ export function DiscoveryHomeContent() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25 }}
-              className="mt-12"
+              className="mt-3 md:mt-4"
             >
+              <div className="mb-7 flex flex-wrap items-center gap-3 rounded-[1.25rem] border border-[var(--rule)] bg-white/65 px-3 py-2.5 backdrop-blur">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className={cn(
+                        "inline-flex h-8 items-center gap-2 rounded-full border px-3 text-[12px] font-medium transition focus-visible:border-[var(--accent)]/50 focus-visible:ring-2 focus-visible:ring-[var(--accent)]/15 focus-visible:outline-none",
+                        reachFilters.length > 0
+                          ? "border-[var(--accent)]/40 bg-[var(--accent-soft)] text-[var(--accent)]"
+                          : "border-[var(--rule)] bg-white text-[var(--ink-soft)] hover:border-[var(--accent)]/40",
+                      )}
+                    >
+                      <span className="text-[10px] font-semibold tracking-[0.18em] uppercase">
+                        Reach
+                      </span>
+                      <span>{reachLabel}</span>
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="start"
+                    className="w-44 border-[var(--rule)] bg-white text-[var(--ink-soft)]"
+                  >
+                    <DropdownMenuLabel className="text-[10px] font-semibold tracking-[0.18em] text-[var(--ink-mute)] uppercase">
+                      Reach
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-[var(--rule)]" />
+                    {REACH_FILTERS.map((reach) => (
+                      <DropdownMenuCheckboxItem
+                        key={reach}
+                        checked={reachFilters.includes(reach)}
+                        onCheckedChange={() => toggleReachFilter(reach)}
+                        onSelect={(event) => event.preventDefault()}
+                        className="text-[13px]"
+                      >
+                        {reach}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className={cn(
+                        "inline-flex h-8 items-center gap-2 rounded-full border px-3 text-[12px] font-medium transition focus-visible:border-[var(--accent)]/50 focus-visible:ring-2 focus-visible:ring-[var(--accent)]/15 focus-visible:outline-none",
+                        stateFilters.length > 0
+                          ? "border-[var(--accent)]/40 bg-[var(--accent-soft)] text-[var(--accent)]"
+                          : "border-[var(--rule)] bg-white text-[var(--ink-soft)] hover:border-[var(--accent)]/40",
+                      )}
+                    >
+                      <span className="text-[10px] font-semibold tracking-[0.18em] uppercase">
+                        HQ State
+                      </span>
+                      <span>{stateLabel}</span>
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="start"
+                    className="max-h-80 w-60 overflow-y-auto border-[var(--rule)] bg-white text-[var(--ink-soft)]"
+                  >
+                    <DropdownMenuLabel className="text-[10px] font-semibold tracking-[0.18em] text-[var(--ink-mute)] uppercase">
+                      HQ State
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-[var(--rule)]" />
+                    {US_STATES.map((state) => (
+                      <DropdownMenuCheckboxItem
+                        key={state.code}
+                        checked={stateFilters.includes(state.code)}
+                        onCheckedChange={() => toggleStateFilter(state.code)}
+                        onSelect={(event) => event.preventDefault()}
+                        className="text-[13px]"
+                      >
+                        {state.label}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {(reachFilters.length > 0 || stateFilters.length > 0) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReachFilters([]);
+                      userChangedStateFiltersRef.current = true;
+                      setStateFilters([]);
+                    }}
+                    className="ml-auto text-[11px] font-semibold tracking-[0.18em] text-[var(--ink-mute)] uppercase underline-offset-4 hover:text-[var(--accent)] hover:underline"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
               {searchResults && (
                 <p className="mb-6 text-[12px] font-semibold tracking-[0.22em] text-[var(--ink-mute)] uppercase">
                   {searchResults.length === 0
