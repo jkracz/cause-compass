@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { Doc } from "@cause/backend/convex/_generated/dataModel";
+import { sanitizeTagline } from "@cause/lib";
 import { OrgMark } from "@/components/editorial/org-mark";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +22,7 @@ export function CompactOrgCard({
   className,
 }: CompactOrgCardProps) {
   const subtitle =
-    organization.tagline ||
+    sanitizeTagline(organization.tagline) ||
     organization.oneSentenceSummary ||
     organization.whySupport;
 

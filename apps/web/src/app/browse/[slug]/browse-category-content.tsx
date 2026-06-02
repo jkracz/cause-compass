@@ -126,6 +126,20 @@ export function BrowseCategoryContent({
           stateFilters[0])
         : `${stateFilters.length} selected`;
 
+  const stateName =
+    stateFilters.length === 1
+      ? (US_STATES.find((state) => state.code === stateFilters[0])?.label ??
+        stateFilters[0])
+      : null;
+
+  const emptyStateTitle = stateName
+    ? `No ${category.label.toLowerCase()} nonprofits from ${stateName} yet.`
+    : "No nonprofits matched these filters.";
+
+  const emptyStateMessage = stateName
+    ? `Cause Compass is still growing its knowledge of organizations in ${stateName}. More are coming as coverage expands.`
+    : "Try widening the reach or HQ state.";
+
   return (
     <>
       {/* Hero band */}
@@ -274,10 +288,10 @@ export function BrowseCategoryContent({
         {status !== "LoadingFirstPage" && results.length === 0 && (
           <div className="rounded-2xl border border-dashed border-[var(--rule)] bg-white/40 px-6 py-20 text-center">
             <p className="font-heading text-[20px] font-semibold text-[var(--ink)]">
-              No nonprofits matched these filters.
+              {emptyStateTitle}
             </p>
             <p className="mt-2 text-[14px] text-[var(--ink-soft)]">
-              Try widening the reach or HQ state.
+              {emptyStateMessage}
             </p>
           </div>
         )}
@@ -296,7 +310,7 @@ export function BrowseCategoryContent({
 
         <div ref={sentinelRef} className="h-12 w-full" aria-hidden />
 
-        {status === "LoadingMore" && (
+        {status === "LoadingMore" && results.length > 0 && (
           <div className="flex justify-center py-8 text-[var(--ink-mute)]">
             <Loader2 className="h-5 w-5 animate-spin" />
           </div>

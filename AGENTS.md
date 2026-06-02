@@ -25,3 +25,4 @@ pnpm typecheck
 
 After changes, always run `pnpm typecheck` and `pnpm lint` to ensure the code is correct.
 Run package-local commands from the relevant workspace when you only need to validate one area.
+DO NOT spin up a dev server on your own unless I tell you to do so. Assume there is one running already.
