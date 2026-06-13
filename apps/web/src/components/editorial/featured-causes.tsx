@@ -93,27 +93,27 @@ export function FeaturedCauses({
             </span>
           </div>
 
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={organization.slug}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <h1 className="font-heading text-[clamp(2.4rem,5vw,4.25rem)] leading-[0.98] font-semibold tracking-tight text-[var(--ink)]">
-                {organization.name}
-              </h1>
+          <div className="min-h-[22rem] lg:min-h-[25.5rem]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={organization.slug}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <h1 className="font-heading line-clamp-3 text-[clamp(2.4rem,5vw,4.25rem)] leading-[0.98] font-semibold tracking-tight text-[var(--ink)] lg:line-clamp-2">
+                  {organization.name}
+                </h1>
 
-              {lead && (
-                <p className="font-heading mt-6 max-w-xl border-l-2 border-[var(--accent)]/70 pl-5 text-[clamp(1.05rem,1.5vw,1.35rem)] leading-[1.45] font-medium text-[var(--ink-soft)] italic">
-                  “{lead}”
-                </p>
-              )}
+                {lead && (
+                  <p className="font-heading mt-6 line-clamp-4 max-w-xl border-l-2 border-[var(--accent)]/70 pl-5 text-[clamp(1.05rem,1.5vw,1.35rem)] leading-[1.45] font-medium text-[var(--ink-soft)] italic lg:line-clamp-3">
+                    “{lead}”
+                  </p>
+                )}
 
-              {organization.keywords && organization.keywords.length > 0 && (
-                <div className="mt-6 flex flex-wrap items-center gap-2">
-                  {organization.keywords.slice(0, 5).map((tag) => (
+                <div className="mt-6 flex min-h-[4.75rem] flex-wrap content-start items-start gap-2">
+                  {organization.keywords?.slice(0, 5).map((tag) => (
                     <span
                       key={tag}
                       className="rounded-full border border-[var(--rule)] bg-white/60 px-3 py-1 text-[11px] font-medium tracking-wide text-[var(--ink-soft)]"
@@ -122,9 +122,9 @@ export function FeaturedCauses({
                     </span>
                   ))}
                 </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
           <div className="mt-8 flex flex-wrap items-center gap-6">
             <button
@@ -188,7 +188,7 @@ export function FeaturedCauses({
               aria-label={`Learn more about ${organization.name}`}
               className="group relative cursor-pointer focus-visible:outline-none"
             >
-              <div className="glass-card relative overflow-hidden !rounded-[2rem] p-8 shadow-[0_30px_70px_-40px_rgba(91,75,158,0.45)] transition-shadow duration-300 ease-out group-hover:shadow-[0_22px_50px_-28px_rgba(91,75,158,0.55)] group-focus-visible:ring-2 group-focus-visible:ring-[var(--accent)]/50 group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-[var(--paper)]">
+              <div className="glass-card relative min-h-[21rem] overflow-hidden !rounded-[2rem] p-8 shadow-[0_30px_70px_-40px_rgba(91,75,158,0.45)] transition-shadow duration-300 ease-out group-hover:shadow-[0_22px_50px_-28px_rgba(91,75,158,0.55)] group-focus-visible:ring-2 group-focus-visible:ring-[var(--accent)]/50 group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-[var(--paper)] sm:min-h-[24rem] lg:min-h-[27rem]">
                 <div
                   aria-hidden
                   className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--accent)]/60 to-transparent"

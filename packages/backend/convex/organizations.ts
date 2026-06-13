@@ -245,16 +245,71 @@ export const getPersonalizedRecommended = query({
 
 // Full-text search organizations by name
 export const search = query({
-  args: { query: v.string() },
-  handler: async (ctx, { query }) => {
-    if (!query.trim()) return [];
+  args: {
+    paginationOpts: paginationOptsValidator,
+    query: v.string(),
+    geographicFocuses: v.optional(v.array(geographicFocusValidator)),
+    states: v.optional(v.array(v.string())),
+  },
+  handler: async (
+    ctx,
+    { paginationOpts, query, geographicFocuses, states },
+  ) => {
+    const searchQuery = query.trim();
+    if (!searchQuery) {
+      return {
+        page: [],
+        isDone: true,
+        continueCursor: paginationOpts.cursor ?? "",
+      };
+    }
 
-    return await ctx.db
+    const onlyGeographicFocus =
+      geographicFocuses?.length === 1 ? geographicFocuses[0] : undefined;
+    const onlyState = states?.length === 1 ? states[0] : undefined;
+    const indexed = ctx.db
       .query("organizations")
-      .withSearchIndex("search_name", (q) =>
-        q.search("name", query).eq("enrichmentStage", "ready"),
-      )
-      .take(20);
+      .withSearchIndex("search_name", (q) => {
+        let search = q
+          .search("name", searchQuery)
+          .eq("enrichmentStage", "ready");
+        if (onlyState) {
+          search = search.eq("state", onlyState);
+        }
+        if (onlyGeographicFocus) {
+          search = search.eq("geographicFocus", onlyGeographicFocus);
+        }
+        return search;
+      });
+
+    const hasPostSearchFilters =
+      (geographicFocuses?.length ?? 0) > 1 || (states?.length ?? 0) > 1;
+
+    if (!hasPostSearchFilters) {
+      return await indexed.paginate(paginationOpts);
+    }
+
+    return await indexed
+      .filter((q) => {
+        const conditions = [];
+        if ((geographicFocuses?.length ?? 0) > 1) {
+          const geographicFocusConditions = geographicFocuses!.map((focus) =>
+            q.eq(q.field("geographicFocus"), focus),
+          );
+          conditions.push(q.or(...geographicFocusConditions));
+        }
+        if ((states?.length ?? 0) > 1) {
+          const stateConditions = states!.map((state) =>
+            q.eq(q.field("state"), state),
+          );
+          conditions.push(q.or(...stateConditions));
+        }
+
+        return conditions.length === 1
+          ? conditions[0]!
+          : q.and(...conditions);
+      })
+      .paginate(paginationOpts);
   },
 });
 
