@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useQueries, useQuery } from "convex/react";
+import { usePaginatedQuery, useQueries, useQuery } from "convex/react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronDown, Compass, Search } from "lucide-react";
+import { ChevronDown, Compass, Loader2, Search } from "lucide-react";
 
 import { DynamicOrganizationModal } from "@/components/dynamic-organization-modal";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -91,12 +91,13 @@ export function DiscoveryHomeContent() {
   );
   const trackedSharedOrgSlugRef = useRef<string | null>(null);
   const userChangedStateFiltersRef = useRef(false);
+  const searchSentinelRef = useRef<HTMLDivElement | null>(null);
   const locationPreference = useLocationPreference();
   const preferredState = locationPreference.activeState?.stateCode;
 
   const debouncedQuery = useDebounce(searchQuery, 300);
-  const isSearching = searchQuery.length > 0;
-  const shouldRunSearch = debouncedQuery.length > 0;
+  const isSearching = searchQuery.trim().length > 0;
+  const shouldRunSearch = debouncedQuery.trim().length > 0;
   const sharedOrgSlug = searchParams.get("org");
 
   const weekKey = useWeekKey();
@@ -130,7 +131,11 @@ export function DiscoveryHomeContent() {
   );
   const rowResults = useQueries(collectionQueries);
 
-  const searchResults = useQuery(
+  const {
+    results: searchResults,
+    status: searchStatus,
+    loadMore: loadMoreSearchResults,
+  } = usePaginatedQuery(
     api.organizations.search,
     shouldRunSearch
       ? {
@@ -140,6 +145,7 @@ export function DiscoveryHomeContent() {
           states: stateFilters.length > 0 ? stateFilters : undefined,
         }
       : "skip",
+    { initialNumItems: 24 },
   );
   const sharedOrganization = useQuery(
     api.organizations.getBySlug,
@@ -147,7 +153,8 @@ export function DiscoveryHomeContent() {
   );
 
   const isSearchLoading =
-    isSearching && (!shouldRunSearch || searchResults === undefined);
+    isSearching &&
+    (!shouldRunSearch || searchStatus === "LoadingFirstPage");
 
   const rowError = Object.values(rowResults).find(
     (result): result is Error => result instanceof Error,
@@ -170,6 +177,25 @@ export function DiscoveryHomeContent() {
     if (userChangedStateFiltersRef.current) return;
     setStateFilters(preferredState ? [preferredState] : []);
   }, [preferredState]);
+
+  useEffect(() => {
+    if (!isSearching) return;
+    const sentinel = searchSentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry?.isIntersecting && searchStatus === "CanLoadMore") {
+          loadMoreSearchResults(24);
+        }
+      },
+      { rootMargin: "400px 0px" },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [isSearching, searchStatus, loadMoreSearchResults]);
 
   useEffect(() => {
     if (!sharedOrgSlug) {
@@ -453,11 +479,11 @@ export function DiscoveryHomeContent() {
                 )}
               </div>
 
-              {searchResults && (
+              {shouldRunSearch && !isSearchLoading && (
                 <p className="mb-6 text-[12px] font-semibold tracking-[0.22em] text-[var(--ink-mute)] uppercase">
                   {searchResults.length === 0
                     ? `No matches for "${debouncedQuery}"`
-                    : `${searchResults.length} result${
+                    : `Showing ${searchResults.length} result${
                         searchResults.length === 1 ? "" : "s"
                       } for "${debouncedQuery}"`}
                 </p>
@@ -474,7 +500,7 @@ export function DiscoveryHomeContent() {
                 </div>
               )}
 
-              {searchResults && searchResults.length > 0 && (
+              {!isSearchLoading && searchResults.length > 0 && (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {searchResults.map((org) => (
                     <EditorialOrgCard
@@ -486,7 +512,7 @@ export function DiscoveryHomeContent() {
                 </div>
               )}
 
-              {searchResults && searchResults.length === 0 && (
+              {!isSearchLoading && shouldRunSearch && searchResults.length === 0 && (
                 <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--rule)] bg-white/40 py-20 text-center">
                   <Search className="mb-4 h-12 w-12 text-[var(--ink-mute)]" />
                   <p className="text-[var(--ink-soft)]">
@@ -498,6 +524,24 @@ export function DiscoveryHomeContent() {
                   >
                     Clear search
                   </button>
+                </div>
+              )}
+
+              <div
+                ref={searchSentinelRef}
+                className="h-12 w-full"
+                aria-hidden
+              />
+
+              {searchStatus === "LoadingMore" && searchResults.length > 0 && (
+                <div className="flex justify-center py-8 text-[var(--ink-mute)]">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                </div>
+              )}
+
+              {searchStatus === "Exhausted" && searchResults.length > 0 && (
+                <div className="py-12 text-center text-[11px] font-semibold tracking-[0.32em] text-[var(--ink-mute)] uppercase">
+                  — End of results —
                 </div>
               )}
             </motion.section>

@@ -243,41 +243,36 @@ export const getPersonalizedRecommended = query({
   },
 });
 
-function matchesSearchFilters(
-  org: Doc<"organizations">,
-  filters: {
-    geographicFocuses?: GeographicFocus[];
-    states?: string[];
-  },
-) {
-  const { geographicFocuses, states } = filters;
-  const matchesGeographicFocus =
-    !geographicFocuses?.length ||
-    (org.geographicFocus !== undefined &&
-      geographicFocuses.includes(org.geographicFocus));
-  const matchesState = !states?.length || states.includes(org.state);
-
-  return matchesGeographicFocus && matchesState;
-}
-
 // Full-text search organizations by name
 export const search = query({
   args: {
+    paginationOpts: paginationOptsValidator,
     query: v.string(),
     geographicFocuses: v.optional(v.array(geographicFocusValidator)),
     states: v.optional(v.array(v.string())),
   },
-  handler: async (ctx, { query, geographicFocuses, states }) => {
-    if (!query.trim()) return [];
+  handler: async (
+    ctx,
+    { paginationOpts, query, geographicFocuses, states },
+  ) => {
+    const searchQuery = query.trim();
+    if (!searchQuery) {
+      return {
+        page: [],
+        isDone: true,
+        continueCursor: paginationOpts.cursor ?? "",
+      };
+    }
 
-    const hasFilters = Boolean(geographicFocuses?.length || states?.length);
     const onlyGeographicFocus =
       geographicFocuses?.length === 1 ? geographicFocuses[0] : undefined;
     const onlyState = states?.length === 1 ? states[0] : undefined;
-    const orgs = await ctx.db
+    const indexed = ctx.db
       .query("organizations")
       .withSearchIndex("search_name", (q) => {
-        let search = q.search("name", query).eq("enrichmentStage", "ready");
+        let search = q
+          .search("name", searchQuery)
+          .eq("enrichmentStage", "ready");
         if (onlyState) {
           search = search.eq("state", onlyState);
         }
@@ -285,14 +280,36 @@ export const search = query({
           search = search.eq("geographicFocus", onlyGeographicFocus);
         }
         return search;
+      });
+
+    const hasPostSearchFilters =
+      (geographicFocuses?.length ?? 0) > 1 || (states?.length ?? 0) > 1;
+
+    if (!hasPostSearchFilters) {
+      return await indexed.paginate(paginationOpts);
+    }
+
+    return await indexed
+      .filter((q) => {
+        const conditions = [];
+        if ((geographicFocuses?.length ?? 0) > 1) {
+          const geographicFocusConditions = geographicFocuses!.map((focus) =>
+            q.eq(q.field("geographicFocus"), focus),
+          );
+          conditions.push(q.or(...geographicFocusConditions));
+        }
+        if ((states?.length ?? 0) > 1) {
+          const stateConditions = states!.map((state) =>
+            q.eq(q.field("state"), state),
+          );
+          conditions.push(q.or(...stateConditions));
+        }
+
+        return conditions.length === 1
+          ? conditions[0]!
+          : q.and(...conditions);
       })
-      .take(hasFilters ? 80 : 20);
-
-    if (!hasFilters) return orgs;
-
-    return orgs
-      .filter((org) => matchesSearchFilters(org, { geographicFocuses, states }))
-      .slice(0, 20);
+      .paginate(paginationOpts);
   },
 });
 
