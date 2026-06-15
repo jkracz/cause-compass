@@ -19,6 +19,9 @@ pnpm run claude-ai-confirm -- --limit=1000
 
 # Validate crawled org websites via Codex (login session or API key)
 pnpm run codex-ai-confirm -- --limit=1000
+
+# Research created orgs with live Codex web search (dry-run JSONL by default)
+pnpm run codex-ai-research -- --limit=25
 ```
 
 ## Local AI Confirmation
@@ -142,6 +145,42 @@ The runner requests structured output through `outputSchema`, then parses and
 validates `finalResponse` with the shared Zod schema before committing. Per-EIN
 failures are logged and the loop continues.
 
+## Codex AI Research
+
+`codex-ai-research` is a live-search Codex worker for `created` organizations
+that do not already have search or Codex research artifacts. It asks Codex to
+resolve the official website, gather profile fields with field-level evidence,
+extract links, and return crawl candidates in one structured response.
+
+The default mode is dry-run. It does not mutate Convex; it writes one JSONL line
+per organization to `.context/codex-ai-research-sample.jsonl` for manual review:
+
+```bash
+pnpm run codex-ai-research -- --limit=25 --concurrency=3 --timeout-ms=180000
+```
+
+Commit modes are explicit:
+
+- `--commit-research` saves `researchRuns`, reduced `searchResults`, and linked
+  `aiConfirmations`, but leaves the organization in `created`.
+- `--enqueue-crawl` also enqueues high/medium crawl candidates and advances the
+  organization to `searched` when crawl jobs are created, otherwise
+  `ai_confirmed`.
+- `--promote-ready` promotes only high-confidence results with a correct website,
+  at least two identity evidence items, and a mission or one-sentence summary.
+  Non-promoted results follow the enqueue/fallback path.
+
+The runner uses the same Codex auth sources as `codex-ai-confirm`: set
+`CODEX_API_KEY` or `OPENAI_API_KEY` for API billing, or leave both unset to use
+the local Codex login session. It also requires `CONVEX_URL` and
+`LOCAL_AI_OPERATOR_TOKEN` to list candidates and to use commit modes.
+
+Optional environment overrides:
+
+- `CODEX_RESEARCH_MODEL` - defaults to `CODEX_MODEL` or `gpt-5.4-mini`
+- `CODEX_RESEARCH_TIMEOUT_MS` - defaults to `180000`
+- `CODEX_RESEARCH_CONCURRENCY` - defaults to `3`
+
 ## Components
 
 - **`src/scripts/createOrgsByStateConvex.ts`** - Reads IRS CSV, filters eligible orgs, writes JSONL for `npx convex import`
@@ -149,6 +188,7 @@ failures are logged and the loop continues.
 - **`src/scripts/localAiConfirm.ts`** - Runs the local Ollama confirmation workflow against Convex
 - **`src/scripts/claudeAiConfirm.ts`** - Runs the concurrent Claude Agent SDK confirmation workflow against Convex (subscription or API key)
 - **`src/scripts/codexAiConfirm.ts`** - Runs the concurrent Codex SDK confirmation workflow against Convex (login session or API key)
+- **`src/scripts/codexAiResearch.ts`** - Runs live-search Codex research for created orgs with dry-run and guarded commit modes
 - **`src/services/parseEoFile.ts`** - Core IRS CSV parser with code dictionary mapping (NTEE, activity, foundation, etc.)
 - **`src/data/dataDictionaries/`** - IRS code reference data (10 JSON files)
 - **`src/utils/`** - Shared utilities (slug generation, amount bucketing, text processing, logging)

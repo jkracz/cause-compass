@@ -44,6 +44,137 @@ const socialMediaUrlsValidator = v.object({
   twitter: v.optional(v.string()),
 });
 
+const codexResearchCandidateConfidenceValidator = v.union(
+  v.literal("high"),
+  v.literal("medium"),
+  v.literal("low"),
+);
+
+const codexResearchEvidenceItemValidator = v.object({
+  sourceUrl: v.string(),
+  quoteOrObservation: v.string(),
+});
+
+const codexResearchEvidenceStringValidator = v.object({
+  value: v.string(),
+  sourceUrl: v.string(),
+  evidence: v.string(),
+});
+
+const codexResearchEvidenceStringArrayValidator = v.object({
+  value: v.array(v.string()),
+  sourceUrl: v.string(),
+  evidence: v.string(),
+});
+
+const codexResearchOutputValidator = v.object({
+  hasCorrectWebsite: v.boolean(),
+  correctWebsiteUrl: v.union(v.string(), v.null()),
+  websiteConfidence: v.union(
+    v.literal("high"),
+    v.literal("medium"),
+    v.literal("low"),
+    v.literal("none"),
+  ),
+  identityEvidence: v.array(codexResearchEvidenceItemValidator),
+  rejectionReason: v.union(v.string(), v.null()),
+  profile: v.object({
+    mission: v.union(codexResearchEvidenceStringValidator, v.null()),
+    tagline: v.union(codexResearchEvidenceStringValidator, v.null()),
+    oneSentenceSummary: v.union(codexResearchEvidenceStringValidator, v.null()),
+    whySupport: v.union(codexResearchEvidenceStringValidator, v.null()),
+    targetAudience: v.union(codexResearchEvidenceStringValidator, v.null()),
+    geographicFocus: v.union(
+      v.object({
+        value: geographicFocusValidator,
+        sourceUrl: v.string(),
+        evidence: v.string(),
+      }),
+      v.null(),
+    ),
+    activities: v.union(
+      v.array(
+        v.object({
+          name: v.string(),
+          description: v.string(),
+          sourceUrl: v.string(),
+          evidence: v.string(),
+        }),
+      ),
+      v.null(),
+    ),
+    keywords: v.union(codexResearchEvidenceStringArrayValidator, v.null()),
+  }),
+  extractedLinks: v.object({
+    donationUrl: v.union(codexResearchEvidenceStringValidator, v.null()),
+    logoUrl: v.union(codexResearchEvidenceStringValidator, v.null()),
+    emailAddresses: v.union(
+      codexResearchEvidenceStringArrayValidator,
+      v.null(),
+    ),
+    socialMediaUrls: v.union(
+      v.object({
+        facebook: v.optional(codexResearchEvidenceStringValidator),
+        instagram: v.optional(codexResearchEvidenceStringValidator),
+        linkedin: v.optional(codexResearchEvidenceStringValidator),
+        youtube: v.optional(codexResearchEvidenceStringValidator),
+        x: v.optional(codexResearchEvidenceStringValidator),
+        threads: v.optional(codexResearchEvidenceStringValidator),
+      }),
+      v.null(),
+    ),
+  }),
+  candidateUrls: v.array(
+    v.object({
+      url: v.string(),
+      purpose: v.union(
+        v.literal("official_site"),
+        v.literal("about"),
+        v.literal("donate"),
+        v.literal("contact"),
+        v.literal("social"),
+        v.literal("other"),
+      ),
+      confidence: codexResearchCandidateConfidenceValidator,
+      evidence: v.string(),
+    }),
+  ),
+});
+
+const codexResearchModeValidator = v.union(
+  v.literal("dry_run"),
+  v.literal("save_only"),
+  v.literal("enqueue_crawl"),
+  v.literal("promote_ready"),
+);
+
+const codexResearchStatusValidator = v.union(
+  v.literal("succeeded"),
+  v.literal("failed"),
+  v.literal("timed_out"),
+  v.literal("schema_invalid"),
+);
+
+const codexResearchInputSnapshotValidator = v.object({
+  name: v.string(),
+  street: v.string(),
+  city: v.string(),
+  state: v.string(),
+  zip: v.optional(v.string()),
+  nteeCode: v.optional(v.string()),
+  activityCodes: v.optional(v.array(v.string())),
+  assetBucket: v.optional(v.string()),
+  incomeBucket: v.optional(v.string()),
+  ico: v.optional(v.string()),
+});
+
+const codexResearchUsageValidator = v.object({
+  inputTokens: v.optional(v.number()),
+  cachedInputTokens: v.optional(v.number()),
+  outputTokens: v.optional(v.number()),
+  reasoningOutputTokens: v.optional(v.number()),
+});
+
 export default defineSchema({
   // Existing users table
   users: defineTable({
@@ -185,6 +316,7 @@ export default defineSchema({
     inputs: v.object({
       searchResultIds: v.optional(v.array(v.id("searchResults"))),
       crawlResultIds: v.optional(v.array(v.id("crawlResults"))),
+      researchRunId: v.optional(v.id("researchRuns")),
     }),
 
     // AI outputs
@@ -204,6 +336,32 @@ export default defineSchema({
   })
     .index("by_ein", ["ein"])
     .index("by_orgId", ["orgId"]),
+
+  researchRuns: defineTable({
+    orgId: v.id("organizations"),
+    ein: v.string(),
+    agent: v.literal("codex"),
+    model: v.string(),
+    runAt: v.string(),
+    status: codexResearchStatusValidator,
+    mode: codexResearchModeValidator,
+    inputSnapshot: codexResearchInputSnapshotValidator,
+    output: v.optional(codexResearchOutputValidator),
+    error: v.optional(v.string()),
+    codexThreadId: v.optional(v.string()),
+    usage: v.optional(codexResearchUsageValidator),
+    projections: v.optional(
+      v.object({
+        searchResultId: v.optional(v.id("searchResults")),
+        aiConfirmationId: v.optional(v.id("aiConfirmations")),
+        enqueuedCrawlJobIds: v.optional(v.array(v.id("crawlQueue"))),
+        promotedOrganization: v.boolean(),
+      }),
+    ),
+  })
+    .index("by_orgId", ["orgId"])
+    .index("by_ein", ["ein"])
+    .index("by_status", ["status"]),
 
   // Crawl queue - job queue for HTML and browser workers
   crawlQueue: defineTable({
