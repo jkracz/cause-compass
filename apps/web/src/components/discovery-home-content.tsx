@@ -140,8 +140,7 @@ export function DiscoveryHomeContent() {
     shouldRunSearch
       ? {
           query: debouncedQuery,
-          geographicFocuses:
-            reachFilters.length > 0 ? reachFilters : undefined,
+          geographicFocuses: reachFilters.length > 0 ? reachFilters : undefined,
           states: stateFilters.length > 0 ? stateFilters : undefined,
         }
       : "skip",
@@ -153,8 +152,7 @@ export function DiscoveryHomeContent() {
   );
 
   const isSearchLoading =
-    isSearching &&
-    (!shouldRunSearch || searchStatus === "LoadingFirstPage");
+    isSearching && (!shouldRunSearch || searchStatus === "LoadingFirstPage");
 
   const rowError = Object.values(rowResults).find(
     (result): result is Error => result instanceof Error,
@@ -332,6 +330,27 @@ export function DiscoveryHomeContent() {
       </div>
 
       <div className="mx-auto max-w-6xl px-4 pt-10 pb-20 md:px-8 md:pt-14">
+        {/* Launch banner — front and center for the Product Hunt launch. */}
+        <div className="editorial-fade-up mb-10 flex flex-col items-center gap-2.5 text-center md:mb-12">
+          <p className="text-[11px] font-semibold tracking-[0.28em] text-[var(--accent)] uppercase">
+            🎉 We&apos;re live on Product Hunt today
+          </p>
+          <a
+            href="https://www.producthunt.com/products/cause-compass?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-cause-compass"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block rounded-[10px] transition hover:-translate-y-0.5 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              alt="Cause Compass - Find nonprofits by mission, not marketing budget | Product Hunt"
+              width={250}
+              height={54}
+              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1172910&theme=light&t=1781579549450"
+            />
+          </a>
+        </div>
+
         {/* Hero: Featured Causes */}
         <div className="editorial-fade-up">
           {featuredCauses === undefined && <FeaturedCausesSkeleton />}
@@ -512,20 +531,22 @@ export function DiscoveryHomeContent() {
                 </div>
               )}
 
-              {!isSearchLoading && shouldRunSearch && searchResults.length === 0 && (
-                <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--rule)] bg-white/40 py-20 text-center">
-                  <Search className="mb-4 h-12 w-12 text-[var(--ink-mute)]" />
-                  <p className="text-[var(--ink-soft)]">
-                    No nonprofits found matching your search
-                  </p>
-                  <button
-                    onClick={() => handleSearchChange("")}
-                    className="mt-4 text-[11px] font-semibold tracking-[0.22em] text-[var(--ink-mute)] uppercase underline-offset-4 hover:text-[var(--accent)] hover:underline"
-                  >
-                    Clear search
-                  </button>
-                </div>
-              )}
+              {!isSearchLoading &&
+                shouldRunSearch &&
+                searchResults.length === 0 && (
+                  <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--rule)] bg-white/40 py-20 text-center">
+                    <Search className="mb-4 h-12 w-12 text-[var(--ink-mute)]" />
+                    <p className="text-[var(--ink-soft)]">
+                      No nonprofits found matching your search
+                    </p>
+                    <button
+                      onClick={() => handleSearchChange("")}
+                      className="mt-4 text-[11px] font-semibold tracking-[0.22em] text-[var(--ink-mute)] uppercase underline-offset-4 hover:text-[var(--accent)] hover:underline"
+                    >
+                      Clear search
+                    </button>
+                  </div>
+                )}
 
               <div
                 ref={searchSentinelRef}
