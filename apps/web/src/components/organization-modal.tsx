@@ -16,7 +16,6 @@ import {
   Drawer,
   DrawerContent,
   DrawerDescription,
-  DrawerHeader,
   DrawerTitle,
   DrawerClose,
 } from "@/components/ui/drawer";
@@ -351,9 +350,9 @@ export function OrganizationModal({
                 </div>
               )}
 
-              <DialogTitle className="font-heading text-ink text-[28px] leading-[1.05] font-semibold tracking-[-0.005em] sm:text-[36px]">
+              <h2 className="font-heading text-ink text-[28px] leading-[1.05] font-semibold tracking-[-0.005em] sm:text-[36px]">
                 {organization.name}
-              </DialogTitle>
+              </h2>
             </div>
 
             {lead && (
@@ -525,24 +524,20 @@ export function OrganizationModal({
     return (
       <Drawer open={isOpen} onOpenChange={onClose}>
         <DrawerContent className="bg-card max-h-[92vh]">
-          <DrawerHeader className="border-rule bg-paper-deep flex items-center justify-between border-b px-4 py-3">
-            <DrawerTitle className="text-ink-mute text-[11px] font-semibold tracking-[0.32em] uppercase">
-              Organization
-            </DrawerTitle>
-            <DrawerDescription className="sr-only">
-              Details about {organization.name}
-            </DrawerDescription>
-            <DrawerClose asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-ink-soft hover:bg-card hover:text-accent"
-              >
-                <X className="h-4 w-4" />
-                <span className="sr-only">Close</span>
-              </Button>
-            </DrawerClose>
-          </DrawerHeader>
+          <DrawerTitle className="sr-only">{organization.name}</DrawerTitle>
+          <DrawerDescription className="sr-only">
+            Details about {organization.name}
+          </DrawerDescription>
+          <DrawerClose asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="border-rule bg-card/90 text-ink-soft hover:border-accent/40 hover:bg-card hover:text-accent absolute top-5 right-4 z-50 h-9 w-9 rounded-full border shadow-sm backdrop-blur transition-all"
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </Button>
+          </DrawerClose>
           <div className="bg-card overflow-y-auto">{content}</div>
         </DrawerContent>
       </Drawer>
@@ -555,6 +550,7 @@ export function OrganizationModal({
         showCloseButton={false}
         className="border-rule bg-card text-ink max-h-[92vh] w-[calc(100vw-2rem)] !max-w-5xl overflow-auto border p-0 shadow-[0_30px_70px_-40px_rgba(91,75,158,0.55)] sm:!max-w-5xl sm:rounded-[32px]"
       >
+        <DialogTitle className="sr-only">{organization.name}</DialogTitle>
         <DialogDescription className="sr-only">
           Details about {organization.name}
         </DialogDescription>

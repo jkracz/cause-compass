@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { TopNavAccount } from "@/components/top-nav-account";
 import { HomeNavLink } from "@/components/home-nav-link";
 import { TopNavLinks } from "@/components/top-nav-links";
+import { MobileNav } from "@/components/mobile-nav";
 
 export function TopNav({ className }: { className?: string }) {
   return (
@@ -18,6 +19,7 @@ export function TopNav({ className }: { className?: string }) {
           <div className="flex items-center gap-3">
             <TopNavLinks />
             <TopNavAccount />
+            <MobileNav />
           </div>
         </div>
       </div>

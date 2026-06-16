@@ -32,7 +32,7 @@ export function HomeNavLink() {
           aria-hidden
         />
       </div>
-      <span className="font-heading text-xl font-bold tracking-tight text-[var(--ink)]">
+      <span className="font-heading hidden text-xl font-bold tracking-tight text-[var(--ink)] sm:inline">
         Cause Compass
       </span>
     </Link>
