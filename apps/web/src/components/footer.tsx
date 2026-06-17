@@ -18,23 +18,6 @@ export function Footer() {
   return (
     <footer className="relative z-20 mt-auto border-t border-[var(--rule)] bg-[color:rgba(240,230,245,0.6)] backdrop-blur-md">
       <div className="container mx-auto flex flex-col gap-6 px-4 py-6">
-        <div className="flex justify-center md:justify-end">
-          <a
-            href="https://www.producthunt.com/products/cause-compass?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-cause-compass"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block rounded-[10px] transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              alt="Cause Compass - Find nonprofits by mission, not marketing budget | Product Hunt"
-              width={250}
-              height={54}
-              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1172910&theme=light&t=1781579549450"
-            />
-          </a>
-        </div>
-
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm">
             <span className="text-xs text-[var(--ink-mute)]">
