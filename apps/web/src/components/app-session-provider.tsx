@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation";
 import { ConvexReactClient, useConvexAuth, useMutation } from "convex/react";
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 import { api } from "@cause/backend/convex/_generated/api";
-import { authClient } from "@/lib/auth-client";
+import { authClient, convexAuthClient } from "@/lib/auth-client";
 import { analytics } from "@/lib/analytics-client";
 
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -291,7 +291,7 @@ export function AppSessionProvider({
   initialGuestId?: string;
 }) {
   return (
-    <ConvexBetterAuthProvider client={convex} authClient={authClient}>
+    <ConvexBetterAuthProvider client={convex} authClient={convexAuthClient}>
       <AppSessionInner initialGuestId={initialGuestId}>
         {children}
       </AppSessionInner>

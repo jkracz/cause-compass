@@ -13,9 +13,9 @@
   "dependencies": {
     "@cause/lib": "workspace:*",
     "@convex-dev/aggregate": "^0.2.1",
-    "@convex-dev/better-auth": "^0.12.2",
+    "@convex-dev/better-auth": "^0.12.4",
     "@convex-dev/migrations": "^0.3.5",
-    "@convex-dev/workflow": "^0.4.3",
+    "@convex-dev/workflow": "^0.4.4",
     "better-auth": "^1.6.19",
     "convex": "^1.41.0",
     "openai": "^6.44.0",
