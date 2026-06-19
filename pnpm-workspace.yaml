@@ -68,6 +68,8 @@ minimumReleaseAgeExclude:
   - react-dom@19.2.7
   - react@19.2.7
   - typescript-eslint@8.60.1
+  - '@types/node@26.0.0'
+  - nanoid@5.1.14
 
 onlyBuiltDependencies:
   - '@tailwindcss/oxide'
