@@ -114,12 +114,12 @@ const codexResearchOutputValidator = v.object({
     ),
     socialMediaUrls: v.union(
       v.object({
-        facebook: v.optional(codexResearchEvidenceStringValidator),
-        instagram: v.optional(codexResearchEvidenceStringValidator),
-        linkedin: v.optional(codexResearchEvidenceStringValidator),
-        youtube: v.optional(codexResearchEvidenceStringValidator),
-        x: v.optional(codexResearchEvidenceStringValidator),
-        threads: v.optional(codexResearchEvidenceStringValidator),
+        facebook: v.union(codexResearchEvidenceStringValidator, v.null()),
+        instagram: v.union(codexResearchEvidenceStringValidator, v.null()),
+        linkedin: v.union(codexResearchEvidenceStringValidator, v.null()),
+        youtube: v.union(codexResearchEvidenceStringValidator, v.null()),
+        x: v.union(codexResearchEvidenceStringValidator, v.null()),
+        threads: v.union(codexResearchEvidenceStringValidator, v.null()),
       }),
       v.null(),
     ),

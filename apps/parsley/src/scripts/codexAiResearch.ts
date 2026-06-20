@@ -30,11 +30,7 @@ const DEFAULT_OUTPUT_PATH = path.join(
   "codex-ai-research-sample.jsonl",
 );
 
-type ResearchMode =
-  | "dry_run"
-  | "save_only"
-  | "enqueue_crawl"
-  | "promote_ready";
+type ResearchMode = "dry_run" | "enqueue_crawl" | "promote_ready";
 type CommitMode = Exclude<ResearchMode, "dry_run">;
 type ResearchStatus = "succeeded" | "failed" | "timed_out" | "schema_invalid";
 
@@ -123,11 +119,6 @@ async function parseArgs() {
       type: "boolean",
       describe: "Write JSONL only and do not save Convex research records",
     })
-    .option("commit-research", {
-      type: "boolean",
-      default: false,
-      describe: "Save researchRuns, searchResults, and aiConfirmations without changing org stage",
-    })
     .option("enqueue-crawl", {
       type: "boolean",
       default: false,
@@ -141,13 +132,12 @@ async function parseArgs() {
     .check((argv) => {
       const selectedModes = [
         argv.dryRun,
-        argv.commitResearch,
         argv.enqueueCrawl,
         argv.promoteReady,
       ].filter(Boolean);
       if (selectedModes.length > 1) {
         throw new Error(
-          "Choose only one mode: --dry-run, --commit-research, --enqueue-crawl, or --promote-ready",
+          "Choose only one mode: --dry-run, --enqueue-crawl, or --promote-ready",
         );
       }
       return true;
@@ -162,9 +152,6 @@ function getResearchMode(args: Awaited<ReturnType<typeof parseArgs>>): ResearchM
   }
   if (args.enqueueCrawl) {
     return "enqueue_crawl";
-  }
-  if (args.commitResearch) {
-    return "save_only";
   }
   return "dry_run";
 }

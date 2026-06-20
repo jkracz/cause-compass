@@ -22,7 +22,6 @@ declare const process: {
 };
 
 const researchModeValidator = v.union(
-  v.literal("save_only"),
   v.literal("enqueue_crawl"),
   v.literal("promote_ready"),
 );
@@ -303,7 +302,7 @@ export const saveRun = mutation({
         ...readyUpdates,
         updatedAt: Date.now(),
       });
-    } else if (mode !== "save_only") {
+    } else {
       await patchOrganization(ctx, orgId, {
         enrichmentStage:
           enqueuedCrawlJobIds.length > 0 ? "searched" : "ai_confirmed",

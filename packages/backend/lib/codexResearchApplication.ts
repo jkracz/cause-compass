@@ -11,7 +11,6 @@ import {
 
 export type CodexResearchMode =
   | "dry_run"
-  | "save_only"
   | "enqueue_crawl"
   | "promote_ready";
 
@@ -180,7 +179,7 @@ export function buildCodexResearchReadyUpdates(
   }
 
   const socialValues = Object.values(result.extractedLinks.socialMediaUrls ?? {})
-    .map((item) => httpUrl(item.value))
+    .map((item) => (item ? httpUrl(item.value) : undefined))
     .filter((value): value is string => value !== undefined);
   const socialMediaUrls = extractSocialMediaUrls(socialValues);
   const emails = cleanEmails(result.extractedLinks.emailAddresses?.value);

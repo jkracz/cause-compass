@@ -150,12 +150,12 @@ export const CodexResearchResultSchema = z.object({
     emailAddresses: CodexResearchEvidenceStringArraySchema.nullable(),
     socialMediaUrls: z
       .object({
-        facebook: CodexResearchEvidenceStringSchema.optional(),
-        instagram: CodexResearchEvidenceStringSchema.optional(),
-        linkedin: CodexResearchEvidenceStringSchema.optional(),
-        youtube: CodexResearchEvidenceStringSchema.optional(),
-        x: CodexResearchEvidenceStringSchema.optional(),
-        threads: CodexResearchEvidenceStringSchema.optional(),
+        facebook: CodexResearchEvidenceStringSchema.nullable(),
+        instagram: CodexResearchEvidenceStringSchema.nullable(),
+        linkedin: CodexResearchEvidenceStringSchema.nullable(),
+        youtube: CodexResearchEvidenceStringSchema.nullable(),
+        x: CodexResearchEvidenceStringSchema.nullable(),
+        threads: CodexResearchEvidenceStringSchema.nullable(),
       })
       .nullable(),
   }),

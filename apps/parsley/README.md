@@ -159,10 +159,8 @@ per organization to `.context/codex-ai-research-sample.jsonl` for manual review:
 pnpm run codex-ai-research -- --limit=25 --concurrency=3 --timeout-ms=180000
 ```
 
-Commit modes are explicit:
+Write modes are explicit:
 
-- `--commit-research` saves `researchRuns`, reduced `searchResults`, and linked
-  `aiConfirmations`, but leaves the organization in `created`.
 - `--enqueue-crawl` also enqueues high/medium crawl candidates and advances the
   organization to `searched` when crawl jobs are created, otherwise
   `ai_confirmed`.
