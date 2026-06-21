@@ -60,3 +60,26 @@ export function limitArrayBySize(
 
   return result.length > 0 ? result : undefined;
 }
+
+/**
+ * Extracts a JSON payload from a model's free-form text response. Strips a
+ * Markdown code fence if present, then falls back to the substring between the
+ * first `{` and last `}` to tolerate stray prose around the object. Used to
+ * recover structured output when an SDK returns text instead of validated JSON.
+ *
+ * @param raw - The raw model response text
+ * @returns The best-effort JSON substring (caller still parses + validates it)
+ */
+export function extractJsonPayload(raw: string): string {
+  const trimmed = raw.trim();
+  const fenceMatch = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
+  if (fenceMatch?.[1]) {
+    return fenceMatch[1].trim();
+  }
+  const firstBrace = trimmed.indexOf("{");
+  const lastBrace = trimmed.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    return trimmed.slice(firstBrace, lastBrace + 1);
+  }
+  return trimmed;
+}

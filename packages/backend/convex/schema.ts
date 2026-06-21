@@ -340,7 +340,7 @@ export default defineSchema({
   researchRuns: defineTable({
     orgId: v.id("organizations"),
     ein: v.string(),
-    agent: v.literal("codex"),
+    agent: v.union(v.literal("codex"), v.literal("claude")),
     model: v.string(),
     runAt: v.string(),
     status: codexResearchStatusValidator,
@@ -348,7 +348,9 @@ export default defineSchema({
     inputSnapshot: codexResearchInputSnapshotValidator,
     output: v.optional(codexResearchOutputValidator),
     error: v.optional(v.string()),
+    // codexThreadId is set by the Codex runner; sessionId by the Claude runner.
     codexThreadId: v.optional(v.string()),
+    sessionId: v.optional(v.string()),
     usage: v.optional(codexResearchUsageValidator),
     projections: v.optional(
       v.object({
@@ -360,6 +362,7 @@ export default defineSchema({
     ),
   })
     .index("by_orgId", ["orgId"])
+    .index("by_orgId_and_status", ["orgId", "status"])
     .index("by_ein", ["ein"])
     .index("by_status", ["status"]),
 

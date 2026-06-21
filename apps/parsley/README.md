@@ -22,6 +22,9 @@ pnpm run codex-ai-confirm -- --limit=1000
 
 # Research created orgs with live Codex web search (dry-run JSONL by default)
 pnpm run codex-ai-research -- --limit=25
+
+# Research created orgs with live Claude web search (dry-run JSONL by default)
+pnpm run claude-ai-research -- --limit=25
 ```
 
 ## Local AI Confirmation
@@ -179,6 +182,55 @@ Optional environment overrides:
 - `CODEX_RESEARCH_TIMEOUT_MS` - defaults to `180000`
 - `CODEX_RESEARCH_CONCURRENCY` - defaults to `3`
 
+## Claude AI Research
+
+`claude-ai-research` is the Claude Agent SDK counterpart to `codex-ai-research`.
+It does the exact same job for `created` organizations that do not already have
+search or research artifacts: resolve the official website, gather profile
+fields with field-level evidence, extract links, and return crawl candidates in
+one structured response. It shares the same Convex backend, `researchRuns`
+table, and projection logic as the Codex runner — each run is tagged with
+`agent: "claude"` for provenance.
+
+Codex's `webSearchMode: "live"` is replaced by the Agent SDK's built-in
+`WebSearch` and `WebFetch` tools in a multi-turn agentic loop. The turn is
+read-only: only the web tools are available (no filesystem or bash access),
+permissions are bypassed, and no project/user settings are loaded.
+
+The default mode is dry-run. It does not mutate Convex; it writes one JSONL line
+per organization to `.context/claude-ai-research-sample.jsonl` for manual
+review:
+
+```bash
+pnpm run claude-ai-research -- --limit=25 --concurrency=3 --timeout-ms=180000
+```
+
+Write modes are identical to the Codex runner:
+
+- `--enqueue-crawl` also enqueues high/medium crawl candidates and advances the
+  organization to `searched` when crawl jobs are created, otherwise
+  `ai_confirmed`.
+- `--promote-ready` promotes only high-confidence results with a correct website,
+  at least two identity evidence items, and a mission or one-sentence summary.
+  Non-promoted results follow the enqueue/fallback path.
+
+Authentication is auto-detected exactly like `claude-ai-confirm`: set
+`ANTHROPIC_API_KEY` for metered API billing, or leave it unset to use the local
+`claude login` subscription session. It also requires `CONVEX_URL` and
+`LOCAL_AI_OPERATOR_TOKEN` to list candidates and to use commit modes.
+
+Note: the SDK's native `outputFormat: json_schema` mode is only enforced on the
+`ANTHROPIC_API_KEY` auth path. The Max subscription path ignores it and returns
+free-form text, which the runner parses and validates with the shared Zod schema
+as a fallback. On API-key auth, `WebSearch`/`WebFetch` are metered.
+
+Optional environment overrides:
+
+- `CLAUDE_RESEARCH_MODEL` - defaults to `ANTHROPIC_MODEL` or `claude-sonnet-4-6`
+- `CLAUDE_RESEARCH_TIMEOUT_MS` - defaults to `180000`
+- `CLAUDE_RESEARCH_CONCURRENCY` - defaults to `3`
+- `CLAUDE_RESEARCH_MAX_TURNS` - defaults to `30`
+
 ## Components
 
 - **`src/scripts/createOrgsByStateConvex.ts`** - Reads IRS CSV, filters eligible orgs, writes JSONL for `npx convex import`
@@ -187,6 +239,7 @@ Optional environment overrides:
 - **`src/scripts/claudeAiConfirm.ts`** - Runs the concurrent Claude Agent SDK confirmation workflow against Convex (subscription or API key)
 - **`src/scripts/codexAiConfirm.ts`** - Runs the concurrent Codex SDK confirmation workflow against Convex (login session or API key)
 - **`src/scripts/codexAiResearch.ts`** - Runs live-search Codex research for created orgs with dry-run and guarded commit modes
+- **`src/scripts/claudeAiResearch.ts`** - Runs live-search Claude Agent SDK research for created orgs with dry-run and guarded commit modes
 - **`src/services/parseEoFile.ts`** - Core IRS CSV parser with code dictionary mapping (NTEE, activity, foundation, etc.)
 - **`src/data/dataDictionaries/`** - IRS code reference data (10 JSON files)
 - **`src/utils/`** - Shared utilities (slug generation, amount bucketing, text processing, logging)

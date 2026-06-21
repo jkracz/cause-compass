@@ -113,17 +113,19 @@ async function hasPriorSearchOrResearch(
     return true;
   }
 
-  const priorResearch = await ctx.db
+  const priorSucceededResearch = await ctx.db
     .query("researchRuns")
-    .withIndex("by_orgId", (q) => q.eq("orgId", orgId))
+    .withIndex("by_orgId_and_status", (q) =>
+      q.eq("orgId", orgId).eq("status", "succeeded"),
+    )
     .first();
 
-  return Boolean(priorResearch);
+  return Boolean(priorSucceededResearch);
 }
 
 /**
- * Lists created organizations that have not already produced search or Codex
- * research artifacts. The caller can enrich code descriptions locally.
+ * Lists created organizations that have not already produced search artifacts
+ * or successful Codex research. Failed research attempts remain retryable.
  */
 export const listCandidates = query({
   args: {
@@ -178,6 +180,8 @@ export const saveRun = mutation({
   args: {
     operatorToken: v.string(),
     orgId: v.id("organizations"),
+    // Defaults to "codex" so the existing Codex runner can omit it.
+    agent: v.optional(v.union(v.literal("codex"), v.literal("claude"))),
     model: v.string(),
     status: researchStatusValidator,
     mode: researchModeValidator,
@@ -185,6 +189,7 @@ export const saveRun = mutation({
     result: v.optional(v.any()),
     error: v.optional(v.string()),
     codexThreadId: v.optional(v.string()),
+    sessionId: v.optional(v.string()),
     usage: v.optional(usageValidator),
   },
   handler: async (
@@ -192,6 +197,7 @@ export const saveRun = mutation({
     {
       operatorToken,
       orgId,
+      agent,
       model,
       status,
       mode,
@@ -199,6 +205,7 @@ export const saveRun = mutation({
       result,
       error,
       codexThreadId,
+      sessionId,
       usage,
     },
   ) => {
@@ -222,7 +229,7 @@ export const saveRun = mutation({
     const researchRunId = await ctx.db.insert("researchRuns", {
       orgId,
       ein: org.ein,
-      agent: "codex",
+      agent: agent ?? "codex",
       model,
       runAt,
       status,
@@ -231,6 +238,7 @@ export const saveRun = mutation({
       output,
       error,
       codexThreadId,
+      sessionId,
       usage,
     });
 
