@@ -1,7 +1,4 @@
 import "dotenv/config";
-import { existsSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
@@ -19,6 +16,11 @@ import {
   type LocalAiCandidate,
   type LocalAiCandidatePage,
 } from "@/utils/aiConfirmation";
+import {
+  assertClaudeCredentials,
+  collectClaudeResult,
+} from "@/utils/claudeAgent";
+import { runWithConcurrency } from "@/utils/concurrency";
 import { logger } from "@/utils/logger";
 
 const DEFAULT_MODEL = "claude-sonnet-4-6";
@@ -88,106 +90,6 @@ async function parseArgs() {
 }
 
 /**
- * Runs `worker` over `items` with at most `concurrency` in flight at a time.
- * Each worker pulls from a shared index, so the pool stays full until the
- * queue drains — better throughput than chunked Promise.all when individual
- * tasks vary in duration.
- */
-async function runWithConcurrency<T>(
-  items: T[],
-  concurrency: number,
-  worker: (item: T) => Promise<void>,
-): Promise<void> {
-  let cursor = 0;
-  const drain = async (): Promise<void> => {
-    while (true) {
-      const idx = cursor++;
-      if (idx >= items.length) {
-        return;
-      }
-      await worker(items[idx]!);
-    }
-  };
-  const workerCount = Math.max(1, Math.min(concurrency, items.length));
-  await Promise.all(Array.from({ length: workerCount }, drain));
-}
-
-/**
- * The SDK enforces `outputFormat` only on direct-API auth; the Max subscription
- * path silently ignores it and returns free-form text in `result.result`.
- * Strip a markdown fence if present, then fall back to the substring between
- * the first `{` and last `}` to tolerate stray prose.
- */
-function extractJsonPayload(raw: string): string {
-  const trimmed = raw.trim();
-  const fenceMatch = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
-  if (fenceMatch?.[1]) {
-    return fenceMatch[1].trim();
-  }
-  const firstBrace = trimmed.indexOf("{");
-  const lastBrace = trimmed.lastIndexOf("}");
-  if (firstBrace !== -1 && lastBrace > firstBrace) {
-    return trimmed.slice(firstBrace, lastBrace + 1);
-  }
-  return trimmed;
-}
-
-/**
- * Drains the Agent SDK async iterator until the terminal `result` message.
- * Prefers SDK-validated `structured_output` (API-key auth); falls back to
- * parsing free-form `result.result` text (subscription auth).
- */
-async function collectStructuredOutput(
-  iterator: AsyncIterable<unknown>,
-): Promise<unknown> {
-  for await (const message of iterator) {
-    if (
-      !message ||
-      typeof message !== "object" ||
-      (message as { type?: string }).type !== "result"
-    ) {
-      continue;
-    }
-    const result = message as {
-      subtype?: string;
-      structured_output?: unknown;
-      result?: unknown;
-    };
-    if (result.subtype === "success") {
-      if (result.structured_output !== undefined) {
-        return result.structured_output;
-      }
-      if (typeof result.result === "string") {
-        try {
-          return JSON.parse(extractJsonPayload(result.result));
-        } catch (error) {
-          throw new Error(
-            `Failed to parse JSON from Claude text response: ${
-              error instanceof Error ? error.message : String(error)
-            }`,
-            { cause: error },
-          );
-        }
-      }
-      throw new Error(
-        "Claude Agent SDK returned success result with neither structured_output nor a string result",
-      );
-    }
-    if (result.subtype === "error_max_structured_output_retries") {
-      throw new Error(
-        "Claude Agent SDK exhausted structured-output retries before producing a schema-valid response",
-      );
-    }
-    throw new Error(
-      `Claude Agent SDK returned unexpected result subtype: ${result.subtype ?? "<missing>"}`,
-    );
-  }
-  throw new Error(
-    "Claude Agent SDK iterator completed without a result message",
-  );
-}
-
-/**
  * Runs one organization through the Claude Agent SDK using the SDK's native
  * `outputFormat: json_schema` mode. The SDK handles constrained generation
  * and schema-mismatch retries; we still re-validate with Zod for type safety.
@@ -228,33 +130,17 @@ async function confirmCandidate(args: {
     },
   });
 
-  const structuredOutput = await withTimeout(
-    collectStructuredOutput(response),
+  const { output } = await withTimeout(
+    collectClaudeResult(response),
     args.timeoutMs,
   );
 
-  const parsed = WebsiteConfirmationSchema.safeParse(structuredOutput);
+  const parsed = WebsiteConfirmationSchema.safeParse(output);
   if (!parsed.success) {
     throw new Error(`Schema validation failed: ${parsed.error.message}`);
   }
 
   return parsed.data;
-}
-
-function assertClaudeCredentials(): "api-key" | "subscription" {
-  if (process.env.ANTHROPIC_API_KEY) {
-    return "api-key";
-  }
-  // On macOS, `claude login` stores credentials in the Keychain rather than
-  // ~/.claude/.credentials.json, so we can only check that Claude Code itself
-  // has been set up. The SDK will surface a clear error on the first call if
-  // the Keychain entry is missing or stale.
-  if (existsSync(join(homedir(), ".claude"))) {
-    return "subscription";
-  }
-  throw new Error(
-    "No Claude credentials found. Either set ANTHROPIC_API_KEY for metered API billing, or install and log in to Claude Code (`claude login`) to use your Max subscription.",
-  );
 }
 
 async function main() {

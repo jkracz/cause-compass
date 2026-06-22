@@ -10,7 +10,9 @@
     "transform-to-convex": "tsx src/scripts/transformToConvex.ts",
     "local-ai-confirm": "tsx src/scripts/localAiConfirm.ts",
     "claude-ai-confirm": "tsx src/scripts/claudeAiConfirm.ts",
-    "codex-ai-confirm": "tsx src/scripts/codexAiConfirm.ts"
+    "codex-ai-confirm": "tsx src/scripts/codexAiConfirm.ts",
+    "codex-ai-research": "tsx src/scripts/codexAiResearch.ts",
+    "claude-ai-research": "tsx src/scripts/claudeAiResearch.ts"
   },
   "repository": {
     "type": "git",

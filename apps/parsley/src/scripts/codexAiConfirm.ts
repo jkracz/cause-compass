@@ -16,6 +16,9 @@ import {
   type LocalAiCandidate,
   type LocalAiCandidatePage,
 } from "@/utils/aiConfirmation";
+import { assertCodexCredentials } from "@/utils/codexClient";
+import { runWithConcurrency } from "@/utils/concurrency";
+import { extractJsonPayload } from "@/utils/textUtils";
 import { logger } from "@/utils/logger";
 
 const DEFAULT_MODEL = "gpt-5.4-mini";
@@ -51,39 +54,6 @@ async function parseArgs() {
     })
     .strict()
     .parse();
-}
-
-async function runWithConcurrency<T>(
-  items: T[],
-  concurrency: number,
-  worker: (item: T) => Promise<void>,
-): Promise<void> {
-  let cursor = 0;
-  const drain = async (): Promise<void> => {
-    while (true) {
-      const idx = cursor++;
-      if (idx >= items.length) {
-        return;
-      }
-      await worker(items[idx]!);
-    }
-  };
-  const workerCount = Math.max(1, Math.min(concurrency, items.length));
-  await Promise.all(Array.from({ length: workerCount }, drain));
-}
-
-function extractJsonPayload(raw: string): string {
-  const trimmed = raw.trim();
-  const fenceMatch = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
-  if (fenceMatch?.[1]) {
-    return fenceMatch[1].trim();
-  }
-  const firstBrace = trimmed.indexOf("{");
-  const lastBrace = trimmed.lastIndexOf("}");
-  if (firstBrace !== -1 && lastBrace > firstBrace) {
-    return trimmed.slice(firstBrace, lastBrace + 1);
-  }
-  return trimmed;
 }
 
 async function confirmCandidate(args: {
@@ -153,13 +123,6 @@ Return only JSON matching the provided output schema. Do not inspect files, run 
   } finally {
     clearTimeout(timeout);
   }
-}
-
-function assertCodexCredentials(): "api-key" | "login" {
-  if (process.env.OPENAI_API_KEY || process.env.CODEX_API_KEY) {
-    return "api-key";
-  }
-  return "login";
 }
 
 async function main() {

@@ -67,6 +67,116 @@ export const WebsiteConfirmationSchema = z.object({
 });
 export type WebsiteConfirmation = z.infer<typeof WebsiteConfirmationSchema>;
 
+export const CodexResearchConfidenceSchema = z.enum([
+  "high",
+  "medium",
+  "low",
+  "none",
+]);
+export type CodexResearchConfidence = z.infer<
+  typeof CodexResearchConfidenceSchema
+>;
+
+export const CodexResearchCandidateConfidenceSchema =
+  CodexResearchConfidenceSchema.exclude(["none"]);
+export type CodexResearchCandidateConfidence = z.infer<
+  typeof CodexResearchCandidateConfidenceSchema
+>;
+
+export const CodexResearchEvidenceItemSchema = z.object({
+  sourceUrl: z.string().describe("URL where the evidence was found"),
+  quoteOrObservation: z
+    .string()
+    .describe("A short quote or observation supporting the decision"),
+});
+export type CodexResearchEvidenceItem = z.infer<
+  typeof CodexResearchEvidenceItemSchema
+>;
+
+export const CodexResearchEvidenceStringSchema = z.object({
+  value: z.string(),
+  sourceUrl: z.string(),
+  evidence: z.string(),
+});
+export type CodexResearchEvidenceString = z.infer<
+  typeof CodexResearchEvidenceStringSchema
+>;
+
+export const CodexResearchEvidenceStringArraySchema = z.object({
+  value: z.array(z.string()),
+  sourceUrl: z.string(),
+  evidence: z.string(),
+});
+export type CodexResearchEvidenceStringArray = z.infer<
+  typeof CodexResearchEvidenceStringArraySchema
+>;
+
+export const CodexResearchEvidenceGeographicFocusSchema = z.object({
+  value: GeographicFocusSchema,
+  sourceUrl: z.string(),
+  evidence: z.string(),
+});
+export type CodexResearchEvidenceGeographicFocus = z.infer<
+  typeof CodexResearchEvidenceGeographicFocusSchema
+>;
+
+export const CodexResearchEvidenceActivitySchema = ActivitySchema.extend({
+  sourceUrl: z.string(),
+  evidence: z.string(),
+});
+export type CodexResearchEvidenceActivity = z.infer<
+  typeof CodexResearchEvidenceActivitySchema
+>;
+
+export const CodexResearchResultSchema = z.object({
+  hasCorrectWebsite: z.boolean(),
+  correctWebsiteUrl: z.string().nullable(),
+  websiteConfidence: CodexResearchConfidenceSchema,
+  identityEvidence: z.array(CodexResearchEvidenceItemSchema),
+  rejectionReason: z.string().nullable(),
+  profile: z.object({
+    mission: CodexResearchEvidenceStringSchema.nullable(),
+    tagline: CodexResearchEvidenceStringSchema.nullable(),
+    oneSentenceSummary: CodexResearchEvidenceStringSchema.nullable(),
+    whySupport: CodexResearchEvidenceStringSchema.nullable(),
+    targetAudience: CodexResearchEvidenceStringSchema.nullable(),
+    geographicFocus: CodexResearchEvidenceGeographicFocusSchema.nullable(),
+    activities: z.array(CodexResearchEvidenceActivitySchema).nullable(),
+    keywords: CodexResearchEvidenceStringArraySchema.nullable(),
+  }),
+  extractedLinks: z.object({
+    donationUrl: CodexResearchEvidenceStringSchema.nullable(),
+    logoUrl: CodexResearchEvidenceStringSchema.nullable(),
+    emailAddresses: CodexResearchEvidenceStringArraySchema.nullable(),
+    socialMediaUrls: z
+      .object({
+        facebook: CodexResearchEvidenceStringSchema.nullable(),
+        instagram: CodexResearchEvidenceStringSchema.nullable(),
+        linkedin: CodexResearchEvidenceStringSchema.nullable(),
+        youtube: CodexResearchEvidenceStringSchema.nullable(),
+        x: CodexResearchEvidenceStringSchema.nullable(),
+        threads: CodexResearchEvidenceStringSchema.nullable(),
+      })
+      .nullable(),
+  }),
+  candidateUrls: z.array(
+    z.object({
+      url: z.string(),
+      purpose: z.enum([
+        "official_site",
+        "about",
+        "donate",
+        "contact",
+        "social",
+        "other",
+      ]),
+      confidence: CodexResearchCandidateConfidenceSchema,
+      evidence: z.string(),
+    }),
+  ),
+});
+export type CodexResearchResult = z.infer<typeof CodexResearchResultSchema>;
+
 export const WebsiteConfirmationPromptArgsSchema = z.object({
   ein: z.string(),
   name: z.string(),
