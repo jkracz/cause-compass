@@ -282,7 +282,13 @@ export const saveRun = mutation({
 
     const readyUpdates =
       mode === "promote_ready"
-        ? buildCodexResearchReadyUpdates(output)
+        ? buildCodexResearchReadyUpdates(output, {
+            ein: org.ein,
+            name: inputSnapshot.name,
+            street: inputSnapshot.street,
+            city: inputSnapshot.city,
+            state: inputSnapshot.state,
+          })
         : null;
     const promotedOrganization = readyUpdates !== null;
     const enqueuedCrawlJobIds: Id<"crawlQueue">[] = [];

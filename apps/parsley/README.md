@@ -167,9 +167,12 @@ Write modes are explicit:
 - `--enqueue-crawl` also enqueues high/medium crawl candidates and advances the
   organization to `searched` when crawl jobs are created, otherwise
   `ai_confirmed`.
-- `--promote-ready` promotes only high-confidence results with a correct website,
+- `--promote-ready` promotes high-confidence results with a correct website,
   at least two identity evidence items, and a mission or one-sentence summary.
-  Non-promoted results follow the enqueue/fallback path.
+  It also promotes medium-confidence results when they have at least three
+  identity evidence items, an official-site candidate for the confirmed domain,
+  and hard identity evidence such as EIN, street address, or name plus
+  city/state. Non-promoted results follow the enqueue/fallback path.
 
 The runner uses the same Codex auth sources as `codex-ai-confirm`: set
 `CODEX_API_KEY` or `OPENAI_API_KEY` for API billing, or leave both unset to use
@@ -210,9 +213,12 @@ Write modes are identical to the Codex runner:
 - `--enqueue-crawl` also enqueues high/medium crawl candidates and advances the
   organization to `searched` when crawl jobs are created, otherwise
   `ai_confirmed`.
-- `--promote-ready` promotes only high-confidence results with a correct website,
+- `--promote-ready` promotes high-confidence results with a correct website,
   at least two identity evidence items, and a mission or one-sentence summary.
-  Non-promoted results follow the enqueue/fallback path.
+  It also promotes medium-confidence results when they have at least three
+  identity evidence items, an official-site candidate for the confirmed domain,
+  and hard identity evidence such as EIN, street address, or name plus
+  city/state. Non-promoted results follow the enqueue/fallback path.
 
 Authentication is auto-detected exactly like `claude-ai-confirm`: set
 `ANTHROPIC_API_KEY` for metered API billing, or leave it unset to use the local

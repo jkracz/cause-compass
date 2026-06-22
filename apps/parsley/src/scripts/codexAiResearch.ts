@@ -130,7 +130,8 @@ async function parseArgs() {
     .option("promote-ready", {
       type: "boolean",
       default: false,
-      describe: "Promote only high-confidence complete results to ready",
+      describe:
+        "Promote high-confidence complete results, plus medium-confidence results with hard identity evidence, to ready",
     })
     .check((argv) => {
       const selectedModes = [
