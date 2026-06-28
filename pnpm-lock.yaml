@@ -9,11 +9,11 @@ importers:
   .:
     devDependencies:
       prettier:
-        specifier: ^3.8.5
-        version: 3.8.5
+        specifier: ^3.9.0
+        version: 3.9.0
       prettier-plugin-tailwindcss:
         specifier: ^0.8.0
-        version: 0.8.0(prettier@3.8.5)
+        version: 0.8.0(prettier@3.9.0)
       turbo:
         specifier: ^2.10.0
         version: 2.10.0
@@ -243,8 +243,8 @@ importers:
         specifier: ^7.1.1
         version: 7.1.1(eslint@10.6.0(jiti@2.7.0))
       prettier:
-        specifier: ^3.8.5
-        version: 3.8.5
+        specifier: ^3.9.0
+        version: 3.9.0
       tailwindcss:
         specifier: ^4.3.1
         version: 4.3.1
@@ -3682,13 +3682,13 @@ packages:
       prettier-plugin-svelte:
         optional: true
 
-  prettier@3.8.4:
-    resolution: {integrity: sha512-N2MylSdi48+5N/6S5j+maeHbUSIzzZ5uOcX5Hm4QpV8Dkb1HFjfAKTKX6yNPJQD9AhcT3ifHNB66tWTTJDi11Q==}
+  prettier@3.8.5:
+    resolution: {integrity: sha512-zxcTTCedNGJM4R8sj/Cq/F0W/c4iE0afWBcBwMTRtw4WHYP9TWkYjdiH3npPRUYsXQCPR0hTU9yjovOu+E6EQA==}
     engines: {node: '>=14'}
     hasBin: true
 
-  prettier@3.8.5:
-    resolution: {integrity: sha512-zxcTTCedNGJM4R8sj/Cq/F0W/c4iE0afWBcBwMTRtw4WHYP9TWkYjdiH3npPRUYsXQCPR0hTU9yjovOu+E6EQA==}
+  prettier@3.9.0:
+    resolution: {integrity: sha512-LjIqSIC5VYLzs9WedVmJ2ljNAGnU+DteIClbahu4L/DBeWjZ6iT/k1lAYyu9JUh+1xINxWadaPw/Pl63y/agAw==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -6020,7 +6020,7 @@ snapshots:
   convex@1.42.0(react@19.2.7):
     dependencies:
       esbuild: 0.27.0
-      prettier: 3.8.4
+      prettier: 3.8.5
       ws: 8.21.0
     optionalDependencies:
       react: 19.2.7
@@ -7363,13 +7363,13 @@ snapshots:
 
   prelude-ls@1.2.1: {}
 
-  prettier-plugin-tailwindcss@0.8.0(prettier@3.8.5):
+  prettier-plugin-tailwindcss@0.8.0(prettier@3.9.0):
     dependencies:
-      prettier: 3.8.5
-
-  prettier@3.8.4: {}
+      prettier: 3.9.0
 
   prettier@3.8.5: {}
+
+  prettier@3.9.0: {}
 
   prop-types@15.8.1:
     dependencies:
