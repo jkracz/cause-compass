@@ -14,7 +14,7 @@ import {
   type CodexResearchCandidate,
   type CodexResearchCandidatePage,
 } from "@/utils/aiConfirmation";
-import { assertCodexCredentials, mapCodexUsage } from "@/utils/codexClient";
+import { createIsolatedCodex, mapCodexUsage } from "@/utils/codexClient";
 import { runWithConcurrency } from "@/utils/concurrency";
 import { extractJsonPayload } from "@/utils/textUtils";
 import { logger } from "@/utils/logger";
@@ -68,6 +68,8 @@ type InputSnapshot = {
 
 const nteeCodesDict = nteeCodes as Record<string, NteeCode>;
 const activityCodesDict = activityCodes as Record<string, ActivityCode>;
+
+let cleanupCodexHome: (() => Promise<void>) | undefined;
 
 class CodexResearchError extends Error {
   readonly status: Exclude<ResearchStatus, "succeeded">;
@@ -384,10 +386,8 @@ async function main() {
   const writer = createJsonlWriter(outputPath);
   await writer.init(argv.append);
 
-  const authMode = assertCodexCredentials();
-  const apiKey = process.env.CODEX_API_KEY || process.env.OPENAI_API_KEY;
-  const { Codex } = await import("@openai/codex-sdk");
-  const codex = new Codex(apiKey ? { apiKey } : undefined);
+  const { codex, authMode, cleanup } = await createIsolatedCodex();
+  cleanupCodexHome = cleanup;
   const convex = new ConvexHttpClient(convexUrl);
   const counters = {
     attempted: 0,
@@ -503,7 +503,17 @@ async function main() {
   );
 }
 
-main().catch((error) => {
-  logger.error(error instanceof Error ? error.message : String(error));
-  process.exitCode = 1;
-});
+main()
+  .catch((error) => {
+    logger.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  })
+  .finally(() =>
+    cleanupCodexHome?.().catch((error) =>
+      logger.error(
+        `Failed to remove scratch Codex home: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      ),
+    ),
+  );

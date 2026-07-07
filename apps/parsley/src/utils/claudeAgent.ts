@@ -3,7 +3,8 @@
  * runners.
  */
 import { existsSync } from "node:fs";
-import { homedir } from "node:os";
+import { copyFile, mkdtemp, rm } from "node:fs/promises";
+import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import { extractJsonPayload } from "./textUtils";
 
@@ -11,20 +12,82 @@ import { extractJsonPayload } from "./textUtils";
  * Detects how the Claude Agent SDK will authenticate. An `ANTHROPIC_API_KEY`
  * takes precedence (metered billing); otherwise the runner uses the local
  * `claude login` subscription session. On macOS the credential material may live
- * in the Keychain rather than `~/.claude/.credentials.json`, so we only confirm
- * the Claude config directory exists — the SDK surfaces a clear error on the
- * first call if the session is missing or stale.
+ * in the Keychain rather than `<config dir>/.credentials.json`, so we only
+ * confirm the Claude config directory exists (honoring `CLAUDE_CONFIG_DIR` for a
+ * relocated config, matching the source used to copy credentials below) — the
+ * SDK surfaces a clear error on the first call if the session is missing or
+ * stale.
  */
 export function assertClaudeCredentials(): "api-key" | "subscription" {
   if (process.env.ANTHROPIC_API_KEY) {
     return "api-key";
   }
-  if (existsSync(join(homedir(), ".claude"))) {
+  const configDir = process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), ".claude");
+  if (existsSync(configDir)) {
     return "subscription";
   }
   throw new Error(
     "No Claude credentials found. Either set ANTHROPIC_API_KEY for metered API billing, or install and log in to Claude Code (`claude login`) to use your Max subscription.",
   );
+}
+
+/**
+ * Runs the Claude Agent SDK against a throwaway `CLAUDE_CONFIG_DIR` instead of
+ * the shared `~/.claude`.
+ *
+ * Every SDK `query()` writes a session transcript into
+ * `<CLAUDE_CONFIG_DIR>/projects/<cwd>/`. The batch runners issue one query per
+ * organization and never resume those sessions, so at scale they pile thousands
+ * of transcripts into the same `~/.claude` that Claude Code uses — inflating it
+ * and slowing the `/resume` picker for that directory. Pointing the runs at a
+ * temp config dir keeps that data out of `~/.claude`, and `cleanup()` deletes it
+ * so nothing accumulates. Spread the returned `env` into each `query()`'s
+ * options and call `cleanup()` in a `finally`.
+ *
+ * Auth: API-key auth needs nothing (the key rides in `env`). Subscription auth
+ * stores an OAuth token in the macOS Keychain (global, so a scratch dir still
+ * resolves it) or in `<source>/.credentials.json`; the file is copied across
+ * when present.
+ */
+export async function createIsolatedClaude(): Promise<{
+  authMode: "api-key" | "subscription";
+  env: Record<string, string>;
+  configDir: string;
+  cleanup: () => Promise<void>;
+}> {
+  const authMode = assertClaudeCredentials();
+  const configDir = await mkdtemp(join(tmpdir(), "claude-parsley-"));
+
+  if (authMode === "subscription") {
+    const sourceDir =
+      process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), ".claude");
+    const credentials = join(sourceDir, ".credentials.json");
+    if (existsSync(credentials)) {
+      try {
+        await copyFile(credentials, join(configDir, ".credentials.json"));
+      } catch {
+        // Best-effort: fall back to the Keychain-backed session.
+      }
+    }
+  }
+
+  // The SDK's `env` REPLACES process.env for the subprocess, so forward the
+  // existing environment (dropping undefined values to satisfy the typed shape)
+  // and then override CLAUDE_CONFIG_DIR so the redirect always wins.
+  const env: Record<string, string> = {};
+  for (const [key, value] of Object.entries(process.env)) {
+    if (value !== undefined) {
+      env[key] = value;
+    }
+  }
+  env.CLAUDE_CONFIG_DIR = configDir;
+
+  return {
+    authMode,
+    env,
+    configDir,
+    cleanup: () => rm(configDir, { recursive: true, force: true }),
+  };
 }
 
 type ClaudeUsage = {
