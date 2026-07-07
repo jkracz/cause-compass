@@ -12,15 +12,18 @@ import { extractJsonPayload } from "./textUtils";
  * Detects how the Claude Agent SDK will authenticate. An `ANTHROPIC_API_KEY`
  * takes precedence (metered billing); otherwise the runner uses the local
  * `claude login` subscription session. On macOS the credential material may live
- * in the Keychain rather than `~/.claude/.credentials.json`, so we only confirm
- * the Claude config directory exists — the SDK surfaces a clear error on the
- * first call if the session is missing or stale.
+ * in the Keychain rather than `<config dir>/.credentials.json`, so we only
+ * confirm the Claude config directory exists (honoring `CLAUDE_CONFIG_DIR` for a
+ * relocated config, matching the source used to copy credentials below) — the
+ * SDK surfaces a clear error on the first call if the session is missing or
+ * stale.
  */
 export function assertClaudeCredentials(): "api-key" | "subscription" {
   if (process.env.ANTHROPIC_API_KEY) {
     return "api-key";
   }
-  if (existsSync(join(homedir(), ".claude"))) {
+  const configDir = process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), ".claude");
+  if (existsSync(configDir)) {
     return "subscription";
   }
   throw new Error(
