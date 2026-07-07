@@ -17,8 +17,8 @@ import {
   type LocalAiCandidatePage,
 } from "@/utils/aiConfirmation";
 import {
-  assertClaudeCredentials,
   collectClaudeResult,
+  createIsolatedClaude,
 } from "@/utils/claudeAgent";
 import { runWithConcurrency } from "@/utils/concurrency";
 import { logger } from "@/utils/logger";
@@ -28,6 +28,8 @@ const DEFAULT_LIMIT = 1000;
 const DEFAULT_TIMEOUT_MS = 120_000;
 const DEFAULT_CONCURRENCY = 5;
 const MIN_PAGE_SIZE = 25;
+
+let cleanupClaudeConfigDir: (() => Promise<void>) | undefined;
 
 /**
  * Applies a soft per-request timeout around the Claude Agent SDK call while
@@ -98,6 +100,7 @@ async function confirmCandidate(args: {
   candidate: LocalAiCandidate;
   model: string;
   timeoutMs: number;
+  env: Record<string, string>;
 }): Promise<WebsiteConfirmation> {
   const outputSchema = toJSONSchema(WebsiteConfirmationSchema);
   const messages = buildWebsiteConfirmationMessages({
@@ -127,6 +130,7 @@ async function confirmCandidate(args: {
       settingSources: [],
       maxTurns: 1,
       outputFormat: { type: "json_schema", schema: outputSchema },
+      env: args.env,
     },
   });
 
@@ -160,7 +164,8 @@ async function main() {
     throw new Error("Missing LOCAL_AI_OPERATOR_TOKEN environment variable");
   }
 
-  const authMode = assertClaudeCredentials();
+  const { authMode, env: claudeEnv, cleanup } = await createIsolatedClaude();
+  cleanupClaudeConfigDir = cleanup;
 
   const convex = new ConvexHttpClient(convexUrl);
   const counters = {
@@ -203,7 +208,12 @@ async function main() {
     }
 
     try {
-      const result = await confirmCandidate({ candidate, model, timeoutMs });
+      const result = await confirmCandidate({
+        candidate,
+        model,
+        timeoutMs,
+        env: claudeEnv,
+      });
       const commit = await convex.mutation(commitResultRef, {
         operatorToken,
         orgId: candidate._id,
@@ -255,7 +265,9 @@ async function main() {
   );
 }
 
-main().catch((error) => {
-  logger.error(error instanceof Error ? error.message : String(error));
-  process.exitCode = 1;
-});
+main()
+  .catch((error) => {
+    logger.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  })
+  .finally(() => cleanupClaudeConfigDir?.());

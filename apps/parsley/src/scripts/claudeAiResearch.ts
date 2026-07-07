@@ -16,8 +16,8 @@ import {
 } from "@/utils/aiConfirmation";
 import {
   ClaudeResultError,
-  assertClaudeCredentials,
   collectClaudeResult,
+  createIsolatedClaude,
   mapClaudeUsage,
 } from "@/utils/claudeAgent";
 import { runWithConcurrency } from "@/utils/concurrency";
@@ -71,6 +71,8 @@ type InputSnapshot = {
 
 const nteeCodesDict = nteeCodes as Record<string, NteeCode>;
 const activityCodesDict = activityCodes as Record<string, ActivityCode>;
+
+let cleanupClaudeConfigDir: (() => Promise<void>) | undefined;
 
 class ClaudeResearchError extends Error {
   readonly status: Exclude<ResearchStatus, "succeeded">;
@@ -270,6 +272,7 @@ async function researchCandidate(args: {
   model: string;
   timeoutMs: number;
   maxTurns: number;
+  env: Record<string, string>;
 }): Promise<ResearchSuccess> {
   const outputSchema = toJSONSchema(CodexResearchResultSchema);
   const abortController = new AbortController();
@@ -290,6 +293,7 @@ async function researchCandidate(args: {
         maxTurns: args.maxTurns,
         outputFormat: { type: "json_schema", schema: outputSchema },
         abortController,
+        env: args.env,
       },
     });
 
@@ -410,7 +414,8 @@ async function main() {
     throw new Error("Missing LOCAL_AI_OPERATOR_TOKEN environment variable");
   }
 
-  const authMode = assertClaudeCredentials();
+  const { authMode, env: claudeEnv, cleanup } = await createIsolatedClaude();
+  cleanupClaudeConfigDir = cleanup;
 
   const writer = createJsonlWriter(outputPath);
   await writer.init(argv.append);
@@ -445,6 +450,7 @@ async function main() {
         model,
         timeoutMs,
         maxTurns,
+        env: claudeEnv,
       });
       counters.succeeded++;
     } catch (error) {
@@ -527,7 +533,9 @@ async function main() {
   );
 }
 
-main().catch((error) => {
-  logger.error(error instanceof Error ? error.message : String(error));
-  process.exitCode = 1;
-});
+main()
+  .catch((error) => {
+    logger.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  })
+  .finally(() => cleanupClaudeConfigDir?.());
