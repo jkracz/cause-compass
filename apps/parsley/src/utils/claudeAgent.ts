@@ -60,7 +60,11 @@ export async function createIsolatedClaude(): Promise<{
       process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), ".claude");
     const credentials = join(sourceDir, ".credentials.json");
     if (existsSync(credentials)) {
-      await copyFile(credentials, join(configDir, ".credentials.json"));
+      try {
+        await copyFile(credentials, join(configDir, ".credentials.json"));
+      } catch {
+        // Best-effort: fall back to the Keychain-backed session.
+      }
     }
   }
 

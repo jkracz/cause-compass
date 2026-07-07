@@ -270,4 +270,12 @@ main()
     logger.error(error instanceof Error ? error.message : String(error));
     process.exitCode = 1;
   })
-  .finally(() => cleanupClaudeConfigDir?.());
+  .finally(() =>
+    cleanupClaudeConfigDir?.().catch((error) =>
+      logger.error(
+        `Failed to remove scratch Claude config dir: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      ),
+    ),
+  );

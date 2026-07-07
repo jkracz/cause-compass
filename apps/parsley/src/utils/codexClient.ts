@@ -1,6 +1,7 @@
 /**
  * Shared Codex SDK helpers used by the Codex confirmation and research runners.
  */
+import { existsSync } from "node:fs";
 import { copyFile, mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -39,22 +40,21 @@ export async function createIsolatedCodex(): Promise<{
   const apiKey = process.env.CODEX_API_KEY || process.env.OPENAI_API_KEY;
   const codexHome = await mkdtemp(path.join(os.tmpdir(), "codex-parsley-"));
 
-  // Login-based auth lives in <CODEX_HOME>/auth.json; a fresh scratch home has
-  // none, so copy it across. API-key auth needs nothing extra.
+  // Login-based auth may live in <CODEX_HOME>/auth.json; a fresh scratch home
+  // has none, so copy it across when present. Codex can also keep the session in
+  // the OS keyring, which a scratch CODEX_HOME still resolves, so a missing or
+  // uncopyable auth.json is non-fatal — the SDK surfaces a clear auth error on
+  // the first call if there is genuinely no session. API-key auth needs nothing.
   if (authMode === "login") {
     const sourceHome =
       process.env.CODEX_HOME ?? path.join(os.homedir(), ".codex");
-    try {
-      await copyFile(
-        path.join(sourceHome, "auth.json"),
-        path.join(codexHome, "auth.json"),
-      );
-    } catch (error) {
-      await rm(codexHome, { recursive: true, force: true });
-      throw new Error(
-        `Codex login auth not found at ${sourceHome}/auth.json. Run \`codex login\` or set CODEX_API_KEY/OPENAI_API_KEY.`,
-        { cause: error },
-      );
+    const source = path.join(sourceHome, "auth.json");
+    if (existsSync(source)) {
+      try {
+        await copyFile(source, path.join(codexHome, "auth.json"));
+      } catch {
+        // Best-effort: fall back to the keyring-backed session.
+      }
     }
   }
 

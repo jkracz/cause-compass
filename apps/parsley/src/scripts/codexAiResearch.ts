@@ -508,4 +508,12 @@ main()
     logger.error(error instanceof Error ? error.message : String(error));
     process.exitCode = 1;
   })
-  .finally(() => cleanupCodexHome?.());
+  .finally(() =>
+    cleanupCodexHome?.().catch((error) =>
+      logger.error(
+        `Failed to remove scratch Codex home: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      ),
+    ),
+  );
