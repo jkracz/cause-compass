@@ -12,19 +12,19 @@
   "license": "ISC",
   "dependencies": {
     "@cause/lib": "workspace:*",
-    "@convex-dev/aggregate": "^0.2.1",
-    "@convex-dev/better-auth": "^0.12.4",
+    "@convex-dev/aggregate": "^0.2.2",
+    "@convex-dev/better-auth": "^0.12.5",
     "@convex-dev/migrations": "^0.3.5",
     "@convex-dev/workflow": "^0.4.4",
     "better-auth": "^1.6.23",
-    "convex": "^1.42.1",
-    "openai": "^6.45.0",
+    "convex": "^1.42.2",
+    "openai": "^6.47.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@cause/eslint-config": "workspace:*",
     "@cause/typescript-config": "workspace:*",
-    "eslint": "^10.6.0",
-    "typescript": "latest"
+    "eslint": "^10.7.0",
+    "typescript": "^6.0.3"
   }
 }

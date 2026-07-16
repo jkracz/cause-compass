@@ -19,16 +19,10 @@ minimumReleaseAgeExclude:
   - '@anthropic-ai/claude-agent-sdk-win32-arm64@0.3.154'
   - '@anthropic-ai/claude-agent-sdk-win32-x64@0.3.154'
   - '@anthropic-ai/claude-agent-sdk@0.3.154'
-  - '@openai/codex-sdk@0.135.0'
-  - '@openai/codex@0.135.0'
-  - '@openai/codex@0.135.0-darwin-arm64'
-  - '@openai/codex@0.135.0-darwin-x64'
-  - '@openai/codex@0.135.0-linux-arm64'
-  - '@openai/codex@0.135.0-linux-x64'
-  - '@openai/codex@0.135.0-win32-arm64'
-  - '@openai/codex@0.135.0-win32-x64'
-  - '@posthog/core@1.29.13'
-  - '@posthog/types@1.376.4'
+  - '@openai/codex-sdk@0.135.0 || 0.144.5'
+  - '@openai/codex@0.135.0-darwin-arm64 || 0.135.0-darwin-x64 || 0.135.0-linux-arm64 || 0.135.0-linux-x64 || 0.135.0-win32-arm64 || 0.135.0-win32-x64 || 0.135.0 || 0.144.5-darwin-arm64 || 0.144.5-darwin-x64 || 0.144.5-linux-arm64 || 0.144.5-linux-x64 || 0.144.5-win32-arm64 || 0.144.5-win32-x64 || 0.144.5'
+  - '@posthog/core@1.29.13 || 1.43.0'
+  - '@posthog/types@1.376.4 || 1.396.0'
   - '@turbo/darwin-64@2.9.16'
   - '@turbo/darwin-arm64@2.9.16'
   - '@turbo/linux-64@2.9.16'
@@ -38,7 +32,7 @@ minimumReleaseAgeExclude:
   - eslint-plugin-turbo@2.9.16
   - lucide-react@1.17.0
   - openai@6.39.1
-  - posthog-js@1.376.4
+  - posthog-js@1.376.4 || 1.403.0
   - turbo@2.9.16
   - '@convex-dev/workflow@0.4.3'
   - '@next/env@16.2.7'
@@ -70,6 +64,22 @@ minimumReleaseAgeExclude:
   - typescript-eslint@8.60.1
   - '@types/node@26.0.0'
   - nanoid@5.1.14
+  - '@tailwindcss/node@4.3.3'
+  - '@tailwindcss/oxide-android-arm64@4.3.3'
+  - '@tailwindcss/oxide-darwin-arm64@4.3.3'
+  - '@tailwindcss/oxide-darwin-x64@4.3.3'
+  - '@tailwindcss/oxide-freebsd-x64@4.3.3'
+  - '@tailwindcss/oxide-linux-arm-gnueabihf@4.3.3'
+  - '@tailwindcss/oxide-linux-arm64-gnu@4.3.3'
+  - '@tailwindcss/oxide-linux-arm64-musl@4.3.3'
+  - '@tailwindcss/oxide-linux-x64-gnu@4.3.3'
+  - '@tailwindcss/oxide-linux-x64-musl@4.3.3'
+  - '@tailwindcss/oxide-wasm32-wasi@4.3.3'
+  - '@tailwindcss/oxide-win32-arm64-msvc@4.3.3'
+  - '@tailwindcss/oxide-win32-x64-msvc@4.3.3'
+  - '@tailwindcss/oxide@4.3.3'
+  - '@tailwindcss/postcss@4.3.3'
+  - tailwindcss@4.3.3
 
 onlyBuiltDependencies:
   - '@tailwindcss/oxide'

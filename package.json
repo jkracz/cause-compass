@@ -1,7 +1,7 @@
 {
   "name": "cause-compass",
   "private": true,
-  "packageManager": "pnpm@11.10.0",
+  "packageManager": "pnpm@11.13.1",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
@@ -12,9 +12,9 @@
     "worktree:cleanup": "./scripts/worktree-cleanup"
   },
   "devDependencies": {
-    "prettier": "^3.9.4",
-    "prettier-plugin-tailwindcss": "^0.8.0",
-    "turbo": "^2.10.3",
+    "prettier": "^3.9.5",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "turbo": "^2.10.5",
     "typescript": "^6.0.3"
   }
 }
