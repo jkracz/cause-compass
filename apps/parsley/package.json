@@ -29,7 +29,7 @@
     "@cause/backend": "workspace:*",
     "@cause/lib": "workspace:*",
     "@openai/codex-sdk": "^0.144.5",
-    "convex": "^1.42.2",
+    "convex": "^1.42.3",
     "csv-parse": "^7.0.1",
     "dotenv": "^17.4.2",
     "ollama": "^0.6.3",
