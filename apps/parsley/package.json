@@ -47,7 +47,7 @@
     "@types/yargs": "^17.0.35",
     "eslint": "^10.8.1",
     "globals": "^17.9.0",
-    "tsx": "^4.23.11",
-    "typescript-eslint": "^8.66.0"
+    "tsx": "^4.23.12",
+    "typescript-eslint": "^8.67.0"
   }
 }
