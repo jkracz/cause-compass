@@ -16,7 +16,7 @@
     "@convex-dev/better-auth": "^0.12.5",
     "@convex-dev/migrations": "^0.3.5",
     "@convex-dev/workflow": "^0.4.4",
-    "better-auth": "^1.6.29",
+    "better-auth": "^1.7.1",
     "convex": "^1.44.0",
     "openai": "^6.49.0",
     "zod": "^4.4.3"
@@ -24,7 +24,7 @@
   "devDependencies": {
     "@cause/eslint-config": "workspace:*",
     "@cause/typescript-config": "workspace:*",
-    "eslint": "^10.8.1",
+    "eslint": "^10.9.0",
     "typescript": "^6.0.3"
   }
 }
