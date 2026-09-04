@@ -10,19 +10,19 @@ allowBuilds:
   unrs-resolver: true
 
 minimumReleaseAgeExclude:
-  - '@anthropic-ai/claude-agent-sdk-darwin-arm64@0.3.154'
-  - '@anthropic-ai/claude-agent-sdk-darwin-x64@0.3.154'
-  - '@anthropic-ai/claude-agent-sdk-linux-arm64-musl@0.3.154'
-  - '@anthropic-ai/claude-agent-sdk-linux-arm64@0.3.154'
-  - '@anthropic-ai/claude-agent-sdk-linux-x64-musl@0.3.154'
-  - '@anthropic-ai/claude-agent-sdk-linux-x64@0.3.154'
-  - '@anthropic-ai/claude-agent-sdk-win32-arm64@0.3.154'
-  - '@anthropic-ai/claude-agent-sdk-win32-x64@0.3.154'
-  - '@anthropic-ai/claude-agent-sdk@0.3.154'
-  - '@openai/codex-sdk@0.135.0 || 0.144.5'
-  - '@openai/codex@0.135.0-darwin-arm64 || 0.135.0-darwin-x64 || 0.135.0-linux-arm64 || 0.135.0-linux-x64 || 0.135.0-win32-arm64 || 0.135.0-win32-x64 || 0.135.0 || 0.144.5-darwin-arm64 || 0.144.5-darwin-x64 || 0.144.5-linux-arm64 || 0.144.5-linux-x64 || 0.144.5-win32-arm64 || 0.144.5-win32-x64 || 0.144.5'
-  - '@posthog/core@1.29.13 || 1.43.0'
-  - '@posthog/types@1.376.4 || 1.396.0'
+  - '@anthropic-ai/claude-agent-sdk-darwin-arm64@0.3.154 || 0.3.261'
+  - '@anthropic-ai/claude-agent-sdk-darwin-x64@0.3.154 || 0.3.261'
+  - '@anthropic-ai/claude-agent-sdk-linux-arm64-musl@0.3.154 || 0.3.261'
+  - '@anthropic-ai/claude-agent-sdk-linux-arm64@0.3.154 || 0.3.261'
+  - '@anthropic-ai/claude-agent-sdk-linux-x64-musl@0.3.154 || 0.3.261'
+  - '@anthropic-ai/claude-agent-sdk-linux-x64@0.3.154 || 0.3.261'
+  - '@anthropic-ai/claude-agent-sdk-win32-arm64@0.3.154 || 0.3.261'
+  - '@anthropic-ai/claude-agent-sdk-win32-x64@0.3.154 || 0.3.261'
+  - '@anthropic-ai/claude-agent-sdk@0.3.154 || 0.3.261'
+  - '@openai/codex-sdk@0.135.0 || 0.144.5 || 0.153.3'
+  - '@openai/codex@0.135.0-darwin-arm64 || 0.135.0-darwin-x64 || 0.135.0-linux-arm64 || 0.135.0-linux-x64 || 0.135.0-win32-arm64 || 0.135.0-win32-x64 || 0.135.0 || 0.144.5-darwin-arm64 || 0.144.5-darwin-x64 || 0.144.5-linux-arm64 || 0.144.5-linux-x64 || 0.144.5-win32-arm64 || 0.144.5-win32-x64 || 0.144.5 || 0.153.3-darwin-arm64 || 0.153.3-darwin-x64 || 0.153.3-linux-arm64 || 0.153.3-linux-x64 || 0.153.3-win32-arm64 || 0.153.3-win32-x64 || 0.153.3'
+  - '@posthog/core@1.29.13 || 1.43.0 || 1.50.5'
+  - '@posthog/types@1.376.4 || 1.396.0 || 1.409.0'
   - '@turbo/darwin-64@2.9.16'
   - '@turbo/darwin-arm64@2.9.16'
   - '@turbo/linux-64@2.9.16'
@@ -30,9 +30,9 @@ minimumReleaseAgeExclude:
   - '@turbo/windows-64@2.9.16'
   - '@turbo/windows-arm64@2.9.16'
   - eslint-plugin-turbo@2.9.16
-  - lucide-react@1.17.0
+  - lucide-react@1.17.0 || 1.41.0
   - openai@6.39.1
-  - posthog-js@1.376.4 || 1.403.0
+  - posthog-js@1.376.4 || 1.403.0 || 1.427.2
   - turbo@2.9.16
   - '@convex-dev/workflow@0.4.3'
   - '@next/env@16.2.7'
@@ -80,6 +80,9 @@ minimumReleaseAgeExclude:
   - '@tailwindcss/oxide@4.3.3'
   - '@tailwindcss/postcss@4.3.3'
   - tailwindcss@4.3.3
+  - eslint@10.10.0
+  - playwright-core@1.63.0
+  - playwright@1.63.0
 
 onlyBuiltDependencies:
   - '@tailwindcss/oxide'
