@@ -9,6 +9,11 @@
   "prConcurrentLimit": 10,
   "packageRules": [
     {
+      "description": "Keep Better Auth on 1.6 until @convex-dev/better-auth supports 1.7",
+      "matchPackageNames": ["better-auth"],
+      "allowedVersions": "<1.7.0"
+    },
+    {
       "description": "Wait for npm packages to pass pnpm's release-age gate",
       "matchDatasources": ["npm"],
       "minimumReleaseAge": "1 day",

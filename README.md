@@ -94,6 +94,20 @@ pnpm --filter @cause/scraper build
 pnpm --filter @cause/lib build
 ```
 
+## Dependency Compatibility
+
+Better Auth stays on `~1.6.30` in both the web app and backend because
+`@convex-dev/better-auth@0.12.5` requires `>=1.6.11 <1.7.0`. Better Auth 1.7
+removed the OIDC provider plugin that the Convex integration imports. Upgrade
+both auth packages together once the integration supports 1.7, and remove the
+matching `allowedVersions` constraint in `renovate.json`.
+
+TypeScript uses the [official side-by-side setup](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-6.0):
+`@typescript/native` aliases TypeScript 7 and supplies `tsc` for builds and
+typechecks; `typescript` aliases `@typescript/typescript6` to supply the compiler
+API required by ESLint and other tooling. Keep both aliases when updating
+TypeScript until those tools support the new compiler API.
+
 ## Environment Configuration
 
 Environment examples live next to the apps that use them:
