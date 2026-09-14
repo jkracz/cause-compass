@@ -19,7 +19,7 @@
     "better-auth": "~1.6.31",
     "convex": "^1.45.0",
     "openai": "^7.15.0",
-    "zod": "^4.6.2"
+    "zod": "^4.6.4"
   },
   "devDependencies": {
     "@cause/eslint-config": "workspace:*",
