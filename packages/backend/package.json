@@ -16,9 +16,9 @@
     "@convex-dev/better-auth": "^0.12.5",
     "@convex-dev/migrations": "^0.3.6",
     "@convex-dev/workflow": "^0.4.6",
-    "better-auth": "~1.6.31",
-    "convex": "^1.45.0",
-    "openai": "^7.15.0",
+    "better-auth": "~1.6.33",
+    "convex": "^1.46.0",
+    "openai": "^7.18.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
