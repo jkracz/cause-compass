@@ -13,9 +13,9 @@
   },
   "devDependencies": {
     "@typescript/native": "npm:typescript@^7.0.2",
-    "prettier": "^3.9.6",
+    "prettier": "^3.9.8",
     "prettier-plugin-tailwindcss": "^0.8.1",
-    "turbo": "^2.10.12",
+    "turbo": "^2.10.13",
     "typescript": "npm:@typescript/typescript6@^6.0.2"
   }
 }
