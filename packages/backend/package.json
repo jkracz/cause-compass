@@ -18,14 +18,14 @@
     "@convex-dev/workflow": "^0.4.6",
     "better-auth": "~1.6.33",
     "convex": "^1.46.0",
-    "openai": "^7.18.0",
+    "openai": "^7.19.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
     "@cause/eslint-config": "workspace:*",
     "@cause/typescript-config": "workspace:*",
     "@typescript/native": "npm:typescript@^7.0.2",
-    "eslint": "^10.10.0",
+    "eslint": "^10.11.0",
     "typescript": "npm:@typescript/typescript6@^6.0.2"
   }
 }
