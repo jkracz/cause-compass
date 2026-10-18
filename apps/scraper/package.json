@@ -20,7 +20,7 @@
     "@cause/typescript-config": "workspace:*",
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.5",
-    "eslint": "^10.12.0",
+    "eslint": "^10.13.0",
     "globals": "^17.13.0",
     "tsx": "^4.23.15",
     "typescript-eslint": "^8.71.2"
