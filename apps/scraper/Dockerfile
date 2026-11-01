@@ -1,4 +1,4 @@
-FROM node:22.23.4-slim AS base
+FROM node:26.13.0-slim AS base
 
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@10.28.1 --activate
@@ -23,7 +23,7 @@ COPY apps/scraper/ apps/scraper/
 RUN pnpm --filter @cause/scraper run build
 
 # --- Production stage ---
-FROM node:22.23.4-slim AS production
+FROM node:26.13.0-slim AS production
 
 RUN corepack enable && corepack prepare pnpm@10.28.1 --activate
 
